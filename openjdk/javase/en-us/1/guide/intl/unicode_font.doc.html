@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+ 
+<table width=100%><tr>
+<td>
+</td><td align=right><i> </i></td>
+</tr></table>
+
+<hr>
+<br>
+ 
+<a name="25268"></a>
+<center>
+<h1> Unicode Font Support in JDK 1.1</h1>
+<h3></h3>
+<h3></h3>
+<h3></h3>
+<h4></h4>
+</center>
+<hr><p><a name="18907"></a>
+JDK 1.0 was limited to displaying only the characters in the ISO-Latin-1 subset of Unicode. This restriction is removed in JDK 1.1. Java programs can now display any Unicode character which can be rendered with a host font. <p><a name="18909"></a>
+Java provides a small number of predefined "virtual" font names, and maps them to real fonts available on the host. In JDK 1.0, each Java font name mapped to exactly one host font. In JDK 1.1, a Java font name can map to a series of host fonts, which can be chosen to cover as much of the Unicode character set as is desired. The font mapping is specified in a font properties file. <p><a name="19497"></a>
+Since Java font names are virtual names that can represent multiple host fonts, it is appropriate that they have generic names. JDK 1.0 included the font names TimesRoman, Courier, and Helvetica, which were very specific and do not apply to many locales. JDK 1.1 introduces three replacements for these names: Serif, SansSerif, and MonoSpaced. Use of these new names is recommended.<p><a name="25669"></a>
+The JDK ships with font property files that cover all supported locales. For a locale to be supported, an adequate font property file must exist.<p>
+<a name="19110"></a>
+<h1> Font Property File  </h1>
+<a name="19112"></a>
+The example that follows is a font property file with values that might be used on a Windows platform:<p><a name="19479"></a>
+#-------------------------------------------<br>serif.0.plain=Times New Roman<br>serif.1.plain=MS Mincho<br># Any style fonts use WinDings as component font 2<br># and Lucida Sans Unicode Regular as component font 3.<br>serif.2=WingDings<br>serif.3=Lucida Sans Unicode Regular<br>...<br>sansserif.0.italic=Helvetica<br>sansserif.1.italic=MS Gothic<br>....<br>....<br>#-------------------------------------------<br><p><a name="19509"></a>
+The complete key representation is:<p><pre><a name="19133"></a>&lt;abstract name&gt;.&lt;component font number&gt;.&lt;style name&gt;.
+</pre><a name="19134"></a>
+If the style name is omitted, the mapping applies for all styles in that family. Fully specified mappings take precedence over those without the style name. The component font number gives a priority to each host font. If a Unicode character can be displayed with multiple fonts in a mapping, the font with the lowest component number will be used.<p><a name="19140"></a>
+The font properties file can also specify a default character to be displayed in place of characters that can not be rendered with the given mappings. The default character is specified in terms of its Unicode value, as shown below. If the default character can not be mapped, the ASCII `?' is used.<p><pre><a name="19145"></a>#-----------------------------------<br>
+default.char=274f<br>
+#-----------------------------------
+</pre><a name="19154"></a>
+The aliasing of the new font names to the old names is accomplished with the following entry<p><pre><a name="19155"></a>#--------------------------------<br>
+alias.timesroman=serif<br>
+alias.helvetica=sansserif<br>
+alias.courier=monospaced<br>
+#-----------------------------------
+</pre><a name="19163"></a>
+The priority ordering of host fonts may not be sufficient to specify the desired mapping when multiple host fonts overlap. Exclusion ranges can be set on a host font to prohibit characters from being displayed with that font. The following example shows how this is done:<p><pre><a name="19165"></a>#---------------------------------------<br>
+exclusion.sansserif.1=xxxx-XXXX<br>
+exclusion.monospaced.plain.2=xxxx-XXXX<br>
+#---------------------------------------
+</pre><a name="19174"></a>
+Exclusion ranges can be abbreviated in the same way the name mappings are. Fully specified names take priority over abbreviated ones.<p>
+<a name="19415"></a>
+<h1>Supporting User-Defined Characters  </h1>
+<a name="19416"></a>
+Especially in the Japanese market, many end-users require specialized fonts for non-standard characters. These characters are called Gaiji in Japan. To support Gaiji fonts, Java must be told how to map between the Gaiji font and Unicode. <p><a name="19701"></a>
+For example, assume a user has a font which contains exactly three glyphs. The glyphs are indexed 0, 1, and 2 in the font, and the user wishes to map these into the Unicode characters \uE800, \uE801, \uE802 (three Private Use Area characters in Unicode). This can be accomplished with the following two steps:<p><a name="19420"></a>
+
+<p>
+1. Subclass CharToByteConvertor (or one of its subclasses).<p>
+
+<pre><a name="19421"></a>class MyFontCharset extends CharToByteSingleByte {
+	private String name;
+
+	public MyFontCharset(){
+		name = "MyGaiji";
+	}
+
+	public boolean isConvert(char ch){
+		if (ch &gt;= 0xE800 &amp;&amp; ch &lt;= 0xE802)
+			return true;
+		else
+			return false;
+	}
+
+	// this is the conversion method actually called by 
+	// the font mechanism
+	public int convert(String str, byte[] out){
+		for (int i = 0; i &lt; str.length(); i++){
+			out[i] = str.charAt(i) - 0xE800;
+		}
+		return str.length();
+	}
+
+	// needed as convert is an abstract method in
+	// CharToByteConversion
+	public int convert(char ch[],int off,int len, 
+			   byte b[], int boff, int blen){
+		String str = new String(ch, off, len);
+		byte bb[] = new byte[blen-boff];
+		System.arraycopy(b,boff,bb,0,bb.length);
+		return convert(str, bb);
+	}
+
+	public String toString(){
+		return name;
+	}
+}
+<a name="19615"></a>
+</pre>
+<p>
+2. Specify this class in a property as follows:<p>
+<pre>
+<a name="19612"></a>#------------------------------------------------------------
+...
+serif.4=&lt;special font name&gt;
+...
+fontcharset.serif.4=MyFontCharset
+...
+#----------------------------------------------------------------
+</pre><a name="19434"></a>
+Some Japanese companies, including Fujitsu and NEC, have their own defined characters (called Vendor defined characters). This mechanism allows vendors to extend Java to support these characters.<p><a name="19769"></a>
+<p>
+
+<br>
+<hr> 
+
+
+<hr>
+
+
+
+<address>
+<a href="mailto:java-intl@java.sun.com">java-intl@java.sun.com</a>
+</address>
+
+<a href="copyright.doc.html">
+<font size=-1><i>Copyright &#169; 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by Dale Green on January 16, 1998 -->
+
+</body>
+</html>

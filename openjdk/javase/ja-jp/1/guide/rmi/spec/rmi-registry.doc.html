@@ -1,0 +1,130 @@
+<html><head><title>レジストリインタフェース
+</title></head>
+<body bgcolor=#ffffff>
+ 
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-server.doc.html">前項目</a> <a href="rmi-stubs.doc.html">次項目</a>
+<hr><br>
+ 
+<a name="60">
+<h1>レジストリインタフェース
+</h1>
+</a>
+<hr><p><a name="64">
+
+<p>
+</a>RMI システムは <code>java.rmi.registry.Registry</code> インタフェースと <code>java.rmi.registry.LocateRegistry</code> クラスを使用してオブジェクトを単純名によって取り出し、あるいは登録するよく知られたブートストラップサービスを行います。どのサーバのプロセスもそのレジストリをサポートすることができますし、単独のレジストリでもホストにつかうことが出来ます。
+<p><em>レジストリ</em> は名前をリモートオブジェクトにマップするためのリモートオブジェクトです。レジストリは仮想マシンの中で別なサーバクラスと共に、あるいは単独で使用することができます。
+<p><code>LocateRegistry</code> メソッドは特定のホスト、またはホストとポートで動作しているレジストリを得るために使います。
+<p><h3><a name="6513">
+トピックス:
+</a></h3><ul><li><a href="rmi-registry.doc.html#186">Registry インタフェース</a>
+<li><a href="rmi-registry.doc.html#6378">LocateRegistry クラス</a>
+<li><a href="rmi-registry.doc.html#6564">RegistryHandler インタフェース</a>
+</ul><h1><a name="186">
+Registry インタフェース
+</a></h1><code>java.rmi.registry.Registry</code> リモートインタフェースはレジストリの内容をルックアップ、バインド、リバインド、アンバインドそして受信する手段を提供します。
+<code>java.rmi.Naming</code> クラスは <code>registry</code> リモートインタフェースを使い URL に基づく命名法を提供します。
+<p><dl><a name="4655"><pre>package java.rmi.registry;
+
+public interface Registry extends java.rmi.Remote
+{
+</pre></a><a name="6587"><pre>	public static final int REGISTRY_PORT = 1099;
+
+	public java.rmi.Remote lookup(String name)
+		throws java.rmi.RemoteException,
+		java.rmi.NotBoundException, java.rmi.AccessException;
+
+	public void bind(String name, java.rmi.Remote obj)
+		throws java.rmi.RemoteException,
+		java.rmi.AlreadyBoundException, java.rmi.AccessException;
+
+	public void rebind(String name, java.rmi.Remote obj)
+		throws java.rmi.RemoteException, java.rmi.AccessException;
+
+	public void unbind(String name)
+		throws java.rmi.RemoteException,
+		java.rmi.NotBoundException, java.rmi.AccessException;
+
+	public String[] list()
+		throws java.rmi.RemoteException, java.rmi.AccessException;
+}
+</pre></a></dl><code>REGISTRY_PORT</code> はレジストリのデフォルトポートです。
+<p><code>lookup</code> メソッドは引数で指定された名前にバインドされたリモートオブジェクトを返します。
+リモートオブジェクトはリモートインタフェースのセットを実装します。クライアントはリモートオブジェクトを希望するリモートインタフェースにキャストすることができます。（このキャストは Java 言語におけるキャストと同様の理由で失敗することがあります）
+<p><code>bind</code> メソッドは名前をリモートオブジェクト obj に関連付けます。
+もし、その名前がすでにオブジェクトにバインドされているならば <code>AlreadyBoundExcepton</code> がスローされます。
+<p><code>rebind</code> メソッドは名前をリモートオブジェクト obj と関連付けます。もしそれ以前にバインドが存在すれば、その名前に対する古いバインドは破棄されます。
+<p><code>unbind</code> メソッドは名前とリモートオブジェクト obj の間のバインドを削除します。もしその名前にバインドが存在していなかった場合は <code>NotBoundException</code> がスローされます。
+<p><code>list</code> メソッドはレジストリに結び付けられている名前のスナップショットを 文字列の配列として返します。返り値はレジストリの内容のスナップショットを含んでいます。
+クライアントがレジストリにアクセスする場合は <code>LocateRegistry</code> と<code>Registry</code> インタフェースか、または URL ベースの <code>java.rmi.Naming</code> クラスのメソッドを使うことができます。 
+レジストリがサポートするのは <code>bind</code>、 <code>unbind</code>、そして <code>rebind</code> が同じホストがサーバとして働いているクライアントからのみです。ルックアップは任意のホストから実行可能です。
+<p><h1><a name="6378">
+LocateRegistry クラス
+</a></h1><code>java.rmi.registry.LocateRegistry</code> クラスは現ホスト上のレジストリ、現ホスト、現ポート、指定されたホストの特定ポートのレジストリへの参照を返す static メソッドを持ちます。
+ここで返されるのは特定のホストやポートの情報を含んだレジストリへのリモートスタブです。 どのホスト上のどのレジストリであっても、参照（スタブ）を得るためにはリモートオペレーションを実行する必要はありません。
+<p><dl><a name="3295"><pre>package java.rmi.registry;
+public final class LocateRegistry {
+	public static Registry getRegistry()
+		throws java.rmi.RemoteException;
+
+	public static Registry getRegistry(int port)
+		throws java.rmi.RemoteException;
+
+	public static Registry getRegistry(String host)
+		throws java.rmi.RemoteException,
+		java.rmi.UnknownHostException;
+
+	public static Registry getRegistry(String host, int port)
+		throws java.rmi.RemoteException,
+		java.rmi.UnknownHostException;
+
+	public static Registry createRegistry(int port)
+		throws java.rmi.RemoteException;
+}
+</pre></a></dl><code>createRegistry</code> メソッドはローカルホストの特定のポートでレジストリを作成してエクスポートします。
+レジストリは単純フラット命名法を実装し、リモートオブジェクトの名前（文字列）をリモートオブジェクトへの参照にバインドします。
+名前とリモートオブジェクトのバインディングはサーバが再スタートするときには保持されません。
+<p><em><code>createRegistry</code> メソッドによるレジストリのスタートではサーバのプロセスはアクティブのまま保たれません。
+</em><p><h1><a name="6564">
+RegistryHandler インタフェース
+</a></h1><code>RegistryHandler</code> インタフェースは private 実装へのインタフェースとして使われます。
+<p><dl><a name="6566"><pre>package java.rmi.registry;
+
+public interface RegistryHandler {
+
+	Registry registryStub(String host, int port)
+		throws java.rmi.RemoteException, 
+		java.rmi.UnknownHostException;
+
+	Registry registryImpl(int port) 
+		throws java.rmi.RemoteException;
+}
+</pre></a></dl><code>registryStub</code> メソッドは指定されたホストとポート上のリモートレジストリへコンタクトするためのスタブを返します。
+
+<p><code>registryImpl</code> メソッドは指定されたポート上のレジストリを構築してエクスポートします。 ポート番号はゼロであってはなりません。
+<p>
+<p>
+<hr><br>
+ 
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-server.doc.html">前項目</a> <a href="rmi-stubs.doc.html">次項目</a>
+<hr><br>
+ 
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.4 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email  -->
+<!-- -->
+<!-- Last updated: 03/18/97 13:00:03 -->
+
+</body>
+</html>
+

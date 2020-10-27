@@ -1,0 +1,84 @@
+<html>
+<head>
+<title>AWT グラフィックスクリップ API</title>
+</head>
+<BODY BGCOLOR="#FFFFFF">
+ 
+<h1>AWT グラフィックスクリップ API</h1>
+<hr>
+<address>最終更新: 1996 年 10 月 30 日</address>
+<h2>問題</h2>
+現在 AWT Graphics オブジェクトは、減っていくだけのクリップ領域を実装するメソ
+ッドを持っています。クリップ領域を操作するための単一の<a href="../../../../api/java.awt.Graphics.html#clipRect">clipRect()</a> メソッドがあります。このメソッドは現在のクリップ領域と指示された矩形とを交差させ、2 つの交差する点に新しいクリップ領域をセットします。この操作は、レンダリングを、コンテキストの「再描画領域」にクリップするためにセットアップされた Graphics オブジェクト内で操作する間に、クリッピングを使用してペイント配布を制御しようとする、多くのグラフィックスアルゴリズムにとって便利なものです。不幸にして、クリッピングがレンダリングプロセスで使用されているとき、通常これは少ないレンダリング操作のためにだけ使用されます。クリップ領域を、再描画プロセスによって確立される元のコンテキストクリップに拡大する機能がなければ、レンダリングを目的としたクリッピングは、一時のプロセスになります。
+<p>
+プログラマが、一時的に 1 つまたは 2 つのレンダリング操作に対して小さな領域にクリップをセットし、それを後で復元したい場合、別の機構を使用する必要があります。現在使用可能な方法は、<a href="../../../../api/java.awt.Graphics.html#create">create()</a> メソッドの 1 つを使用して Graphics オブジェクトをコピーし、 clipRect メソッドを使用して、一時的なクリップを新しい Graphics オブジェクトにセットし、それが終わったときに処理することです。元の Graphics オブジェクトは依然元のクリップを修正されずに持っており、次のレンダリングに使用することができます。
+<p>
+さらに、Graphics オブジェクトの他のすべての属性は問い合わせ、変更そして元の値に復元することができます。レンダリング属性としてビューされたとき、クリップ領域は部分的にしかこの設計モデルに従いません。クリップ領域を Rectangle オブジェクトとして問い合わせるためには、 <a href="../../../../api/java.awt.Graphics.html#getClipRect()">getClipRect()</a> メソッドがありますが、このメソッドは将来非矩形のクリップが提供されるとき、拡張はできません。加えて、現在のクリップ領域を問い合わせした場合でも、もっと限定されたクリップをインストールした後で、このクリップを明示的にこの値にセットする方法はありませんでした。
+
+<h2>新クリップ API</h2>
+この問題を解決するために、1 つの新しいクラス:
+<pre>	<a href="../../../../api/java.awt.Shape.html">java.awt.Shape</a></pre>
+が AWT に追加され、3 つの新しいメソッド:
+<pre>	<a href="../../../../api/java.awt.Graphics.html#getClip()">getClip()</a>
+	<a href="../../../../api/java.awt.Graphics.html#setClip(java.awt.Shape)">setClip(Shape)</a>
+	<a href="../../../../api/java.awt.Graphics.html#setClip(int, int, int, int)">setClip(int x, int y, int w, int h)</a></pre>
+が AWT Graphics クラスに追加されています。
+<p>そして、getClipRect() メソッドは、前述したもっと一般的な getClip() メソッドと次の新しいメソッドのために、現在推奨されていません:
+<pre>	<a href="../../../../api/java.awt.Graphics.html#getClipBounds()">getClipBounds()</a></pre>
+これは、その形に関わらず、現在のクリップ領域の境界ボックスを Rectangle として返します。このメソッドにはまた、AWT のクラスを超えて実装された最近の用語更新と一貫性がある名前が付けられています。
+
+<h2>サンプルコード</h2>
+<p>一時的なクリッピングを実行するために古い API の使用方法を示すサンプルコードを、次に示します:
+<pre>
+
+    import java.awt.*;
+    import java.applet.*;
+
+    public class TempClipExample extends Applet {
+	Image bgimg, img2;
+	public void paint(Graphics g) {
+	    // Draw a background image
+	    g.drawImage(bgimg, 0, 0, this);
+	    // Draw the upper left 100x100 portion of another image at 10,10
+	    <b>Graphics g2 = g.create();</b>
+	    <b>g2.clipRect(10, 10, 100, 100);</b>
+	    <b>g2.drawImage(img2, 10, 10, this);</b>
+	    <b>g2.dispose();	// reclaims resources more quickly</b>
+	    // Now continue drawing with original clip area
+	    g.fillRect(0, 0, 10, 10);
+	}
+    }
+</pre>
+<p>一時的なクリッピングを実行するために新しい API の使用方法を示すサンプルコードを、次に示します:
+<pre>
+
+    import java.awt.*;
+    import java.applet.*;
+
+    public class TempClipExample extends Applet {
+	Image bgimg, img2;
+	public void paint(Graphics g) {
+	    // Draw a background image
+	    g.drawImage(bgimg, 0, 0, this);
+	    // Draw the upper left 100x100 portion of another image at 10,10
+	    <b>Shape oldclip = g.getClip();</b>
+	    <b>g.clipRect(10, 10, 100, 100);</b>
+	    <b>g.drawImage(img2, 10, 10, this);</b>
+	    <b>g.setClip(oldclip);</b>
+	    // Now continue drawing with original clip area
+	    g.fillRect(0, 0, 10, 10);
+	}
+    }
+</pre>
+
+<hr><br>
+
+<address>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</address>
+
+<i>Copyright (C) 1996, Sun Microsystems, Inc.   All rights
+reserved.</i>
+
+</body>
+</html>

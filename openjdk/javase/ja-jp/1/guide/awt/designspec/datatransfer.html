@@ -1,0 +1,567 @@
+<html><head><title>Java AWT: データ転送</title></head>
+<BODY BGCOLOR="#FFFFFF">
+ 
+ 
+<a name="919682">
+<h1><img align=middle src="images/juggler.sm.gif">  Java AWT: データ転送</h1>
+</a>
+<hr><p><a name="919687">
+<address>
+最終更新: 1997年 2 月3 日
+</address>
+
+<h2>目的</h2>
+</a>
+今日の典型的な GUI ユーザは、切り取り/コピー/貼り付けおよびドラッグとドロップのような操作を使用して、アプリケーション間でデータ転送できることを期待しています。現在の Java 環境でのこの唯一の機構は、AWT ネイティブウィジット (TextField、TextArea) がデフォルトで提供する機能を介するものです。しかし、アプリケーションがこれらネイティブウィジット外でそのような操作を有効にする必要のあるケースがたくさんあります。そのため、Java プラットフォームは、基本的なデータ転送機能を有効化するために、 API を提供する必要があります。このドキュメントでは、様々な転送プロトコルをその上に構築できる Java オブジェクトのベースラインデータ転送を定義します。このドキュメントではまた、これら上位レベル転送プロトコルの 2 つの API、<a href="#clipboard">クリップボード </a>および<a href="#dnd"> ドラッグとドロップ </a> について説明します。<a name="919689">
+<p>
+注:  クリップボード API は JDK 1.1 にありますが、ドラッグとドロップ API は（ 1.1 の時間的制約により）次のバージョンになります 。ここでは、Java Beans ドキュメントから参照ができ、できる限り早くフィードバックを得られるように、ドラッグとドロップのドキュメントを入れています。
+<p>
+<h2>Java データ転送</h2>
+</a><a name="919690">
+<h3>転送 API の設計目標</h3>
+</a>
+データ転送 API の設計目標は次のとおりです:<ul>
+<li>単純なタスクは単純にしておく（ Java APIで常にそうであるように）。
+
+<li>API が一般的であり、既存および将来の転送モデルを有効化するために充分であることを保証する。
+
+<li>ダイナミックなデータ型を作成、登録及び転送できるようにする。
+
+<li>プロセス空間の境界の内外両方でデータ転送を可能にする。
+
+<li>Java および非  Java アプリケーション間のデータ転送を可能にする。
+
+<li>Java Beans の転送をサポートする。
+</ul><a name="transfer">
+<p>
+<h2>転送 API の概要</h2>
+</a>
+<h3>Transferable オブジェクト</h3>
+
+API は転送される次のオブジェクトが実装するインタフェースを軸にしています。
+<pre><code>	<a href="../../../api/java.awt.datatransfer.Transferable.html">java.awt.datatransfer.Transferable</a>
+</code></pre>
+
+Transferable オブジェクトは、最も豊富な内容説明のフレーバから最低のフレーバまで要求された、(データフレーバと呼ばれる）データ提供フォーマットのリストを出せなければなりません。これはまた、特定のフレーバで要求されたとき、(オブジェクト参照の形式で）データを返すことができなければなりません(あるいは、そのフレーバがサポートされていない場合、またはそのデータがもはや使用できない場合には、例外をスローします)。
+<p>共通データ型に Transferable インタフェースを実装する convenience クラスは、開発者がこれらの共通型の転送を容易に行えるようにするために提供されます。例えば次のとおりです:
+<pre><code>	<a href="../../../api/java.awt.datatransfer.StringSelection.html">java.awt.datatransfer.StringSelection</a>
+</code></pre>
+
+
+<p>この API の目的は、特定のエレメントまたはデータ型を転送可能にする作業に入ったとき、上位レベル転送プロトコル（クリップボード、ドラッグとドロップなど）のどれかを使用して、簡単にそれを渡せることを保証することです。<a name="919707">
+<p>
+<h3>データフレーバ</h3>
+</a>
+典型的な共通データ転送操作（クリップボート、ドラッグとドロップ）には、データを転送するフレーバ上での、プロバイダと要求者の間のネゴシエーションという様相があります。例えば、html テキストがブラウザで選択され、別個のワードプロセスアプリケーションにコピー/貼り付けされるとき、貼り付け操作の可能な対象アプリケーション数を最大化するために、ブラウザは通常データを複数のフレーバ（大抵 htmlフ ォーマットのテキストおよび単なる ASCII ）で提供します。 
+<p>このネゴシエーションでは、個別のアプリケーションでこれら様々なフレーバとデータ型が一意に定義され認識できる、データ型分類用名前空間の定義が必要です。「フォーマット」などの過負荷な用語との混同を避けるために、「フレーバ」という用語を選びこの概念を表します。
+<p>データフレーバは、アプリケーション間のフレーバネゴシエーションと転送を可能にするために、特定のフレーバに関する必要な情報すべてをカプセル化したオブジェクトによって表します:
+<pre><code>	<a href="../../../api/java.awt.datatransfer.DataFlavor.html">java.awt.datatransfer.DataFlavor</a>
+</code></pre>
+
+<p>この情報には、フレーバの論理名（プログラム上の識別を可能にする）、人間紹介名（ユーザに紹介するために使用し、ローカライズが可能）、データを実際に転送するオブジェクトクラスを定義するために使用する表現クラスなどが入っています。
+<p>
+<h3>論理名としての MIME型</h3>
+
+現在、データフレーバの論理名を表すために、MIME 型/サブ型 パラメータ表記の使用を計画しています（ MIME 型の仕様については、RFC 1521を参照してください）。Java 環境に対しては、「他のデータ型分類用名前空間」を作成するより、既存のインターネット標準を採用する方が好ましいと考えます。 
+<p>MIME 型の登録は、現在 Internet Assigned Numbers Authority (IANA) というサードパーティが行っており、開発者が簡単に公開データフォーマット用に使用する標準型/サブ型名を検索できるようになっています。幸い、あまり一般的でないフォーマットに対して新しい MIME 型/サブ型名を定義するためには、公式の登録は必要ありません（このような公式の要件が、基本的な Java データ転送で容認されないのは好ましいことです）。新しい型名は公式な登録はせずに、名前の前に "x-" を追加して作成できます。
+<p>
+<h3>表現クラス</h3>
+
+データを実際に返す次の Transferable メソッドは、「Object」クラスのインスタンスを返すように緩やかに定義されているために、DataFlavor が定義した表現クラスは転送操作の終端では重要になります。それは返されたオブジェクトが明瞭にデコードされるようにするからです。
+<pre><code>	Object getTransferData(DataFlavor flavor)
+</code></pre>
+<p>現在の DataFlavorクラスは、次の 2 つの一般的なデータフレーバを定義します。<ul>
+<li>固有の Java クラスを表す DataFlavor:
+</ul>
+<pre><code>	     MIME-type="application/x-java-serialized-object; class=&lt;implemenation class&gt;"
+</code></pre>
+
+<pre><code>	     RepresentationClass=&lt;implemenation class&gt;
+</code></pre>
+<p>
+<pre>        たとえば、AWT GUI コンポーネントを表す DataFlavor:<p></pre>
+
+<pre><code>	     MIME-type="application/x-java-serialized-object; class=java.awt.Component"
+</code></pre>
+
+<pre><code>	     RepresentationClass=java.awt.Component
+</code></pre>
+
+<pre><code>	  転送操作の要求側がこのフレーバのデータを求める場合、Componentクラスのインスタンスが戻されます。
+</code></pre>
+<ul>
+<li>特定の MIME 型を表す DataFlavor:
+</ul>
+<pre><code>	     MIME-type="application/&lt;mime-subtype&gt;"
+</code></pre>
+
+<pre><code>	     RepresentationClass=java.io.InputStream
+</code></pre>
+<p>
+<pre>        たとえば、RTFテキストを表す DataFlavor:<p></pre>
+
+<pre><code>	     MIME-type="application/rtf"
+</code></pre>
+
+<pre><code>	     RepresentationClass=java.io.InputStream
+</code></pre>
+
+<pre><code>	  転送操作の要求側がこのフレーバのデータを求める場合、それから
+           RTFフォーマットのテキストを読み込み/解析できる InputStream
+           インスタンスが戻されます。
+</code></pre>
+<p>
+与えられた MIME 型(上記型 #2)については、Java プログラムは異なる表現クラスを持つ複数のフレーバを自由に作成できます。例えば、MIME 型 application/rtf にフレーバを提供することに加えて、プログラムは別のフレーバを指定することもできます:
+<pre>        たとえば、RTFテキストを表す DataFlavor:<p></pre>
+
+<pre><code>	     MIME-type="application/rtf"
+</code></pre>
+
+<pre><code>	     RepresentationClass=foobar.fooRTF
+</code></pre>
+
+<p>
+<h3>カプセル化の原理</h3>
+
+最初は、（単なる MIME 型文字列でなく）データフレーバを定義するためにクラスを使用することは、過剰であると思えるかもしれません。しかし、このカプセル化は次の理由から利点があるものといえます:<ol>
+
+<li>使用性 - 論理文字列にだけ奇異なほどに関連付けることができますが、データフォーマットに対する人間紹介名のように、データフォーマットに関連付けるべき属性があります。 DataFlavor オブジェクトについては、これらの属性は直接カプセル化している DataFlavor オブジェクトに関連付けられています。
+
+<li>利便性 - DataFlavor オブジェクトの使用は、データフォーマット比較処理の便利な方法です。isMimeTypeEqual() メソッドはプログラマを開放したり、またはプログラマの MIME 型を正規の形式に変換することを忘れずに実行する必要があります。（ MIME 型、サブ型、パラメータ名には大文字小文字の区別があり、パラメータはどんな順序でも表示されるため、これは問題です）。
+
+<li>拡張性 - 抽象化によって、必要ならばいつでもフレーバ属性/メソッドを拡張できるようになります。
+
+<li>性能 - Motif および Windows は、データフォーマットを識別するために、文字列でなくアトムを使用します。各データフォーマットを識別するためにオブジェクトを使用することで、必要なアトムの収容数を縮小しながら、MIME 型名に対応するアトムをキャッシュする手頃な場所が与えられます。同様に、"text/plain" などの MIME 型を、 Windows の CF_TEXT や Macintoshの 'TEXT' などのプラットフォーム固有のクリップボードフォーマットに割り当てた結果は、キャッシュが可能になります。
+</ol>
+
+<p>DataFlavor の概念は複雑で困惑させるように思えるかもしれませんが、意図しているのは、共通に使用するデータフレーバのセットを定義して、これを開発者にとってできる限り使用しやすくすることです。<a name="919742">
+<p>
+<h3>複数項目の転送</h3>
+</a>
+転送プロトコルが、単一の転送操作で複数の別個なデータの転送をサポートすること（すなわち、ファイルマネジャーアプリケーションから、複数ファイルのアイコンをドラッグ、ドロップすること）は、一般的ではありません。転送 API は、複数データ項目の同時転送をある形式でサポートする必要があり、現在の提案は、個別データオブジェクトの集まりを扱うことができる Transferable を実装して、この機能をカプセル化することです。この計画は現在綿密に調査されており、この提案を将来改訂するときに詳細に検討されます。<a name="919744">
+<p>
+<h2>Transferableオブジェクト作成のコード例</h2>
+</a>
+次のコードは StringSelection クラスソースを示します。これは当提案で単なる Unicode{tm} テキストを転送できるクラスを作成するための API の使用方法の例です。
+
+<pre><code>
+package java.awt.datatransfer;
+
+import java.io.*;
+
+/**
+ * A class which implements the capability required to transfer a
+ * simple java String in plain text format.
+ */
+public class StringSelection implements Transferable, ClipboardOwner {
+
+    final static int STRING = 0;
+    final static int PLAIN_TEXT = 1;
+
+    DataFlavor flavors[] = {DataFlavor.stringFlavor, DataFlavor.plainTextFlavor};
+
+    private String data;
+						   
+    /**
+     * Creates a transferable object capable of transferring the
+     * specified string in plain text format.
+     */
+    public StringSelection(String data) {
+        this.data = data;
+    }
+
+    /**
+     * Returns the array of flavors in which it can provide the data.
+     */
+    public synchronized DataFlavor[] getTransferDataFlavors() {
+	return flavors;
+    }
+
+    /**
+     * Returns whether the requested flavor is supported by this object.
+     * @param flavor the requested flavor for the data
+     */
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+	return (flavor.equals(flavors[STRING]) || flavor.equals(flavors[PLAIN_TEXT]));
+    }
+
+    /**
+     * If the data was requested in the "java.lang.String" flavor, return the
+     * String representing the selection, else throw an UnsupportedFlavorException.
+     * @param flavor the requested flavor for the data
+     */
+    public synchronized Object getTransferData(DataFlavor flavor) 
+			throws UnsupportedFlavorException, IOException {
+	if (flavor.equals(flavors[STRING])) {
+	    return (Object)data;
+	} else if (flavor.equals(flavors[PLAIN_TEXT])) {
+	    return new StringReader(data);
+	} else {
+	    throw new UnsupportedFlavorException(flavor);
+	}
+    }
+
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    }
+}
+
+</code></pre>
+<hr>
+<a name="clipboard">
+<h1>クリップボード</h1>
+</a>
+アプリケーション内部およびアプリケーション間の両方で、データ転送の手段として、切り取り/コピー/貼り付け操作を提供することは、現在ほとんどのアプリケーションで一般的で期待されている機能です。JDK 1.0 の AWT API では、現在、(ネイティブテキストウィジットでデフォルトとして存在する以外、）この基本的なクリップボード操作の機能をなにも提供していません。そしてこの機能は、 Java プログラムをユーザ環境にうまく統合するためには欠かすことができません。<a name="919798">
+<p>
+<h2>クリップボード API の設計目標</h2>
+</a>
+この API の設計目標は次のとおりです:<ul>
+<li>プログラムでのテキストの切り取り/コピー/貼り付けの実装を、*極めて*簡単にすること。
+
+<li>プラットフォームのネイティブクリップボードと相互に作用するクリップボード操作を可能にすること。
+
+<li>アプリケーション内クリップボード操作用の private クリップボードの作成/使用を可能にすること。
+</ul><a name="919803">
+<p>
+<h2>クリップボード APIの概要</h2>
+</a>
+クリップボード API は、 Java プログラム内で切り取り/コピー/貼り付け操作を実装する標準機能を提供します。異なるクリップボードを異なる目的で作成し名前付けできます（プログラムは自分自身の private クリップボードの作成を好む可能性があります）。しかし、( System と名付けられた）単一のクリップボードインスタンスがあり、これは Java プログラムが非 Java アプリケーションとのデータ転送を可能にするために、プラットフォームのネイティブ機能とのインタフェースを持つものです。
+<p>クリップボードアーキテクチャは、<a href="#transfer">Java データ転送 API</a> が定義するデータ転送機構に依存しています。クリップボード API には、標準クリップボード用のデータ転送モデルを実装する次の単一のクラスがあります:
+<pre><code>	<a href="../../../api/java.awt.datatransfer.Clipboard.html">java.awt.datatransfer.Clipboard</a> 
+</code></pre>
+
+<p>そして、データをクリップボードに書き込んでいるクラスが実装する次のインタフェースがあります:
+<pre><code>	<a href="../../../api/java.awt.datatransfer.ClipboardOwner.html">java.awt.datatransfer.ClipboardOwner</a>
+</code></pre>
+
+<p>Clipboardクラスは、クリップボードとの読み込み/書き込み用の次の 2 つの基本的メソッドを提供します:
+<pre><code>	void setContents(Transferable content, ClipboardOwner owner)
+</code></pre>
+
+<pre><code>	Transferable getContents(Object requestor)
+</code></pre>
+
+<p>ClipboardOwner インタフェースは次の単一のメソッドからなり、これは別のオブジェクトがクリップボードの所有権を主張した場合に呼び出されます。
+<pre><code>	void lostOwnership(Clipboard clipboard)
+</code></pre>
+
+<p>開発者が一般的なデータ型にクリップボード操作を実装するジョブを簡単に行えるように、標準的な方法で ClipboardOwner インタフェースを実装する convenience クラスが提供されます:
+<pre><code>	<a href="../../../api/java.awt.datatransfer.StringSelection.html">java.awt.datatransfer.StringSelection</a>
+</code></pre>
+
+
+<p>java.awt.Toolkit 内の次のメソッドは、ネイティブプラットフォーム機能とのインタフェースを持つクリップボードインスタンスへのアクセスを提供します:
+<pre><code>	<a href="../../../api/java.awt.Toolkit.html#getSystemClipboard">Clipboard getSystemClipboard();</a>
+</code></pre>
+<a name="919819">
+<p>
+<h2>クリップボード API を使用しての切り取り/コピー/貼り付けの実装</h2>
+</a>
+「切り取り」/「コピー」を実装するプログラムの一般的操作手順:<ol>
+
+<li>切り取り/コピーするデータの Transferable インタフェースを実装するオブジェクトのインスタンスを生成します。
+
+<li>ClipboardOwner インタフェースを実装するオブジェクトのインスタンスを生成します（ Transferable を実装するオブジェクトと同じ可能性があります）。
+
+<li>この Transferable および ClipboardOwner オブジェクトを、クリップボードの setContents() メソッドに渡します; これでクリップボードの所有権が確立します。
+
+<li>別のオブジェクトがクリップボードの所有権を主張した場合に呼び出される、クリップボード所有者の lostOwnership() メソッドへの呼び出しを処理します（所有権を失うときに何もする必要がない場合、このメソッドは空で構いません）。
+</ol>
+
+<p>「貼り付け」を実装するプログラムの一般的操作手順: <ol>
+
+<li>Transferable インタフェースを実装するオブジェクトに処理を返す、getContents() メソッドを使用してクリップボードのコンテンツを要求します。
+
+<li>getTransferDataFlavors() メソッドを使用して、transferable オブジェクトからデータの使用可能なフレーバのリストを要求します。
+
+<li>transferableオブジェクトの getTransferData() メソッドを使用して、希望する使用可能なフレーバのデータを取得します。
+</ol>
+
+<p>
+<h3>遅延データモデル</h3>
+クリップボードモデルは、クリップボードコンテンツの持続レベルを暗示しますが、切り取り/コピー時に不要なパフォーマンスの劣化を避けるために、顧客が要求するまでデータは実際には転送されない可能性があります（これは「遅延」データモデルとして知られています）。クリップボードの所有者が破壊された場合、プロバイダが終了した後、その使用可能性を保証するために、そのデータを取得しクリップボード内に格納しようと試みることが必要です。しかし、クリップボードの所有者は、転送がいつ起こるかという仮定をしてはいけません。そして lostOwnership() メソッドが呼び出されるまで、データを使用可能にするよう試みなければなりません（無期限にデータを使用可能にしておくことができない場合、データが要求され、それが使用可能でないならば、IOException をスローする必要があります）。<a name="919832">
+<p>
+<h2>セキュリティ</h2>
+</a>
+ダウンロードされたアプレットがネイティブシステムのクリップボードへアクセスできるようにすることに関して、そのコンテンツに対する読み込み可能（これは微妙な問題になりえます）、および書き込みという点から、明確なセキュリティ上の問題があります。初期には、認可されていないアプレットは、*システム*のクリップボードに直接アクセスすることは認められません（ここにはクリップボードアクセス用の SecurityManager メソッドがあります）。操作の初期化がユーザ生成イベント (「切り取り」または「貼り付け」キーボードイベントなど）からなされた場合、認可されていないアプレットがクリップボード操作に参加できるようにする機構を、今探索中です。
+<p>
+<H2>クリップボード API を使用したサンプルコード</h2>
+単なるテキストの切り取り/コピー/貼り付けを実装しているプログラムの簡単な例を次に示します
+<p>(注: 簡単にするために、コピー/貼り付け操作の元/先として TextArea を使用します; ほとんどのプラットフォームで、切り取り/コピー/貼り付けは既にネイティブピア内の TextArea および TextField 用に実装されています)
+<pre><code>								       
+
+import java.awt.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.datatransfer.*;
+
+public class ClipboardTest extends Frame 
+                           <b>implements ClipboardOwner</b>, ActionListener {
+
+    TextArea srcText, dstText;
+    Button copyButton, pasteButton;
+
+    <b>Clipboard clipboard = getToolkit().getSystemClipboard();</b>
+
+    public ClipboardTest() {
+        super("Clipboard Test");
+        GridBagLayout gridbag = new GridBagLayout();
+        GridBagConstraints c = new GridBagConstraints();
+        setLayout(gridbag);
+
+        srcText = new TextArea(8, 32);
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.CENTER;
+        gridbag.setConstraints(srcText, c);
+        add(srcText);
+
+        copyButton = new Button("Copy Above");
+        copyButton.setActionCommand("copy");
+        copyButton.addActionListener(this);
+        c.gridy = 1;
+        c.gridwidth = 1;
+        gridbag.setConstraints(copyButton, c);
+        add(copyButton);
+
+        pasteButton = new Button("Paste Below");
+        pasteButton.setActionCommand("paste");
+        pasteButton.addActionListener(this);
+        pasteButton.setEnabled(false);
+        c.gridx = 1;
+        gridbag.setConstraints(pasteButton, c);
+        add(pasteButton);
+
+        dstText = new TextArea(8, 32);
+        c.gridx = 0;
+        c.gridy = 2;
+        c.gridwidth = 2;
+        gridbag.setConstraints(dstText, c);
+        add(dstText); 
+
+        pack();
+    }
+
+    public void actionPerformed(ActionEvent evt) {
+        String cmd = evt.getActionCommand();
+
+        if (cmd.equals("copy")) { 
+           // Implement Copy operation
+           String srcData = srcText.getText();
+           if (srcData != null) {
+                <b>StringSelection contents = new StringSelection(srcData);</b>
+                <b>clipboard.setContents(contents, this);</b>
+                pasteButton.setEnabled(true);
+            }
+        } else if (cmd.equals("paste")) {
+            // Implement Paste operation
+            <b>Transferable content = clipboard.getContents(this);</b>
+            <b>if (content != null) {</b>
+                <b>try {</b>
+                    <b>String dstData = (String)content.getTransferData(
+                                                DataFlavor.stringFlavor);</b>
+                    <b>dstText.append(dstData);</b>
+                <b>} catch (Exception e) {</b>
+                    <b>System.out.println("Couldn't get contents in format: "+</b>
+                           <b>DataFlavor.stringFlavor.getHumanPresentableName()); </b>
+                <b>}</b>
+             }
+        }
+    }
+    <b>public void lostOwnership(Clipboard clipboard, Transferable contents) {</b>
+       <b>System.out.println("Clipboard contents replaced");</b>
+    <b>}</b>
+     public static void main(String[] args) {
+        ClipboardTest test = new ClipboardTest();
+        test.show();
+     }
+}
+</code></pre>
+
+<hr>
+<a name="dnd">
+<h1>ドラッグとドロップ</h1>
+</a>
+ドラッグとドロップは一般的に期待される機構になっており、これによってユーザは、ファイルのコピー、印刷ジョブの開始、新しい制御やグラフィックスの作成などの操作を速く行うことができます。JDK1.0 では、限定されたアプリケーション内のドラッグとドロップ操作を実装できますが、ドラッグとドロップを使用して別個のアプリケーション間で対話を行うことはできません（ Java から Java または Java とネイティブ相互間どちらも不可能です）。 このドキュメントは、強力なクロスアプリケーションのドラッグとドロップ操作を可能にする AWT API の初期の仕様を提供します。
+<p>注: ドラッグとドロップ APIは、このバージョンの時間的制約によって、JDK1.1 には入っていません。<a name="919923">
+<p>
+<h2>ドラッグとドロップAPI の設計目標</h2>
+</a>
+この API の設計目標は次のとおりです:<ul>
+<li>ネイティブプラットフォームアプリケーションと Java アプリケーションの間で、透明なドラッグとドロップを可能にする。.
+
+<li>API のベースレベルは簡単に使用でき、しかも高度な使用を制約しないことである。
+
+<li>ドラッグすることでパフォーマンスを極端に落とさない。
+</ul>
+<p>各ネイティブプラットフォームは、ドラッグとドロップに関してやや異なるモデルと
+機能セットを提供しています。この API は、機能と動作の組み合わせにおいて、 OLE のドラッグとドロップに最も近いものです。このアーキテクチャの決定は、多数の Windows ユーザによるものではありませんが、Motif の制限によって制約された設計は受け入れがたく、かたや Macintosh のドラッグとドロップ機能のすべてを包含したアーキテクチャは実装不可能であるという理解に基づいています。<a name="919929">
+<p>
+<h2>ドラッグとドロップ APIの概要</h2>
+</a>
+<p>
+<h3><b>DragSources および DropTargets</b></h3>
+
+ドラッグとドロップ操作については、通常ユーザが指定してドラッグするオブジェクトを表す「ドラッグソース」、およびドロップを受け取ることができる画面上のオブジェクトである0 個以上の「ドロップターゲット」があります。 
+<p>コンポーネントは、インタフェースを実装することによって、ドラッグ可能であると宣言します:
+<pre><code>	java.awt.dnd.DragSource </code></pre>
+
+<p>DragSources は次のことに対して責任を持ちます:<ul>
+<li>ドラッグを開始すべきか、そしてその場合、後続のドロップに対してどのオブジェクトとアクションが使用可能か、を決定する。これは DragSource の dragBegin() メソッド内で行われる。このメソッドは、ドラッグが始まることを示すプラットフォーム固有のユーザの動作に応じて、 AWT 実装が呼び出す。
+<p>
+<li>ユーザおよび現在の DropTarget によって考慮される現在のアクションに応じて、カーソルフィードバック（ドラッグオーバ効果）を変更する。これは DragSource の dragOver() メソッド内で行われる。このメソッドは、ユーザが提示するアクションと現在のドラッグターゲットが変わるとき、常に AWT 実装が呼び出す。 dragOver の実装者がデフォルトと違った動作を希望する場合、このメソッドにカーソルをセットし、それがコールバックを処理したことを示すために、 true を返す必要がある。そうでなければ、false を返し、AWT 実装がデフォルトのドラッグオーバフィードバックを使用するように指示する。<p>
+
+ 注: COPY、MOVE、NONE アクション、加えてそのスクロールの変種 (SCROLL_COPYおよび SCROLL_MOVE) 用の標準カーソルオブジェクトがAWT に追加され、デフォルトのカーソル動作の実装をサポートし、他の同様なコンテキストでこれらのカーソルを AWT ユーザが使用できるようにする。
+<p>
+<li>ドラッグが完了した後にクリアする。DragSource のクリアの仕方は、ドロップが発生したときユーザが選択するアクションによって決定される。例えば、ユーザが MOVE アクションを選択した場合、DragSource はこの時点でソースデータを削除する必要がある。これは、DragSource の dragEnd() メソッドで行われる。このメソッドは、ドラッグが取消されたとき、または DropTarget がドロップの処理を完了した後に、AWT 実装によって呼び出される。 
+</ul>
+<p>コンポーネントは次のインタフェースを実装し、ドロップを受け取ることができると宣言します:
+<pre><code>	java.awt.dnd.DropTarget </code></pre>
+
+<p>DropTarget は次のことに責任を持ちます:<ul>
+<li>ドラッグが最初に DropTarget(dropEnter() メソッド) に入ったとき、およびドラッグがターゲット (dropOver() メソッド) 上を移動している間、提示されたアクションを返す。ドラッグの DataFlavor とデータが DropTarget 内の現在のドラッグ位置と互換である場合、DropTarget は通常 DropContext（後で説明する) の getSuggestedAction() メソッドを返し、ドロップが許されることを示す必要がある。さもなければ、ACTION_NONE を返し、ドロップが行えないことを示す必要がある。
+
+希望するならば、DropTarget はユーザが提示するアクション（ DropContext の getSuggestedAction() メソッドが返すもの）を自由にオーバーライドできる。新しいアクションが DragSource のサポートするアクション（ DropContext の getAllowedActions() メソッドが返すもの）と互換でない場合、AWT 実装はターゲットのアクションを、 getSuggestedAction() で説明するように DragSource がサポートするものに変形する。 <p>
+
+ dropEnter() は、ターゲットが DragSource の DragFlavor とデータの互換性に関する状態をキャッシュして、dropOver() のパフォーマンスを向上できるようにするために存在する。これは、DropTarget の dropOver() メソッドが dropEnter() に比べて呼び出される回数によっては、効果的である。<p>
+
+ DropTarget がユーザへのフィードバックの下でドラッグを提供する場合、通常 dropOver() 内で行う。このフィードバックの目標は、現在のドラッグ位置でのドロップの結果がどんなものかをユーザに明確に分かってもらうためである。この例としては、挿入キャレットと共にドラッグされるテキストの位置に付き従うテキストエディタ DropTarget があり、これはユーザにドロップされたときのテキストが挿入される正確な位置を示す。<p>
+
+ ドラッグが DropTarget に入ったとき必ず、AWT 実装は DropTarget の dropEnter() メソッドを呼び出す。そのため、ドラッグ がDropTarget 上を移動するか、またはユーザがドロップに応じて実行されるアクションを変更したいと指示したとき、常に dropOver() が呼び出される。これはドラッグが DropTarget を抜けるまで続く。 <p>
+
+ [DropEnter() が呼び出された場合、最低一度は DropOver() が呼び出されると保証したい。これはしばしば余分な DropOver() を生成してパフォーマンスを悪くするが、プログラミングモデルを幾分簡単にする。]<p>
+
+<li>有効なドロップが発生したとき、ユーザが希望するアクションを実行する。これには通常 DragSource がさらす各オブジェクトの 1 つまたはそれ以上の DataFlavor 表示のコピーが関わる。これは DragTarget の drop() メソッド内で行われる。このメソッドは、プラットフォーム固有のドロップの動作を実行するユーザに応じて AWT 実装が呼び出す。
+<p>
+<li>dropScroll() が要求する境界からの差し込みが生成されることを報告する。これらの差し込みは、DropTarget の外縁内周辺の境界領域を形成する。ドラッグがこの領域でプラットフォーム固有の時間、一時停止したことを AWT 実装が検出した場合、 DropTarget の dropScroll() メソッドへの呼び出しが生成される。長く停止した場合、 dropScroll() 呼び出しの規則正しいストリームが結果として発生する。境界領域のどの区画 (上部、左側、下部、右側、上部左側、下部右側、上部右側、下部左側）にドラッグがあるかによって、dropScroll() に渡されるスクロール方向が決定される。
+<p>
+<li>指定した水平および垂直方向に、DropTarget のコンテンツをスクロールする。これによって、ユーザはドロップを実行する前に見えない位置をビューにスクロールすることができる。ユーザはドロップスクロールがなければ、ドラッグを取消し、ドロップ位置をビューにスクロールし、ドラッグとドロップを開始しなければならない。
+
+ これは DropTargetの dropScroll() メソッド内で行われる。AWT 実装が dropScroll() を呼び出す条件とスクロールパラメータの値の決定方法は、上述したとおりである。<p>
+
+ Motifでは、dropScroll() の pulse を生成する際問題がいくつかあり、まだ解決に向けて作業の必要がある。<p>
+
+<li>可能なドロップを処理するために作成された構造をクリアする。これは DropTargetの dropLeave() メソッド内で行われる。ドラッグが DropTarget を離れるか、またはドロップが DropTarget 上で発生した後、AWT 実装は dropLeave() を呼び出す。
+</ul>
+<p>
+<h3>アクション</h3>
+
+DragSource から DropTarget ,へオブジェクトをドラッグするとき、ユーザは有効なドロップが発生した場合、DragSource が供給するセットの中からどのアクションをオブジェクトに適用するかを選択できます。このアクションは、ビットマスクを作成するために結合できる定数として表されます。使用可能なアクションは次のとおりです:<ul>
+<li>ACTION_NONE
+
+DropTarget の現在の位置ではドロップが許されないか、またはコンテキストによっては
+ユーザがドラッグの取消しを希望している。DragSource も DropTarget もなにもしてはいけない。<p>
+
+<li>ACTION_COPY
+
+ ユーザが、 DragSource からDropTarget へオブジェクトのコピーを希望している。このアクションでドロップが発生した場合、DropTarget は DragSource のオブジェクトをコピーする必要がある。<p>
+
+<li>ACTION_MOVE
+
+ ユーザが、 DragSourceから DropTarget へオブジェクトのコピーを希望している。このアクションでドロップが発生した場合、DropTarget は DragSource のオブジェクトをコピーし、DragSource はこれらをコンテキストから削除する必要がある。<p>
+</ul>
+<p>注: ACTION_LINK は、 API の複雑さを減少させるために除外されています。
+<p>
+<h3>Javaデータ転送およびドラッグとドロップ</h3>
+
+ドラッグとドロップは単なる転送、またはある位置から別の位置へのオブジェクトのコピーであるため、プログラマがオブジェクトをドラッグソースとドロップターゲットの両方でだけ扱う必要がある場合、便利です。すなわち、プログラマに関する限り、モデルプログラミングとは単に、ドラッグソースからのオブジェクトがドロップターゲットにコピーされることを指します。
+<p>もちろん、異なるアプリケーションまたは Java Virtual Machine 間でドラッグとドロップをするとき、ターゲットが希望するオブジェクトをソースからコピーすることはできません。各ケースで実際なにが起こるかというと、これはかなり複雑で、ネイティブのドラッグとドロップ機構の例として OLE ドラッグとドロップを使用して次に概要を述べます。
+<p>ドラッグとドロップによって転送するためには、Java オブジェクトは <a href="../../../api/java.awt.datatransfer.Transferable.html">Transferable</a> インタフェースをサポートする必要があります。このインタフェースは、オブジェクト(Transferable インタフェースの getTransferDataFlavors() メソッド) がサポートする異なる DataFlavorを列挙し、元のオブジェクトの所定の <a href="../../../api/java.awt.datatransfer.DataFlavor.html">DataFlavor</a> を表す新しいオブジェクトを返す責任を持っています。
+<p>DragSource が、ドラッグされるオブジェクトの集まりに Java オブジェクトを追加するとき、AWT 実装はオブジェクトの周囲に IDataObject インタフェースをラップします。IDataObject-&gt;EnumFormatEtc() はオブジェクトの getTransferFormats() メソッドに結び付けられ、IDataObjectGetData() は getTransferData() に結び付けられます。
+<p>EnumFormatEtc() が返す値は、DragSource が供給する DataFlavor の MIME 型によって決定されます。各 MIME 型文字列は、MIME 型を Windows のクリップボードフォーマットに割り当てるレジストリで参照されます。割り当てが見つかった場合 (例えば、text/plain = CF_TEXT)、その割り当ては FormatEtc.cfFormat の値のために使用されます。見つからない場合、MIME 型の呼び出ししている RegisterClipboardFormat() から返された値が使用されます。
+<p>ターゲットがソースからドラッグされる Java オブジェクトの 1 つの固有の DataFlavorを要求するとき、ドラッグされるオブジェクトの getTransferData() メソッドが、指定した DataFlavor で呼び出されます。これは次の 2 つのうち 1 つを実行する必要があります:<ul>
+<li>要求された DataFlavor が Java オブジェクトの場合、これは単にそのオブジェクトを返す必要がある。AWT 実装は共有メモリバイトストリームをラップしている ObjectOutputStream に、転送されるオブジェクトの直列化されたバージョンを書き込む。次にこのバイトストリームはターゲットプロセスに転送される。DropTarget 側では、AWT 実装が Windows クリップボードアトムを文字列に変換し、それが型 application/x-java-serialized-object であるかを調べる。 次に Java オブジェクトを直列化復元し、それを DropTarget に提示する。<p>
+
+<li>要求された DataFlavor が TIFF のような従来からのデータフォーマットである場合、Java オブジェクトはそのデータフォーマットを表すデータの InputStream を返す必要がある。DataFlavor の MIME 型として application/x-java-serialized-object を使用するより、ソースは MIME 型で適当なものを使用する必要がある (このケースでは、image/tiff）。AWT 実装は InputStream 上に IStream を作成し、それをターゲットアプリケーションに渡す。プロセス境界のドロップターゲット側で何が起こるかは、ドロップターゲットが Java DropTarget であるか、またはネイティブの Windows アプリケーションであるかに依存する。<p>
+
+<li>Java DropTarget の場合、この Istream は DropTarget のアドレス空間の InputStream オブジェクトに戻され、OLE がアドレス空間を介して対話を処理する。次に DropTarget は InputStream からデータを消費することができる。さもなければ、このデータフォーマットを Java クラスに変換する組み込みサポートが存在する場合 (例えば、InputStream を TIFF ImageProducerに変える)、そのクラスのインスタンスを返す可能性がある。
+
+<li>ネイティブ Windows ターゲットの場合、このターゲットは getTransferData() への
+呼び出しによって返される InputStream の上部に作成される OLE Istream からのデータを単に消費する。
+</ul>
+<p>これは Windows の下でのドラッグとドロップの実装についての動作ですが、 Macintosh と Motif についても基本的に同様です。重要なことは、DragSource 側と DropTargets 側の動作は常にお互いに独立しており、他の側が別の Java アプリケーションでも気にかけないということです。DragSource 側は常に、 Java オブジェクトと DataFlavor をネイティブのドラッグとドロップ概念に変換し、DropTarget 側は常に、ネイティブのドラッグとドロップを Java に変換します。この分離によって、Java アプリケーション間のドラッグとドロップが、 Java とネイティブアプリケーション間のドラッグとドロップに同等となります。後者の点で、DragSource と DropTarget が同じ Java Virtual Machine 内にあるとき、直列化を短絡し、可能ならばオブジェクトを単にクローン化することによって、パフォーマンスを常に向上することができます。
+<p>
+<h3> ドラッグとドロップおよび複数オブジェクト</h3>
+
+ユーザは、しばしば異なる型の複数オブジェクトを同時に転送しようと試みます。これらオブジェクトの各々は型が異なる可能性があり、転送される各オブジェクトは、それがサポートする DataFlavor の独自のリストを持っている必要があります。DropTarget は、ドラッグしているオブジェクトの各々に対して最低 1 つの DataFlavor を受け入れることができる場合、ドロップだけを有効と考える必要があります。
+<p>例えば、ユーザが emacs 上のグラフィカルレイアウトエディタから矩形とテキストフィールドをドラッグする場合、emacs はフィードバックを返し、テキストフィールドのコンテンツは受け入れられるが矩形のコンテンツは受け入れられないので、ドロップを受け入れないということを示す必要があります。
+<p>[個別オブジェクトを今のようにさらしておくか、または列挙が渡される OLE に近いアプローチを使用するかは、いまだ明確ではありません。]
+<p>
+<h3>DragContextおよび DropContext</h3>
+
+DragContext と DropContext は、ドラッグが一度始まるとドラッグとドロップ実装によって使用されるソース側とターゲット側の構築物です。これらは、Java DragSource と DropTarget がドラッグの間基礎をなすプラットフォーム固有のドラッグとドロップ実装に通じるインタフェースを供給します。これらはクラスによって表されます:
+<pre><code>	java.awt.dnd.DragContext </code></pre>
+
+<pre><code>	java.awt.dnd.DropContect </code></pre>
+
+<p>DragContext は、ドラッグが始まったとき DragSource の dragBegin() によって作成され、返されます。これには、このドラッグのドロップターゲットのオブジェクトと許されるアクションのリストが含まれます。さらにまた、DragSource の dragOver() メソッド内部で呼び出される次の関数をサポートします:<ul>
+<li>getSuggestedAction()
+
+ ドロップが現在のドラッグ位置で発生した場合、現在のドロップターゲットが DragSource に実行させたいアクションを返す。この結果は DragSource が DragContext を作成したとき許可を出したアクションの 1 つであるか、または ACTION_NONE であることが保証される。<p>
+
+ dragOver() が FALSE を返したとき使用されるデフォルトの AWT 実装は、getSuggestedAction() を呼び出し、結果を setCursor() に渡す。(次に説明する。)<p>
+
+<li>setCursor()
+
+   ドラッグのカーソルイメージを、渡されるアクションに対して正しい事前定義カーソルにセットする。 <p>
+
+<li>setCursor(Cursor c)
+
+   ドラッグのカーソルイメージを指定したカーソルオブジェクトにセットする。<p>
+</ul>
+<p>DropContext はドラッグとドロップ実装によって作成され、すべての DropTarget メソッドに渡されます。これは、ドラッグについての情報を決定するための次の関数を供給します:<ul>
+<li>getDragLocation()
+
+ DragTarget 座標での現在のドラッグ位置を返す。DropTarget はこのメソッドを呼び出し、ドラッグがドロップ可能な位置にあるかどうかを決定する。<p>
+
+<li>getSuggestedAction()
+
+   ユーザがドロップを完了させたいアクションを返す。ドラッグ内の DataFlavor とデータが互換である場合、ドラッグはアクションと同様に単に getSuggestedAction() を返すことができる。
+
+ getSuggestedAction() が返すアクションは、ドラッグソースが許可するアクションと互換である。ユーザが提示するアクションがドラッグソースが許可するアクションの 1 つでない場合、次のように getSuggestedAction() が返すアクションに変形される。<p>
+
+ - ACTION_COPY -&gt; ACTION_NONE<p>
+
+ -ACTION_MOVE -&gt; ACTION_COPY<p>
+
+ DropTarget は、一群の完全なアクションをサポートしない場合、提示されたアクションと異なるアクションを返そうとする可能性がある。例えば、ファイルマネージャはボリューム間でコピーされたファイルだけを許可し、移動されたものは許可しない。<p>
+
+<li>getAllowedActions() 
+
+ ドラッグソースがサポートするアクションを返す。DropTarget が提示するアクションがドラッグソースが許可するアクションと衝突する場合、そのアクションは getSuggestedAction() の下で説明するように変形される。<p>
+
+ このソースには、ドロップが発生したときどのアクションを実行するかについて最終の決定権がある。それは、ソースが MOVE アクションを実行するために必要な追加処理を実行する責任を持つからである。<p>
+
+<li>getObjects()
+
+ ドラッグソースオブジェクトの配列を返す。なにが実際返されるかは、オブジェクトのデータ型に依存する。オブジェクトのデータが Java オブジェクトの直列化バージョンである場合、このオブジェクトは直列化復元され、DropTarget はそのアドレス空間でオブジェクトのコピーを受け取る。<p>
+
+ オブジェクトが GIF ファイルのように非 Java オブジェクトを表す場合、DropTarget  は InputStream を受け取る。 DropTarget は次に InputStream を使用しすべてのオブジェクトデータを受け取ることができる。<p>
+
+AWT 実装が Java プログラマの生活を楽にさせたいという要望に基づいて、非 Java フォーマットを Java 構築物に変換することは可能である。例えば、Adobe Photoshop から Java アプリケーションにドラッグされた GIF ファイルは、基礎をなす AWT 実装によって Java ImageProducer に変換可能である。一方、Windows メールマージアプリケーションからドラッグされたストリートアドレスは、アドレスの直列化バージョンを含んだ単純な InputStream によって表すことが可能となる。<p>
+</ul>
+
+<h2>セキュリティ</h2>
+
+セキュリティおよび質の悪い Java アプリケーションの問題は、クリップボードに対するドラッグとドロップの問題ほどたいしたものではありません。それは、ユーザだけがドラッグとドロップトランザクションを起動できるからです。システム管理者はそれでも、ドラッグとドロップトランザクションを開始する、またはネイティブアプリケーションと共に受け取る Java アプリケーションの機能を制限する必要を感じているかもしれません。このような機能は簡単にセキュリティマネージャに追加し、もっと一般的なデータ転送許可に昇華できるでしょう。
+<p>DragSources および DropTargets は自らを private DataFlavors に限定することで、その乱雑さを制限することができます。しかし、もっと率直な設計をして、 DragContext に現在の DropTarget を得るためのメソッドを追加したり、DropContext に現在の DragSource を取得するためのメソッドを追加したりできるかもしれません。これらのルーチンは、ドラッグが同じ Java VM 内にない場合、null を返します。これは、各項目がそのどちらかに存在するという、ある一対のテキストリストのようなユーザインタフェースを実装可能にします。
+<p>
+<hr><br>
+ 
+<address>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</address>
+ 
+<i>Copyright (C) 1996, Sun Microsystems, Inc.   All rights
+reserved.</i>
+
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.5 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email yourEmail@xyzcorp.com -->
+<!-- -->
+<!-- Last updated: 09/13/96 16:57:17 -->
+
+</body>
+</html>
+
+

@@ -1,0 +1,139 @@
+<html><head><title>オブジェクト出力インタフェース
+</title></head>
+<body bgcolor=#ffffff>
+ 
+<a href="serialTOC.doc.html">[目次]</a> <a href="serial-arch.doc.html">[前項目]</a> <a href="input.doc.html">[次項目]</a>
+<hr><br>
+ 
+<h1><a name="60">
+オブジェクト出力インタフェース
+
+</a></h1>
+<hr><p>
+<p><h3><a name="2703">
+トピック:
+</a></h3><ul><li><a href="output.doc.html#933">ObjectOutputStreamクラス</a>
+<li><a href="output.doc.html#861">writeObjectメソッド</a>
+<li><a href="output.doc.html#3146">writeExternalメソッド</a>
+</ul><h1><a name="933">ObjectOutputStreamクラス
+</a></h1>クラス <code>ObjectOutputStream</code> は、オブジェクト直列化を実装するためのものです。このクラスは、すでに直列化されたオブジェクト・セットなどのストリームの状態を維持します。そのメソッドは、直列化するオブジェクトのトラバーサルを制御して、指定されたオブジェクトと参照するオブジェクトを保管します。
+<p><dl><pre>package java.io;
+
+public class ObjectOutputStream
+	extends OutputStream
+	implements ObjectOutput, ObjectStreamConstants
+{
+	public ObjectOutputStream(OutputStream out)
+		throws IOException;
+
+	public final void writeObject(Object obj)
+		throws IOException;
+
+	public final void defaultWriteObject();
+		throws IOException, NotActiveException;
+
+	public void reset() throws IOException;
+
+	protected void annotateClass(Class cl) throws IOException;
+
+	protected Object replaceObject(Object obj) throws IOException;
+
+	protected final boolean enableReplaceObject(boolean enable)
+		throws SecurityException;
+
+	protected void writeStreamHeader() throws IOException;
+
+	public void write(int data) throws IOException;
+
+	public void write(byte b[]) throws IOException;
+
+	public void write(byte b[], int off, int len) throws IOException;
+
+	public void flush() throws IOException;
+
+	protected void drain() throws IOException;
+
+	public void close() throws IOException;
+
+	public void writeBoolean(boolean data) throws IOException;
+
+	public void writeByte(int data) throws IOException;
+
+	public void writeShort(int data)  throws IOException;
+
+	public void writeChar(int data)  throws IOException;
+
+	public void writeInt(int data)  throws IOException;
+
+	public void writeLong(long data)  throws IOException;
+
+	public void writeFloat(float data) throws IOException;
+
+	public void writeDouble(double data) throws IOException;
+
+	public void writeBytes(String data) throws IOException;
+
+	public void writeChars(String data) throws IOException;
+
+	public void writeUTF(String data) throws IOException;
+}
+</pre></dl><code>ObjectOutputStream</code> 構築子には、OutputStream が必要です。この構築子は、<code>writeStreamHeader</code> を呼び出して、マジック番号とバージョンをストリームに書き込みます。そして、このストリームは、<code>ObjectInputStream</code> 構築子の対応する <code>readStreamHeader</code> によって読み込まれ、検査されます。
+<p><code>writeObject</code> メソッドは、オブジェクトをストリームに直列化するために使用します。オブジェクトは、次のように直列化されます。
+<p><ol>
+<li>ブロックデータバッファにデータがあれば、それがストリームに書き込まれ、バッファがリセットされます。
+<li>オブジェクトが null なら、null がストリームに置かれ、writeObject から戻ります。
+<li>オブジェクトがストリームにすでに書き込まれていれば、そのハンドルがストリームに書き込まれ、writeObject から戻ります。そのオブジェクトがすでに置き換えられていれば、前に書き込まれた置換オブジェクトのハンドルがストリームに書き込まれます。
+<li>オブジェクトがクラスなら、対応する ObjectStreamClass がストリームに書き込まれ、そのクラスのハンドルが割り当てられ、writeObject から戻ります。
+<li>オブジェクトが ObjectStreamClass なら、そのクラスの記述子がストリームに書き込まれます。これには、その名前、serialVersionUID、名前と型別のフィールド・リストが含まれます。この記述子のハンドルが割り当てられます。<code>writeObject</code> から戻る前に、annotateClass サブクラスメソッドが呼び出されます。
+<li>オブジェクトが <code>java.lang.String</code> なら、その文字列が Universal Transfer Format (UTF) 形式で書き込まれ、ハンドルがその文字列に割り当てられ、writeObject から戻ります。
+<li>オブジェクトが配列なら、その配列の <code>ObjectStreamClass</code> を書き込むために、<code>writeObject</code> が再帰的に呼び出されます。その配列のハンドルが割り当てられます。このハンドルの後には、配列の長さが続きます。次に、配列の各要素がストリームに書き込まれ、その後 <code>writeObject</code> から戻ります。
+<li><code>enableReplaceObject</code> を呼び出すことによってオンにされていれば、<code>replaceObject</code> メソッドが呼び出され、サブクラスによるオブジェクトの置換が可能になります。オブジェクトが置き換えられると、元のオブジェクトから置換オブジェクトへのマッピングがステップ 3 で後に使用するために格納され、新しいオブジェクトに対してステップ 2 から 7 が繰り返されます。置換オブジェクトがステップ 2 から 7 で処理される型の 1 つでないと、その置換オブジェクトを使った処理がステップ 9 から再開されます。 
+<li>正規オブジェクトの場合は、そのオブジェクトのクラスに対する ObjectStreamClass が、再帰的に呼び出される writeObject によって書き込まれます。これは、初めて参照されたときだけストリームに現れます。このオブジェクトのハンドルが割り当てられます。
+<li>オブジェクトの内容がストリームに書き込まれます。
+<ul>
+<li>オブジェクトが Serializable なら、最も高い Serializable クラスが見つけられます。そのクラスと各派生クラスに対し、そのクラスのフィールドが書き込まれます。そのクラスに <code>writeObject</code> メソッドがない場合は、<code>defaultWriteObject</code> メソッドが呼び出され、nonstatic と nontransient なフィールドがストリームに書き込まれます。そのクラスに <code>writeObject</code> メソッドがあれば、それが呼び出されます。このクラスは、<code>defaultWriteObject</code> を呼び出して、オブジェクトの状態を保管してから、他の情報をストリームに書き込むことができます。
+<li>そのオブジェクトが <code>Externalizable</code> なら、そのオブジェクトの writeExternal メソッドが呼び出されます。
+<li>オブジェクトが Serializable でも Externalizable でもなければ、NotSerializableException がスローされます。
+</ul>
+</ol>
+トラバーサルの間、または基本のストリームで例外が起こることがあります。
+<code>ObjectStreamException</code> のいずれのサブクラスでも、例外は例外プロトコルを使ってストリームに書き込まれ、ストリーム状態は破棄されます。他の<code>例外</code>では、ストリームは打ち切られ、不明で使用不能な状態のままになります。
+<p><code>defaultWriteObject</code> メソッドは、現行クラスのデフォルトの直列化メカニズムを実装するためのものです。このメソッドは、クラスの <code>writeObject</code> メソッドからのみ呼び出すことができます。このメソッドは、現行クラスのすべての nonstatic と nontransient のフィールドをストリームに書き込みます。<code>writeObject</code> 以外から呼び出すと、NotActiveException がスローされます。
+<p><code>reset</code>メソッドは、ストリーム状態を、構築されたばかりの状態にリセットします。リセットによって、ストリームにすでに書き込まれたオブジェクトの状態は破棄されます。ストリームの現行ポイントがリセットと記されるので、対応する ObjectInputStream が同じポイントでリセットされます。ストリームに前に書き込まれたオブジェクトは、そのストリームにすでに書き込まれているものとはみなされません。それらのオブジェクトは、ストリームに再び書き込まれます。このことは、1 つまたは複数のオブジェクトの内容を再び送る必要がある場合には便利です。オブジェクトが直列化されている間は、オブジェクトを呼び出すことはできません。誤った呼び出しを行うと、IOException がスローされます。
+<p><code>annotateClass</code> メソッドは、クラスが直列化されつつある間と、クラス記述子がストリームに書き込まれた後に呼び出されます。サブクラスによってこのメソッドを拡張し、そのクラスに関する他の情報をストリームに書き込むことができます。この情報は、対応する <code>ObjectInputStream</code> サブクラスの <code>resolveClass</code> メソッドで読み込まなければなりません。
+<p><code>replaceObject</code> メソッドは信頼されたサブクラスによって使用されるもので、これによりグラフ内のオブジェクトが直列化の際に置き換えまたはモニタされます。オブジェクトの置換は、置き換える最初のオブジェクトで <code>writeObject</code> を呼び出す前に、<code>enableReplaceObject</code> を明示的に呼び出すことによってオンにされなければなりません。これがオンにされると、各オブジェクトに対して、それが初めて直列化される直前に <code>replaceObject</code> が呼び出されます。サブクラスの実装によっては、元のオブジェクトの代わりに、直列化される置換オブジェクトが返されることがあります。この置換オブジェクトは直列化可能でなければなりません。ストリームにおける元のオブジェクトへのすべての参照は、この置換オブジェクトによって置き換えられます。
+<p>このサブクラスでは、置換される際、オブジェクトは参照が格納されるすべてのフィールドと互換性がなければなりません。または、直列化復元で補足的な置換が行われなければなりません。オブジェクトは、そのタイプがフィールドまたは配列要素の型のサブクラスでないと、後で、<code>ClassCastException</code> を上げることによって直列化復元を打切ります。参照は格納されません。
+<p><code>enableReplaceObject</code> メソッドは ObjectOutputStream の信頼されたサブクラスによって使用されるもので、これにより直列化の際に、あるオブジェクトで別のオブジェクトを置き換えることが可能になります。オブジェクトの置換は、<code>enableReplaceObject</code> が <code>true</code> 値で呼び出されるまで使用できません。オブジェクトの置換は、その後、この値を <code>false</code> に設定すれば使用不能になります。前の設定が返されます。<code>enableReplaceObject</code> メソッドは、置換を求めているそのストリームが信頼されているかどうかを調べます。オブジェクトへのすべての参照が <code>replaceObject</code> へ渡されます。オブジェクトの private 状態が意図せずに壊される危険のないように、信頼されたストリームしか <code>replaceObject</code> を使用することはできません。信頼されたクラスとは、クラスローダが null に等しいクラスです。
+<p><code>writeStreamHeader</code> メソッドは、マジック番号とバージョンをストリームに書き込みます。この情報は、<code>ObjectInputStream</code> の <code>readStreamHeader</code> メソッドで読み込まなければなりません。サブクラスは、ストリームの固有形式を識別するためにこのメソッドを実装しなければならない場合があります。
+<p><code>flush</code> メソッドは、ストリームによって保持されているバッファを空にし、このフラッシュを基本ストリームに転送するために使用します。基本のストリームをフラッシュせずに <code>ObjectOutputStream</code> のバッファだけを空にする場合は、サブクラスによって <code>drain</code> メソッドを使用することができます。
+<p>プリミティブ型に対するすべての write メソッドは、DataOutputStream を使ってそれらを標準ストリーム形式に置くことによって、それらの値をコード化します。それらのバイトはブロックデータレコードにバッファされるので、オブジェクトのコード化とは区別できます。このバッファリングによって、プリミティブデータは、クラスのバージョン化のために必要ならスキップされます。さらに、このバッファリングによって、ストリームは、クラス固有のメソッドを呼び出すことなく解析されます。
+<p><h1><a name="861">
+writeObject メソッド
+</a></h1>	Serializable オブジェクトの場合、<code>writeObject</code> メソッドによって、クラスがそれ自身のフィールドの直列化を制御することができます。次はそのシグネチャです。
+<p><dl><pre>	private void writeObject(ObjectOutputStream stream)
+		throws IOException;
+</pre></dl>Serializable オブジェクトの各サブクラスは、それ自身の writeObject メソッドを定義することができます。クラスにこのメソッドが実装されていなければ、defaultWriteObject によって与えられるデフォルトの直列化が使用されます。実装されていれば、そのクラスは、それ自身のフィールドの保管だけに責任があります。そのスーパー型やサブ型のフィールドの責任はありません。
+<p>クラスの writeObject メソッドは、実装されているなら、そのクラスの状態を保管する責任があります。<code>defaultWriteObject</code> メソッドをまず呼び出してからでないと、対応する <code>readObject</code>によって、そのオブジェクトの状態を復元するために必要になる任意指定のデータを書き込むことはできません。この任意指定データの形式、構造体、バージョン化の責任はすべて、そのクラスにあります。
+<p><h1><a name="3146">
+writeExternalメソッド
+</a></h1><code>java.io.Externalizable</code> を実装するオブジェクトは、<code>writeExternal</code> メソッドを実装して、そのオブジェクトの状態全体を保管する必要があります。このオブジェクトは、そのスーパークラスと協調して、それらの状態を保管しなければなりません。<code>ObjectOutput</code> のすべてのメソッドが、オブジェクトのプリミティブ型フィールドとオブジェクトフィールドを保管するために使用できます。
+<p><dl><pre>	public void writeExternal(ObjectOutput stream)
+		throws IOException;
+</pre></dl>
+<hr><br>
+ 
+<a href="serialTOC.doc.html">[目次]</a> <a href="serial-arch.doc.html">[前項目]</a> <a href="input.doc.html">[次項目]</a>
+<hr><br>
+ 
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- このファイルは Quadralay WebWorks Publisher 3.0.4で作成されています。-->
+<!-- -->
+<!-- このドキュメントとこのサーバーの残りの部分がどのように作成されている -->
+<!-- のかについては、email rmi-support@javasoft.comにお問い合わせください。-->
+<!-- -->
+<!-- Last updated: 02/04/97 16:45:52 -->
+
+</body>
+</html>

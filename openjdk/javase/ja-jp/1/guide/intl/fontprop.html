@@ -1,0 +1,445 @@
+
+<!--fontprop.html-->
+
+
+
+<html>
+
+<head>
+
+<title>Java ランタイムへのフォントの追加</title>
+
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1>Java ランタイムへのフォントの追加</h1>
+
+<p>
+
+このドキュメントでは「Java ランタイム」JDK 1.1 に、アジア言語および他の言語を追加する方法を説明します。もう少し特定すれば、このドキュメントでは、「Java ランタイム」にこれらのフォントを追加するための JDK 1.1 の特別な機能を取り上げます。この機能は、将来 JDK がバージョンアップするときに変更になる可能性があります。
+
+<p>今回このドキュメントでは、日本語、韓国語、中国語および従来の漢字フォントのインストールの方法を説明します。
+
+<p>「Java ランタイム」の中核部分に Latin-1 フォントのサポートしかない場合、この「ランタイム」は 1 つの <code>font.properties</code> ファイルしか必要としません。他のすべての <code>font.properties</code> ファイルはオプションの I18n パッケージに入っています。 
+
+<p>Win32 プラットフォーム用の JDK 1.1 バージョンは、 TrueType フォントをサポートします。Solaris 用の JDK 1.1 は、F3、Type1 および TrueType などの X11 サーバが扱えるアウトラインフォントをサポートします。
+
+<p>
+
+<h2>
+
+		font.properties ファイルの使用</h2>
+
+<p>
+
+フォントを「Java ランタイム」に追加するためには、<code>font.properties</code> ファイルを操作する必要があります。<code>font.properties</code> ファイルはプラットフォーム固有のものです。これは特定のプラットフォームが Java 仮想フォント用に使用するフォントを指示します。フォントは型またはクラスによってグループ化されます。 現在「Java ランタイム」はフォントの次のクラスをサポートしています:
+
+<ul>
+
+	<li>Serif</li>
+
+	<li>Sans-serif</li>
+
+	<li>Monospaced</li>
+
+	<li>Dialog</li>
+
+	<li>DialogInput</li>
+
+</ul><p>
+
+いくつかの <code>font.properties</code> ファイルは、 JDK 1.1 とバンドルされて出荷されています。これらのファイルは、Java がインストールされているディレクトリの下の <code>../lib</code> ディレクトリにあります。これらのファイルには標準フォント環境に関する情報が入っています。これからの説明では、このドキュメントの読者が英語環境で作業しているものと仮定します。英語環境では、次のように <code>font.properties</code> ファイルをファイル名に後置なしで使用します:
+
+<blockquote>
+
+<pre>
+font.properties
+</pre>
+
+</blockquote>
+
+しかし、使用環境が日本語、韓国語、中国語または従来の漢字の場合、その特定の環境に対応する <code>font.properties</code> ファイルを使用する必要があります。これらのファイルは、次のようにファイル名に国またはロケール後置を追加して識別します。
+
+<blockquote>
+
+<pre>
+font.properties.&lt;locale&gt;
+</pre>
+
+</blockquote>
+
+ただし、<code>locale</code> は次の内の 1 つです。
+
+<blockquote>
+
+<pre>
+ja
+
+ko
+
+zh
+
+zh_TW
+
+...
+</pre>
+
+</blockquote>
+
+関心のある特定のフォントの後置付きファイルを選択します。こうして、従来の漢字については <code>font.properties.zh_TW</code> ファイルをアクセスします。
+
+		<h2>Java ランタイムへのアジアフォントの追加</h2>
+
+<p>
+
+英語環境プラットフォーム上で日本語フォントなどのアジアフォントを使用するためには、 2 つのステップを踏む必要があります。
+
+		<h3>ステップ 1: フォントのインストール</h3>
+
+<p>
+
+最初に、日本語、韓国語、中国語または従来の漢字フォントを使用しているシステムにインストールする必要があります。Windows プラットフォームユーザについては、Microsoft はこれらのアジアフォントを、 NT4.0 インストレーション CD に添付して配布しています。あるいは、これらのフォントを Microsoft World Wide Web ホームページからダウンロードできます。Solaris ユーザは SunSoft に連絡を取り、Solaris 環境のアジアアウトラインフォントをお求めください。
+
+		<h3>ステップ 2: フォントのコピー</h3>
+
+<p>
+
+システムにフォントをインストールした後、関心のあるフォント説明を <code>font.properties</code> にコピーします。アジアフォントを 1 つ追加する最も簡単な方法は、<code>font.properties.&lt;locale&gt;</code> ファイルを新しい <code>font.properties</code> ファイルに名前変更することです。ロケールシンボルはユーザが関心を持つフォント名を表します。<code>font.properties</code> を <code>font.properties.&lt;locale&gt;</code> で置換するとき、編集は必要ありません。それは、<code>font.properties.&lt;locale&gt;</code> が <code>font.properties</code> のスーパーセットだからです。異なるフォントプロパティファイルを指定するのは、次に示すロケールシンボルです:
+
+<h3>フォントのロケールシンボル</h3>
+
+<table border=1>
+
+<tr><td>フォント名<td><code>font.properties</code> 
+シンボル</td></tr>
+
+<tr><td>日本語<td><code>ja</code></td></tr>
+
+<tr><td>韓国語<td><code>ko</code></td></tr>
+
+<tr><td>中国語<td><code>zh</code></td></tr>
+
+<tr><td>従来の漢字<td><code>zh_TW</code></td></tr>
+
+</table>
+
+<p>
+これで韓国語フォントを使用するためには、<code>font.properties.ko</code> を <code>font.properties</code> にコピーまたは名前変更します。
+
+		<h2>ランタイムでの複数フォントの使用</h2>
+
+<p>
+
+ランタイムで複数のアジアフォントを使用することができます。このためには、<code>font.properties</code> ファイルを編集する必要があります。この節では、複数のアジアフォントを使用するために必要なファイルの編集について説明します。<code>font.properties</code> ファイルはプラットフォームのフォントに関するある種の情報を定義します。この中には次のようなエイリアスがあります。
+
+<blockquote>
+
+<pre>
+alias.timesroman=serif
+
+alias.helvetica=sansserif
+</pre>
+
+</blockquote>
+
+これにはフォントの説明も入っています。この説明は、Win32 および Solaris プラットフォームの間では異なります。例ではセリフフォントを使用して、必要に応じたフォントの指定と変換の方法を説明しています。しかし、同じエントリが他の型のフォントにも適用されます。一般的に、フォントプロパティファイルにはユーザが使用したいフォントを指定するエントリがあります。これらのエントリは次のようなフォーマットを持っています。
+
+
+<pre>
+   &lt;virtual font name&gt;.&lt;index number&gt; = &lt;platform font name&gt;, attributes
+</pre>
+
+
+virtual font name は、「Java ランタイム」が認識するフォントの名前です。platform font name は、プラットフォームの実際のフォント名です。例えば、Dialog および Serif は Java フォント名であり、Times および Helvetica は Win32 または Solaris プラットフォームのネイティブフォント名です。index number はゼロを最高の優先順位として、フォントグリフを照合するための検索順序を指定します。
+
+		<h3>Win32 プラットフォームでのフォントの指定</h3>
+
+<p>
+
+英語 Win32 プラットフォームには 3 つの使用可能な既定のセリフフォントがあります。そのフォントは次のとおりです。
+
+<ul>
+
+	<li>Times New Roman</li>
+
+	<li>WingDings</li>
+
+	<li>Symbol</li>
+
+</ul>
+
+<p>
+
+さらに、<code>font.properties</code> ファイル内のこれらセリフフォントの説明は、次のとおりです:
+
+<blockquote>
+
+<pre>
+
+serif.0=Times New Roman,ANSI_CHARSET
+
+serif.1=WingDings,SYMBOL_CHARSET,NEED_CONVERTED
+
+serif.2=Symbol,SYMBOL_CHARSET,NEED_CONVERTED
+
+</pre>
+
+</blockquote>
+
+上記の 3 行はこのプラットフォーム上で使用可能な 3 つのセリフフォントの添字を示します。各行は 1 つのセリフフォントを示し、後ろにそのフォントの 3 つの引数が付きます。
+
+<p><code>serif.0</code> などの <code>serif</code> という語の後に表示されている数字（0、1、2）は、Unicode{tm}、または Java 文字列エンコーディング、codepoint で対応するフォントグリフを検索する順序を示します。こうして、<code>serif.0</code> および <code>serif.1</code> の両方が同じ Unicode codepoint に対応するグリフを持っている場合、<code>serif.0</code> のグリフが使用されます。
+
+<p>最初の引数は、Win32 ネイティブフォントの書体名です。各行は特定のフォントを指名します。例えば、<code>serif.0</code> の行はフォント Times New Roman を、<code>serif.2</code> の行はフォント Symbol を指名しています。
+
+<p>第 2 の引数は <code>*_CHARSET</code> という形式を取ります。この例では、<code>ANSI_CHARSET</code> または <code>SYMBOL_CHARSET</code> のどちらかです。この引数は Win32 での対応するフォントの文字セットエントリを示します。（詳細については、Win32 API ドキュメントを参照してください。）
+
+<p>3 番目の引数は、もしあれば、 <code>NEED_CONVERTED</code> です。この引数は、対応するプラットフォームフォントを Unicode{tm} でアクセスできないことを示します。この引数が存在するとき、「Java ランタイム」は、フォントのグリフの使用を試みる前に、 Unicode{tm} 文字列をこのフォントの添字に変換する必要があります。この <code>NEED_CONVERTED</code> 引数を持つフォントは、対応するフォント文字セットエントリを持つ必要があります。このエントリは、Unicode{tm} 文字列を変換するために使用する文字セットコンバータを示します。
+
+<p>この例では、serif.1 および serif.2 は共に <code>NEED_CONVERTED</code> 引数を
+持っています。両方とも次のとおり font.properties ファイルにフォント文字セットエントリを持っています:
+
+<blockquote>
+
+<pre>
+
+fontcharset.serif.1=sun.awt.windows.CharToByteWingDings
+
+fontcharset.serif.2=sun.awt.CharToByteSymbol
+
+</pre>
+
+</blockquote>
+
+<code>serif.1</code> のフォント文字セットエントリは、WingDings グリフを描画するためには Unicode{tm} 文字列を <code>sun.awt.windows.CharToByteWingDings</code> コンバータを使用して変換するよう指示しています。（font.properties ファイルが既に <code>serif.1</code> のフォントを WingDings として設定したことを思い出してください。） 
+
+<p>文字セットコンバータの仕様については、後節「文字セットコンバータ」を参照してください;
+
+		<h3>Win32 フォントファイル</h3>
+
+<p>
+
+現在の Win32 JDK 構築物は、次のフォントプロパティファイルを提供します:
+
+<blockquote>
+
+<pre>
+
+./lib/font.properties
+
+./lib/font.properties.ja
+
+./lib/font.properties.ko
+
+./lib/font.properties.zh
+
+./lib/font.properties.zh_TW
+
+</pre>
+
+</blockquote>
+
+提供されるフォントと異なるフォントが必要な場合、ユーザ独自のフォントプロパティファイルを生成する必要があります。
+
+		<h3>Solaris プラットフォームでのフォントの指定</h3>
+
+<p>
+
+Solaris <code>font.properties</code> ファイルは、フォントの指定で Win32 バージョンと異なるフォーマットを使用します。Solaris バージョンはプロポーショナルプラットフォームフォントでなく、固定幅を使用します。例えば、英語 Solaris プラットフォームのセリフフォントは次の固定幅フォントから構成されます。
+
+<pre>
+
+serif.plain.0=-linotype-times-medium-r-normal--*-%d-*-*-p-*-iso8859-1
+
+serif.1=-urw-itc zapfdingbats-medium-r-normal--*-%d-*-*-p-*-sun-
+         fontspecific
+
+serif.2=--symbol-medium-r-normal--*-%d-*-*-p-*-sun-fontspecific
+
+serif.italic.0=-linotype-times-medium-i-normal--*-%d-*-*-p-*-iso8859-1
+
+serif.bold.0=-linotype-times-bold-r-normal--*-%d-*-*-p-*-iso8859-1
+
+serif.bolditalic.0=-linotype-times-bold-i-normal--*-%d-*-*-p-*-iso8859-1
+
+</pre>
+
+
+Solaris <code>font.properties</code> ファイルのこれらの行は、異なる型を持つセリフフォントの添字を示します。例えば、書体名がセリフでスタイルがプレーンのフォントは、<code>serif.plain.0</code>、<code>serif.1</code> および <code>serif.2</code> から構成されます。さらに、これらの行は斜体のセリフフォントが <code>serif.italic.0</code>、<code>serif.1</code> および <code>serif.2</code> から構成されることを示します。
+
+<p>現在、Solaris (X11) フォントの添字は Unicode{tm} の添字ではありません。これが Unicode{tm} でないため、このフォントは常に変換する必要があります。各エントリは、次のように変換の方法を示す、対応するフォント文字セットエントリを持つ必要があります: 
+
+<blockquote>
+
+<pre>
+
+fontcharset.serif.0=sun.io.CharToByte8859_1 
+
+fontcharset.serif.1=sun.awt.motif.CharToByteX11Dingbats
+
+fontcharset.serif.2=sun.awt.CharToByteSymbol
+
+</pre>
+
+</blockquote>
+
+例えば:
+
+<blockquote>
+
+<pre>
+
+fontcharset.serif.0=sun.io.CharToByte8859_1 
+
+</pre>
+
+</blockquote>
+
+この行はすべての <code>serif.0</code> フォントを、型がプレーン（<code>serif.plain.0</code>）、太字（<code>serif.bold.0</code>）、斜体（<code>serif.italic.0</code>）または太字斜体（<code>serif.bolditalic.0</code>）であるかどうかに関わらず、<code>sun.io.CharToByte8859_1</code> コンバータを使用して変換することを示します。
+
+		<h3>Solaris フォントファイル</h3>
+
+<p>
+
+現在の Solaris JDK 構築物は、次のフォントプロパティファイルを提供します:
+
+<blockquote>
+
+<pre>
+
+./lib/font.properties
+
+./lib/font.properties.ja
+
+./lib/font.properties.ko
+
+./lib/font.properties.zh
+
+./lib/font.properties.zh_TW
+
+./lib/font.properties.cs
+
+./lib/font.properties.el
+
+./lib/font.properties.hu
+
+./lib/font.properties.lt
+
+./lib/font.properties.lv
+
+./lib/font.properties.pl
+
+./lib/font.properties.ru
+
+./lib/font.properties.tr
+
+./lib/psfont.properties.ja
+
+</pre>
+
+</blockquote>
+
+提供されるフォントと異なるフォントが必要な場合、ユーザ独自のフォントプロパティファイルを生成する必要があります。
+
+		<h2>文字セットコンバータ</h2>
+
+<p>
+
+<code>charset</code> コンバータは、Unicode{tm} または Java 文字列エンコーディングをフォントの添字に変換します。フォントの描画については、「JDK 1.1 ランタイム」は <code>sun.io.CharToByteConverter</code> のサブクラスである <code>charset</code> コンバータを使用します。
+
+<p>「JDK 1.1 ランタイム」に独自のフォントを追加するためには、<code>charset</code> コンバータを生成し、<code>font.properties file</code> 内でそれを指定する必要があります。
+
+<p>ユーザ独自のプラットフォームフォントを Java セリフフォントに追加する方法を、次の例で示します。この例では、ユーザのフォントとして 0 - 0xff の添字の付いた 256 グリフがあります。このフォントグリフは Unicode{tm} 0xe000 - 0xe0ff に対応します。この例は 2 つのステップに分かれます。最初に、ユーザの <code>fontcharset</code> コンバータクラスを生成します。次に、フォント名およびコンバータクラス名を <code>font.properties file</code> 内で指定します。
+
+		<h3>ステップ 1. フォント文字セットコンバータの生成</h3>
+
+<p>
+
+<code>fontcharset</code> コンバータを生成する Java コードを次に示します。 
+
+<blockquote>
+
+<pre>
+
+package mypkg.converter;
+import sun.io.CharToByte8859_1;
+
+public class CharToByteMyfont extends sun.io.CharToByte8859_1 {
+
+/*
+ * This method indicates the range this font covers.
+ */
+public boolean canConvert(char ch) {
+   if (ch &gt;= 0xe000 && ch &lt;= 0xe0ff) {
+       return true;
+   }
+   return false;
+}
+
+/**
+ * This method converts the unicode to this font index.
+ */
+public int convert(char[] input, int inStart, int inEnd,
+                   byte[] output, int outStart, int outEnd)
+                   throws ConversionBufferFullException;
+{
+   int outIndex = outStart; 
+   for (int i = inStart; i &lt; inEnd; i++) {
+        char ch = input[i];
+
+        if (ch &gt;= 0xe000 && ch &lt;= 0xe0ff) {
+            if (outIndex &gt;= outEnd) 
+            throw new ConversionBufferFullException();
+            output[outIndex++] = (byte)(ch - 0xe000);
+        }
+   }
+   return outIndex - outStart;
+}
+/*
+ * This method indicates the charset name for this font.
+ */
+public String toString() {
+   return "Myfont";
+}
+}
+</pre>
+
+</blockquote>
+
+		<h3>ステップ 2. プロパティファイルへのフォントおよびコンバータの追加</h3>
+
+<p>
+
+最初に、フォント名を <code>font.properties file</code> ファイルにセットする必要があります。そのためには、フォントの添字エントリを追加します。例えばセリフフォントについては、セリフフォントの後にファイル内の次の添字順番を付けたセリフフォントを指定する行を追加します。「Java ランタイム」は、すべてのフォントの添字番号が連続していることを要求します。
+
+<p>次に、前述の例の font.properties ファイルにセリフフォントを追加するために、次の行を挿入します:
+
+<blockquote>
+
+<pre>
+serif.3=&lt;your own font name&gt;
+</pre>
+
+</blockquote>
+
+添字番号は、プロパティファイルの中で次に高位の添字番号である必要があります。この例では、既に <code>serif.0</code>、<code>serif.1</code> および <code>serif.2</code> を使用しています。そのため、新しいセリフフォントは <code>serif.3</code> でなければなりません。<code>serif.5</code> などの連続していない番号を使用した場合、「Java ランタイム」はそのエントリを使用しません。
+
+<p>次に、このフォントのコンバータを定義する必要があります。このためには、新しいフォントの <code>fontcharset</code> エントリが必要です。この場合、<code>serif.3</code> です。次の行は、Java コード例で生成したコンバータを使用する <code>fontcharset</code> エントリです:
+
+<blockquote>
+
+<pre>
+fontcharset.serif.3=mypkg.converter.CharToByteMyfont
+</pre>
+
+</blockquote>
+
+ユーザはまた、新しく生成したコンバータが「Java ランタイム」から可視であることを保証する必要があります。ユーザのコンバータが「Java ランタイム」から可視であることを保証するためには、java アプリケーションの <code>classpath</code> が、そのコンバータへのクラスパスを含んでいる必要があります。この例では、クラス <code>mypkg.converter.CharToByteMyfont</code> が「Java ランタイム」に対して可視であることを確認する必要があります。この一番簡単な方法は、このクラスを <code>$JDK_HOME/classes/myown/package</code> ディレクトリの下に置くことです。
+
+<p>
+
+</body>
+</html>
+
+

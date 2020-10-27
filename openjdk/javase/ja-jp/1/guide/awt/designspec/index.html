@@ -1,0 +1,115 @@
+<html>
+<head>
+<title>JDK1.1 - AWTの拡張</title>
+</head>
+
+<BODY BGCOLOR="#FFFFFF">
+<h1><img align=middle src="images/toolbox.med.gif">  JDK1.1 - AWTの拡張</h1>
+<HR>
+<p>
+JDK1.1 の AWT は、大規模 GUI 開発の豊富な下層構造の構築に着手しようとする一方で、主要な品質向上を提供しようとしています。 API 全体に対して拡張と変更をしようとしていますが、1.0 API との後方互換を維持し、既存のアプレットが実行し続けられるようにします。
+<p>
+多くの AWT の変更と拡張は、ツール開発者のニーズを念頭においています。よいソフトウェアツールは Java 技術の使用性と成功の基本です。さらに、1.1 の AWT は <a href="http://splash.javasoft.com/beans">JavaBeans</a> アーキテクチャをサポートします。事実、1.1 のすべての AWTコンポーネントは、「簡単な」Java Beans です。
+<p>
+1.1 AWT には Win32 実装の完全な書き直しを含め、広範囲の改善が行われています。しかし、このドキュメントは API の変更に主眼を置きます:
+<UL>
+<LI> <A HREF="./datatransfer.html">データ転送/クリップボード</A> 
+<LI> <A HREF="./desktopcolors.html">デスクトップカラー</A>
+<LI> <A HREF="./events.html">delegation イベントモデル</A>
+<LI> <A HREF="graphics/index.html">グラフィックスとイメージ</A>
+<LI> <A HREF="./lightweights.html">軽量 UI フレームワーク</a>
+<LI> <A HREF="./mouseless.html">マウスレス操作</A>
+<LI> <A HREF="./popupmenu.html">ポップアップメニュー</A>
+<LI> <A HREF="./printing.html">印刷</A>
+<LI> <A HREF="./scrollpane.html">ScrollPane コンテナ</A>
+</UL>
+<p>
+これらの APIは JDK1.1の最終バージョンのために修正される可能性があることに注意してください。その修正は、完全なテストと Java 開発者による実世界での使用に基づくフィードバックの結果です。これらのドキュメントを定期的に更新し、このような変更を反映するようにします（<a href="#updates">最近の更新</a> を参照してください）。将来計画については、<a href=nextAWT.html>AWT: 次世代</a> を参照してください。
+
+<p>
+フィードバックを歓迎します! 
+<p>
+
+<h2><a name="updates">最近の更新</a></h2>
+これまでに受け取ったフィードバックに答えて、ドキュメントに対して次の修正が行われました（フィードバックに時間を割いていただいた方々に感謝します。これでひと味違ったものになります！）:
+
+<h3>1997 年 2 月 4 日</h3>
+<ul>
+<li>例を更新し、明瞭にコンパイルされるようにした。
+</ul>
+<h3>1997 年 1 月 29 日</h3>
+<ul>
+<li> ドキュメント「軽量 UI フレームワーク」を追加した。
+</ul>
+
+<h3>1997 年 1 月 3 日</h3>
+<ul>
+<li> Delegationイベントモデル
+<ol>
+<li> 新しい TextEvent/TextListener クラスを追加し、テキストコンポーネント上にテキスト値変更イベントを有効にした。
+<li>新しい windowActivated/windowDeactivated イベント型を WindowEvent に追加し、
+ウィンドウがフォーカスを得たり失ったりするときをプログラムが判別できるようにした。
+<li> isTemporary() メソッドを FocusEvent に追加し、フォーカスをコンポーネント間
+で明示的に移動するとき、およびフォーカスが * 一時的に * 変わるときの違いを判別できるようにした （ウィンドウが非アクティブ化されたときなど）。
+<li>新しい ContainerEvent/ContainerListener クラスを追加し、コンポーネントがコン
+テナに対して追加/削除されたときの通知を有効にした。これで、コンテナが、自分自身をそのすべての子孫上のイベントのリスナとして登録することが相対的に簡単になった。
+<li>入力イベント消費が機能する仕方を変更した: 今や InputEvent 上に新しい consume() メソッドがあり、すべてのオブジェクトが入力イベントを「消費」できる（以前はサブクラスだけができた）。
+<li>AWTEventMulticaster クラスを public にし、 AWT 定義イベントに対してマルチキャストソースとして活用させたいコンポーネントサブクラスを再使用できるようにした。
+<li> java.awt.event アダプタクラスを abstract にし、これらは拡張して利用するものであることを明確にした。
+<li>古い 1.0 イベントをパラメータとして取る java.awt.event の Event クラスの古い構築子を削除した。
+<li>ComponentEvent 型のイベント ID 値を変更し、WindowEvent ID と 衝突しないよう
+にした。
+<li>java.awt.event.KeyEvent に仮想キーコード識別子を追加し、キーボード上のすべての標準キーを適切に表せるようにした。キーイベントの keyCode プロパティには現在、これら識別子の 1 つが入っている（Ascii整数相当の代わり）。
+<li>ItemSelectableインタフェースを変更し、項目を文字列で表すことを強要しないようにした。特徴的には、getSelectedIndexes および getSelectedItems メソッドを Object の配列を返す getSelectedObjects メソッドで置き換えた。
+<li>「互換性」および 1.0 と 1.1 の混在の機能の文を更新した。
+</ol>
+<li>ポップアップメニュー
+<ol>
+<li>isPopupTrigger() メソッドを java.awt.event.MouseEvent に追加し、マウスイベン
+トが、与えられたプラットフォームでポップアップメニューを表示するかどうか判別するために、プラットフォーム独立の機構を提供した。
+<li>例を更新し、1.1イベントモデルと isPopupTrigger() メソッドを使用するようにし
+た。
+
+</ol>
+</ul>
+<h3>1996 年 12 月 11 日</h3>
+<ul>
+<li>次世代: 将来計画を記述するドキュメントへのリンクを追加した。
+</ul>
+
+<h3>1996 年 11 月 21 日</h3>
+<ul>
+<li>デスクトップカラー
+     <ol>
+     <li>デスクトップカラーを新しい SystemColor クラスに移動した（これらが色の特殊型であるため）。
+     </ol>
+<li>グラフィックスとイメージ: 当仕様の最初のバージョン。
+</ul>
+
+<h3>1996 年 10 月 25 日</h3>
+<ul>
+<li>delegation イベントモデル
+<ol>
+<li>節「拡張コンポーネントのイベント処理」について再作業を行い、サブクラスのイベントを処理するためにメソッドのオーバーライド方法により柔軟性を与えた。
+<li>システムにイベントキューオブジェクトを追加し、入ってくるすべてのイベントに対して、中央でのアクセス/ビューを可能にした。
+<li>AdjustmentListener および ItemListener インタフェースを簡単にし、単一メソッド
+だけを含むようにした。
+<li>セマンティックリスナの各々が現在単一のメソッドしか持たないため、 3 つのセマ
+ンティックアダプタクラスすべてを削除した。
+</ol>
+</ul>
+
+<hr>
+多くの人が、これらドキュメントの考え方と設計に貢献してくれました。とりわけ、次の方々にお世話になりました (アルファベット順): Tom Ball、Larry Cable、Amy Fowler、Jim Graham、Graham Hamilton、Herb Jellinek、Jonni Kanerva、Tim Prinzing、Blake Sullivan、Carl Quinn、Arthur Van Hoff。
+
+<HR> 
+<ADDRESS>
+<DL>
+</ADDRESS><DT> Copyright (C) 1996, 1997 Sun Microsystems, Inc.
+<DT> Last updated January 31, 1997
+<DT>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</DL>
+
+</BODY>
+</HTML>

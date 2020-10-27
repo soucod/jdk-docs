@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>javah - C ヘッダとスタブファイルジェネレータ</title>
+</head><BODY BGCOLOR="#FFFFFF">
+
+<h1>javah - C ヘッダとスタブファイルジェネレータ</h1>
+<blockquote>
+<b>javah</b> は、Java(tm) クラスから C ヘッダファイルと C ソースファイルを作成します。これらのファイルは、Java プログラミング言語で書かれたコードと、C などのその他の言語で書かれたコードを接続する糊のような役目をし、コードが相互に作用するようにします。
+</blockquote>
+
+<h2>機能説明</h2>
+<blockquote>
+<pre>
+javah [ <a href="javah.html#Options">options</a> ] classname. . .
+javah_g [ <a href="javah.html#Options">options</a> ] classname. . .
+</pre>
+</blockquote>
+
+<h2>説明</h2>
+<blockquote>
+<b>javah</b> は、ネイティブメソッドを実装するために必要な C ヘッダとソースファイルを生成します。作成されたヘッダとソースファイルは、ネイティブソースコードからオブジェクトのインスタンス変数を参照するために C プログラムによって使用されます。.h ファイルは、対応するクラスと一致する配置をもつ構造体定義を含みます。構造体のフィールドは、クラスのインスタンス変数に対応します。
+
+<p>
+ヘッダファイルとその中で宣言される構造体の名前はクラスの名前から派生します。<b>javah</b> に渡されるクラスがパッケージの中にある場合、パッケージ名はヘッダファイル名と構造体名の両方に付加されます。下線 ( _ ) が名前の区切り文字として使用されます。
+
+<p>
+デフォルトでは <b>javah</b> は、コマンド行にリストされる各クラスのヘッダファイルを作成し、現在のディレクトリにファイルを置きます。ソースファイルを作成するためには <i>-stubs</i> オプションを使用してください。1 つのファイルの中に、リストされたすべてのクラスの結果を連結するためには、<i>-o</i> オプションを使用してください。
+
+<p>
+新しいネイティブメソッドインタフェースの Java Native Interface (JNI) は、ヘッダ情報またはスタブファイルを必要としません。現行では、<b>javah</b> は <b>-jni</b> オプションを使用して、JNI形式のネイティブメソッドに必要なネイティブメソッド機能プロトタイプを生成します。その結果は .h ファイルに置かれます。
+
+
+<p>
+<b>javah_g</b> は、<a href=jdb.html><b>jdb</b></a> のようなデバッガに適した、<b>javah</b> の最適化されていないバージョンです。
+</blockquote>
+
+<a name=Options>
+<h2>オプション</h2>
+</a>
+<blockquote>
+
+<dl>
+<dt><b>-o <i>outputfile</i></b>
+<dd>
+コマンド行にリストされたすべてのクラスに対して、結果のヘッダまたはソースファイルを連結して <i>outputfile</i> へ入れます。
+<p>
+
+<dt><b>-d <i>directory</i></b>
+<dd>
+<b>javah</b> が、ヘッダファイルまたはスタブファイルを保存するディレクトリを設定します。
+<p>
+
+<dt><b>-td <i>directory</i></b>
+<dd>
+<b>javah</b> が、一時ファイルを格納するディレクトリを設定します。デフォルトでは、<b>javah</b> は、一時ファイルを %TEMP% 環境変数によって指定されたディレクトリに格納します。%TEMP% が指定されていない場合、javah は %TMP% 環境変数のチェックを行います。そして最終的に、%TMP% が指定されていない場合、<b>javah</b> がディレクトリ C:\tmp を作成し、そこにファイルを格納します。
+<p>
+
+<dt><b>-stubs</b>
+<dd>
+<b>javah</b> に Java オブジェクトファイルから C 宣言を生成させます。
+<p>
+
+<dt><b>-v</b>
+<dd>
+詳細出力を指定し、作成ファイルの状態に関するメッセージを、<b>javah</b> に標準出力にプリントさせます。
+<p>
+<dt><b>-help</b>
+<dd>
+このメッセージをプリント出力します。 
+<p>
+<dt><b>-trace</b>
+<dd>
+<code>stubs</code> ファイルにトレース情報を追加します。
+<p>
+<dt><b>-version</b>
+<dd>
+作成バージョンを出力します。 
+
+<p>
+<dt><b>-jni</b>
+<dd>
+JNI 形式のネイティブファイルプロトタイプを含む出力ファイルを、<b>javah</b> が作成します。
+<p>
+ 
+
+
+<dt><b>-classpath <i>path</i></b>
+<dd>
+クラスを探すために <b>javah</b> が使用するパスを指定します。デフォルトまたは CLASSPATH 環境変数の設定を上書きします。ディレクトリは、セミコロンで分割します。したがって、<i>path</i> のための一般形式は次のようになります。
+<pre>
+   .;&lt;your_path&gt;
+</pre>
+たとえば、パスの指定は次のとおりです。
+<pre>
+   .;C:\users\dac\classes;C:\tools\java\classes
+</pre>
+</dl>
+</blockquote>
+
+<h2>環境変数</h2>
+<blockquote>
+<dl>
+<dt>CLASSPATH
+<dd>ユーザ定義クラスへのパスをシステムに指定します。ディレクトリはセミコロンで分割します。たとえば、次のとおりです。
+<pre>
+   .;C:\users\dac\classes;C:\tools\java\classes
+</pre>
+</dl>
+</blockquote>
+
+<h2>参照</h2>
+<blockquote>
+<a href="javac.html">javac</a>,  
+<a href="java.html">java</a>,
+<a href="jdb.html">jdb</a>,
+<a href="javap.html">javap</a>,
+<a href="javadoc.html">javadoc</a>
+</blockquote>
+
+</body>
+</html>
+

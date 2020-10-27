@@ -1,0 +1,303 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title> </title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><a href="jniTOC.doc.html">目次</a> | <a href="functions.doc.html">前項目</a> | 次項目 </td><td align=right><i>Java ネイティブインタフェースの仕様
+</i></td>
+</tr></table>
+
+<hr><br>
+ 
+<h1><a name="15899"></a>
+<strong> 5 - 呼び出し API
+ </strong></h1>
+<hr><p><a name="1057"></a>
+この呼び出し API により、ソフトウェアベンダは Java VM を任意のネイティブアプリケーションにロードできるようになります。そのベンダの提供する Java が実行可能なアプリケーションは、Java VM ソースコードにリンクする必要がありません。
+<p><a name="499"></a>
+本章では、呼び出し API の概要を述べ、その後ですべての呼び出し API 関数を説明します。
+<p><hr align=left><a name="15926"></a>
+<h1> 概要
+</h1>
+<a name="954"></a>
+次のコード例では、呼び出し API の関数の使用方法について説明します。この例では、C++ コードは Java VM を生成し、<code>Main.test</code> と呼ばれる static メソッドを起動します。明瞭にするために、エラーチェックを省略しました。
+<p><pre>        #include &lt;jni.h&gt;       /* where everything is defined */
+    
+        ...
+    
+        JavaVM *jvm;       /* denotes a Java VM */
+        JNIEnv *env;       /* pointer to native method interface */
+    
+        JDK1_1InitArgs vm_args; /* JDK 1.1 VM initialization arguments */
+    
+        /* Get the default initialization arguments and set the class 
+         * path */
+        JNI_GetDefaultJavaVMInitArgs(&amp;vm_args);
+        vm_args.classpath = ...;
+    
+        /* load and initialize a Java VM, return a JNI interface 
+         * pointer in env */
+        JNI_CreateJavaVM(&amp;jvm, &amp;env, &amp;vm_args);
+    
+        /* invoke the Main.test method using the JNI */
+        jclass cls = env-&gt;FindClass("Main");
+        jmethodID mid = env-&gt;GetStaticMethodID(cls, "test", "(I)V");
+        env-&gt;CallStaticVoidMethod(cls, mid, 100);
+    
+        /* We are done. */
+        jvm-&gt;DestroyJavaVM();
+</pre><a name="980"></a>
+この例では、API の3つの関数を使用しています。呼び出し API はネイティブアプリケーションが JNI インタフェースポインタを使用し VM 機能にアクセスできるようにします。この設計は Netscape の JRI 埋め込みインタフェースと同様です。
+<p><br><a name="15956"></a>
+<h2>		 VM の生成
+</h2>
+<a name="1045"></a>
+<code>JNI_CreateJavaVM()</code> 関数は Java VM をロードして初期化し、JNI インタフェースポインタにポインタを返します。<code>JNI_CreateJavaVM()</code> を呼び出したスレッドは、 
+<em>メインスレッド</em>とみなされます。
+<p><br><a name="1060"></a>
+<h2>		 VM への接続
+</h2>
+<a name="15965"></a>
+JNI インタフェースポインタ(<code>JNIEnv</code>)は、現在のスレッドでのみ有効です。別のスレッドが Java VM にアクセスする必要がある場合、これは最初に 
+<code> AttachCurrentThread()</code> を呼び出し、それ自体を VM に接続し JNI インタフェースポインタを取得する必要があります。一度 VM に接続されると、ネイティブスレッドはネイティブメソッド内で実行中の普通の Java スレッドのように機能します。ネイティブスレッドは、それ自体を分離するために <code>DetachCurrentThread()</code> を呼び出すまで VM に接続されたままになります。 
+<p><br><a name="16553"></a>
+<h2>		 VM のアンロード
+</h2>
+<a name="548"></a>
+メインスレッドは、VM から分離できません。代わりに、VM 全体をアンロードするために  
+<code>DestroyJavaVM()</code> を呼び出す必要があります。さらに、メインスレッドは VM をアンロードできる唯一のスレッドです。
+<p><a name="627"></a>
+メインスレッドは、Java VM をアンロードするために <code>DestroyJavaVM()</code> 関数を呼び出すとき、Java VM 内で実行中の唯一の<em>ユーザスレッド</em>である必要があります。ユーザスレッドには、Java スレッドおよび接続されたネイティブスレッドの両方があります。この制限は、Java スレッドまたは接続されたネイティブスレッドがロック、ウィンドウなどのシステムリソースを保持している可能性があるために存在します。<code>DestroyJavaVM()</code> 関数は、自動的にこれらのリソースを開放することはできません。VM がアンロードされているときに、メインスレッドを唯一の実行中のスレッドであると制限することで、任意のスレッドが保持するシステムリソースを開放する負荷はプログラマに課せられます。
+<p><hr align=left><a name="16554"></a>
+<h1> 初期化構造
+</h1>
+<a name="16529"></a>
+Java VM は異なる実装方式を使用するため、異なる初期化構造を要求することがあります。したがって、次の初期化構造の正確なコンテントは java VM によってさまざまに変わります。ネイティブアプリケーションは、呼び出そうとする特別な VM に応じて初期化構造を正確に設定する必要があります。
+<p><a name="15980"></a>
+次のコードは、JDK 1.1で java VM の初期化に使われる構造を示します。 
+
+<p><pre>    typedef struct JavaVMInitArgs {
+       /* reserved fields */
+        jint reserved0;
+        void *reserved1;
+    
+       /* whether to check the Java source files are newer than 
+        * compiled class files. */
+        jint checkSource;
+    
+       /* maximum native stack size of Java-created threads. */
+        jint nativeStackSize;
+    
+       /* maximum Java stack size. */
+        jint javaStackSize;
+    
+       /* initial heap size. */
+        jint minHeapSize;
+    
+       /* maximum heap size. */
+        jint maxHeapSize;
+    
+       /* controls whether Java byte code should be verified:
+        * 0 -- none, 1 -- remotely loaded code, 2 -- all code. */
+        jint verifyMode;
+    
+       /* the local directory path for class loading. */
+        const char *classpath;
+    
+       /* a hook for a function that redirects all VM messages. */
+        jint (*vfprintf)(FILE *fp, const char *format, 
+                         va_list args);
+    
+       /* a VM exit hook. */
+        void (*exit)(jint code);
+    
+       /* a VM abort hook. */
+        void (*abort)();
+    
+       /* whether to enable class GC. */
+        jint enableClassGC;
+    
+       /* whether GC messages will appear. */
+        jint enableVerboseGC;
+    
+       /* whether asynchronous GC is allowed. */
+        jint disableAsyncGC;
+    
+    } JDK1_1InitArgs;
+</pre><a name="738"></a>
+JDK 1.1では、初期化構造が提供するフックにより、ネイティブアプリケーションは VM メッセージをリダイレクトすることができ、 VM 終了を制御することができるようになります。
+<p><a name="886"></a>
+次に示す構造は、ネイティブスレッドが JDK 1.1 の Java VM に接続するとき、引数として渡されます。実際、JDK 1.1 へ接続するためにネイティブスレッドが要求する引数はありません。<code>JDK1_1AttachArgs</code> 構造体は、空の構造を許さない C コンパイラ用の埋込みスロットだけから成ります。
+<p><pre>    typedef struct JDK1_1AttachArgs {
+       /*
+        * JDK 1.1 does not need any arguments to attach a
+        * native thread. The padding is here to satisfy the C
+        * compiler which does not permit empty structures.
+        */
+        void *__padding;
+    } JDK1_1AttachArgs;
+</pre><hr align=left><a name="756"></a>
+<h1> 呼び出し API の関数
+</h1>
+<a name="16292"></a>
+<code>Java VM</code> 型は呼び出し API 関数テーブルのポインタです。次のコード例では、この関数テーブルを示します。
+<p><pre>    typedef const struct JNIInvokeInterface *JavaVM;
+    
+    const struct JNIInvokeInterface ... = {
+        NULL,
+        NULL,
+        NULL,
+    
+        DestroyJavaVM,
+        AttachCurrentThread,
+        DetachCurrentThread,
+    };
+</pre><a name="16293"></a>
+次の 3 つの呼び出し API 関数に注意してください。
+<code>JNI_GetDefaultJavaVMInitArgs()</code>、 JNI_GetCreatedJavaVMs()、および 
+<code>JNI_CreateJavaVM()</code>は、Java VM 関数ではありません。これらの関数は以前の <code>JavaVM</code> 構造がなくても使用することができます。
+<p><br><a name="16064"></a>
+<h2>		 JNI_GetDefaultJavaVMInitArgs
+</h2>
+<a name="16312"></a>
+<code>void JNI_GetDefaultJavaVMInitArgs(void *vm_args);
+</code><p><a name="16317"></a>
+Java VM のデフォルト構成を返します。
+<p><a name="869"></a>
+<h4> パラメータ:
+</h4>
+<a name="16324"></a>
+<code>vm_args</code>: デフォルト引数が入る <code>VM-specific initialization</code> 構造へのポインタ。
+<p><br><a name="633"></a>
+<h2>		 JNI_GetCreatedJavaVMs
+</h2>
+<a name="634"></a>
+<code>jint JNI_GetCreatedJavaVMs(JavaVM **vmBuf, jsize bufLen,<br>
+     jsize *nVMs);
+</code><p><a name="635"></a>
+作成された Java VM をすべて返す。VM へのポインタは、作成された順にバッファ vmBuf に書き込まれます。しかし、エントリの bufLen 番号しか書き込みません。作成された VM の全体数は、*nVM で返します。
+<p><a name="636"></a>
+JDK 1.1 は 1 つのプロセスで、1 つの VM しかサポートしません。
+<p><a name="637"></a>
+<h4> パラメータ:
+</h4>
+<a name="638"></a>
+<code>vmBuf</code>: VM 構造が配置されるバッファへのポインタ。
+<p><a name="639"></a>
+<code>bufLen</code>: バッファの長さ。
+<p><a name="640"></a>
+<code>nVMs</code>: 整数を参照するポインタ。
+<p><a name="641"></a>
+<h4> 返り値:
+</h4>
+<a name="642"></a>
+成功したとき"0"; 失敗したとき負の数を返します。
+<p><br><a name="16334"></a>
+<h2>		 JNI_CreateJavaVM
+</h2>
+<a name="16331"></a>
+<code>jint JNI_CreateJavaVM(JavaVM **p_vm, JNIEnv **p_env,<br>
+     void *vm_args);
+</code><p><a name="16339"></a>
+ロードして、Java VM を初期化します。カレントスレッドがメインスレッドになります。<code>env</code> 引数を、メインスレッドの JNI インタフェースポインタへ設定します。
+<p><a name="16345"></a>
+JDK 1.1 は 1 つのプロセスで、1 つの VM しかサポートしません。
+<p><a name="16351"></a>
+<h4> パラメータ:
+</h4>
+<a name="16356"></a>
+<code>p_vm</code>: 結果の VM 構造が配置される位置へのポインタ。
+<p><a name="16358"></a>
+<code>p_env</code>: メインスレッドの JNI インタフェースポインタが配置される位置へのポインタ。
+<p><a name="16360"></a>
+<code>vm_args</code>: Java VM 初期化引数。
+<p><a name="16085"></a>
+<h4> 返り値:
+</h4>
+<a name="711"></a>
+成功したとき"0"; 失敗したとき負の数を返します。
+<p><br><a name="16089"></a>
+<h2>		 DestroyJavaVM
+</h2>
+<a name="16384"></a>
+<code>jint DestroyJavaVM(JavaVM *vm);
+</code><p><a name="16381"></a>
+Java VM をアンロードし、そのリソースを回復します。メインスレッドだけが VM をアンロードできます。メインスレッドは <code>DestroyJavaVM()</code> を呼び出すとき、唯一残ったユーザスレッドでなければなりません。
+<p><a name="16386"></a>
+<h4> パラメータ:
+</h4>
+<a name="16387"></a>
+<code>vm</code>: 破壊される Java VM。
+<p><a name="16390"></a>
+<h4> 返り値:
+</h4>
+<a name="715"></a>
+成功したとき"0"; 失敗したとき負の数を返します。
+<p><a name="628"></a>
+JDK 1.1 は VM のアンロードをサポートしません。
+<p><br><a name="16436"></a>
+<h2>		 AttachCurrentThread
+</h2>
+<a name="16433"></a>
+<code>jint AttachCurrentThread(JavaVM *vm, JNIEnv **p_env,<br>
+     void *thr_args);
+</code><p><a name="16441"></a>
+カレントスレッドを Java VM へ接続します。
+<code>JNIEnv</code> 引数で JNI インタフェースポインタを返します。
+<p><a name="987"></a>
+すでに接続されているスレッドへの接続は、ノーオペレーションです。
+<p><a name="988"></a>
+ネイティブスレッドを 2 つの Java VM へ 同時に接続することはできません。
+<p><a name="989"></a>
+<h4> パラメータ:
+</h4>
+<a name="16456"></a>
+<code>vm</code>: カレントスレッドが接続される VM。
+<p><a name="16457"></a>
+<code>p_env</code>: カレントスレッドの JNI インタフェースポインタが配置される位置へのポインタ。
+<p><a name="16458"></a>
+<code>thr_args</code>: VM 固有のスレッド接続引数。
+<p><a name="16459"></a>
+<h4> 返り値:
+</h4>
+<a name="721"></a>
+成功したとき"0"; 失敗したとき負の数を返します。
+<p><br><a name="16108"></a>
+<h2>		 DetachCurrentThread
+</h2>
+<a name="16468"></a>
+<code>jint DetachCurrentThread(JavaVM *vm);
+</code><p><a name="16111"></a>
+Java VM からカレントスレッドを分離します。このスレッドが保持する Java モニタはすべて解放されます。このスレッドが終了するのを待つ Java スレッドすべてに、通知が行われます。
+<p><a name="16115"></a>
+Java VM を作成するスレッドであるメインスレッドを、VM から分離することができません。その代わり、VM 全体をアンロードするために、メインスレッドは
+<code>JNI_DestroyJavaVM()</code> を呼び出す必要があります。
+<p><a name="16491"></a>
+<h4> パラメータ:
+</h4>
+<a name="16492"></a>
+<code>vm</code>: カレントスレッドが分離される VM。
+<p><a name="16495"></a>
+<h4> 返り値:
+</h4>
+<a name="725"></a>
+成功したとき"0"; 失敗したとき負の数を返します。
+<p><a name="15891"></a>
+
+<p>
+
+<hr>
+<!-- This inserts footnotes--><p>
+<a href="jniTOC.doc.html">目次</a> | <a href="functions.doc.html">前項目</a> | 次項目 
+<p>
+<font size=-1>Java ネイティブインタフェース仕様 (1997年3月15日に dkramer によって生成された HTML)<br>
+<i><a href="copyright.doc.html">Copyright (C) 1996, 1997 Sun Microsystems, Inc.</a>
+All rights reserved</i>
+<br>
+コメントは、<a href="mailto:jni@java.sun.com">jni@java.sun.com</a>宛てに送ってください。
+</font>
+</body></html>
+

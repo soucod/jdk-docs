@@ -1,0 +1,63 @@
+<html><head><title>オブジェクト直列化における例外
+</title></head>
+<body bgcolor=#ffffff>
+ 
+<a href="serialTOC.doc.html">[目次]</a> <a href="security.doc.html">[前項目]</a> [次項目]
+<hr><br>
+ 
+<h1><a name="3601">
+オブジェクト直列化における例外
+</a></h1>
+<hr><p>
+<p>	直列化クラスによってスローされる例外は、すべて <code>ObjectStreamException</code> のサブクラスであり、これは <code>IOException</code> のサブクラスです。
+<Table Border="3">
+<caption></caption>
+<tr><th>例外
+<th>説明
+
+<tr><td><code>ObjectStreamException
+</code><td>すべての直列化例外のスーパークラス
+<tr><td><code>InvalidClassException
+</code><td>次のいずれかの理由によって、クラスがオブジェクトを復元できないときにスローされる。
+<ul><li>そのクラスが、ストリームにあるクラスの直列化バージョンと一致しない。
+<li>そのクラスに無効なプリミティブデータ型をもつフィールドが含まれている。
+<li>そのクラスが public ではない。そのクラスには、アクセス可能な引数無しの構築子がない。
+</ul>
+<tr><td><code>NotSerializableException
+</code><td><code>readObject</code> か <code>writeObject</code> メソッドによってスローされ、直列化または直列化復元を停止する。
+<tr><td><code>StreamCorruptedException
+</code><td>ストリームヘッダーが正しくない、ストリームにある制御情報が見つからない、見つかっても正しくない、という場合にスローされる。
+<tr><td><code>NotActiveException
+</code><td><code>readObject</code> で <code>registerValidation</code> が呼び出されないとスローされる。
+<tr><td><code>InvalidObjectException
+</code><td>復元されたオブジェクトを有効にできないとスローされる。
+<tr><td><code>OptionalDataException
+</code><td>ストリームにプリミティブデータがあり、オブジェクトが予期されるときに readObject によってスローされる。例外の長さフィールドは、現行ブロックで使用可能なバイト数を表す。
+<tr><td>WriteAbortedException
+<td>ストリームの書き込みの間に起こった例外によって停止されたストリームを読み込むと、スローされる。
+
+</Table>
+
+<table>
+<tr><td>
+</table>
+
+<p>
+<p>
+<hr><br>
+ 
+<a href="serialTOC.doc.html">[目次]</a> <a href="security.doc.html">[前項目]</a> [次項目]
+<hr><br>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- このファイルは Quadralay WebWorks Publisher 3.0.4で作成されています。-->
+<!-- -->
+<!-- このドキュメントおよびこのサーバの残りの部分がどのように作成されている -->
+<!-- のかについては、email rmi-support@javasoft.comにお問い合わせください。 -->
+<!-- -->
+<!-- Last updated: 02/04/97 16:46:48 -->
+
+</body>
+</html>

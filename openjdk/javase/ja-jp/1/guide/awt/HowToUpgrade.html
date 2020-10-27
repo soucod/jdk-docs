@@ -1,0 +1,842 @@
+<html>
+<head>
+<title>
+プログラムの 1.1 AWT APIへの変換方法
+</title>
+</head>
+
+<BODY BGCOLOR="#FFFFFF">
+<font size=-1>
+<a href=index.html>AWT の拡張の目次へ戻る </a>
+</font>
+<hr>
+
+<h1>
+プログラムの 1.1 AWT APIへの変換方法
+</h1>
+
+AWT のアーキテクチャは 1.1 になって大きく改善されました。この改善では、互換性に影響するような変更がいくつか行われました。特に、1.1 の機能を使用するプログラムは、それ以前のバージョンの実行システムでは
+<b>動作しません</b>。しかし、1.1 に基づく実行システムでは、1.0、1.0.1、1.0.2 でコンパイルしたプログラムは、それ以前のバージョンでバグがない限り
+<b>動作します</b>。(これら非互換の可能性があるバグの修正リストは、ドキュメント
+<a href=IncompatibleChanges.html>1.1 AWT API の非互換変更</a>の中にあります。) 1.0.X の機能だけを使用して 1.1 でコンパイルしたプログラムについては、1.0.X 実行システムで動作するようですが、この互換性は厳密にはテストされておらず保証はされません。
+
+<p>
+
+例えば、1.0 のアプレットはすべて、 1.1 でコンパイルが成功するはずです。そして古い (1.0) クラスファイルを使用するか、再コンパイルして新しい (1.1) クラスファイルを使用するかに関わらず、1.0 のアプレットは 1.1 ベースのブラウザで動作します。また、アプレットソースを変更しない限り、新しい (1.1) クラスファイルは古い (1.0ベースの) ブラウザで動作するはずです。しかし、1.1 の機能を使用するためにアプレットを変更した場合、アプレットは 1.1 API への更新をしていない Netscape 3.0 のようなブラウザでは動作しないでしょう。
+
+<p>
+
+さて、なぜプログラムを 1.1 AWT API に更新する必要があるのでしょうか? 
+次の 3 つの理由があります:
+
+<ul>
+<li> AWT バージョン 1.1 には使用を促すような新しい機能があること。
+<li> 新しいアーキテクチャによってAWTの実装が速くかつ強力になり、更新したプログラムの作業性が向上すること。
+<li> 古い API のサポートはいずれなくなること。
+</ul>
+
+<p>
+
+このドキュメントの後半では、
+<a href=#awtChanges>AWT の変更内容</a> および
+<a href=#awtHowTo>プログラムの変換方法</a>
+について説明します。そして、プログラムを 1.1 に変換する
+<a href=#example>例</a>
+を示します。
+
+
+<h2>
+<a name=awtChanges>
+AWT の変更内容 
+</a>
+</h2>
+
+AWTの変更は次の 3 つの方法で行われました:
+
+<ul>
+<li> アーキテクチャが改善され、大規模な GUI 開発が実現可能になり、見落とされてい
+た基本的な機能が追加された。
+     <p>
+イベント処理のために、非コンポーネント ("delegation")、データ転送 (切り取り-コピー-貼り付けなど)、デスクトップカラー (外観の一貫性を向上させるため)、マウスレス操作、およびコンポーネント固有カーソルによるアーキテクチャのサポートが追加された。しかし、これらアーキテクチャの改善に関連する機能のすべてが、完全に実装されているわけではない。例えば、データ転送アーキテクチャによってドラッグとドロップが可能にはなったが、ドラッグとドロップは 1.1 に実装はされていない。<a href=designspec/index.html><b>JDK1.1 - AWT の拡張</b></a>には、最終の 1.1 リリースで実装された確実な詳細が記されている。
+<p>
+<li> メソッド名、引数および機能性に一貫性ができた。
+<p>
+こうした変更によって、プログラムのうち、GUI ビルダや JavaBeans を使用したものがコンポーネントに問合わせをして、コンポーネントのプロパティを決定できるようになった。また、プログラマが簡単に AWT API を学習して使用できるようになった。
+<p>
+<li> その他の品質改善が行われ、新機能が追加された。
+<p>
+例えば、イメージとグラフィック機能が向上し、<code>PopupMenu</code> および <code>ScrollPane</code> クラスが追加された。<code>PopupMenu</code>
+クラスによって、メニューバーに結び付けられていないメニューを持つことができるようになった。<code>ScrollPane</code> クラスによって、スクロール領域の実装がスクロール速度の向上と同様に、簡単にできるようになった。
+</ul>
+
+<p>
+
+イベント処理の変更の詳細は
+<a href=#events>このドキュメントの後半</a>にあります。AWT の変更内容の詳細については、
+<a href=designspec/index.html><b>JDK1.1
+- AWT の拡張</b></a>を参照してください。
+
+
+<h2>
+<a name=awtHowTo>
+プログラムの変換方法
+</a>
+</h2>
+
+プログラムを 1.1 AWT に変換するには、次の 2 つの大きなフェーズがあります:
+<ul>
+<li> 新しい名前に変換する。この変換はほとんど自動で行われる。
+<li> 新しいイベント方式に変換する。
+</ul>
+
+<h3>
+一般的な操作説明
+</h3>
+<ol>
+<li> 最初に元のプログラム、Java ソースコードと Java バイトコードの両方のコピーを保存します。そのプログラムを実行する Java 実行システムのすべてが 1.1 に変換されるまで、そのコピーは必要です。例えば、 Netscape や Microsoft などのライセンシーが自社製品に 1.1 を組み込んで更新するためには、最終の JDK 1.1 リリースから数ヶ月を要する可能性があります。こうした理由から、アプレットの予定ユーザが新バージョンにアップグレードするまで、1.1 ベースのアプレットを Web へリリースするのを遅らせたい (または 1.0 と 1.1 バージョンを両方提供したい) ということがあるかもしれません。
+
+次に UNIX システム上でプログラムのコピーを保存する例を示します:
+<blockquote>
+<pre>
+% <b>cp MyClass.java MyClass.java.orig</b>
+% <b>cp MyClass.class MyClass.class.orig</b>
+</pre>
+</blockquote>
+
+<li> ソースコードを変換します--
+可能ならば自動的に--
+こうして名前が変更されたメソッドの新しい名前を使用するようにします。
+
+     <p>
+
+ほとんどの変換を自動的に実行する <a href=updateAWT><code>sed</code> スクリプト</a>が提供されます。(スクリプトがなにを変換するかの詳細については、<a href=NameChanges.html>単純な名前変更</a>を参照してください。) このスクリプトは  UNIX <code>sed</code> コマンド用に設計されています。PC 上で開発をしている場合、UNIX ツールの PC バージョンを提供する MKS Toolkit などの製品を使用して、スクリプトを実行可能です。次に UNIX システム上のシェルプロンプトで <code>sed</code> スクリプトの使用方法を示します:
+<blockquote>
+<pre>
+% <b>updateAWT MyClass.java &gt; tmp.java</b>
+</pre>
+</blockquote>
+     <p>
+変更をチェックし、明らかな異常が起こらないことを確認します。例えば、UNIX システム上で次のコマンドを実行できます:
+     <p>
+<blockquote>
+<pre>
+% <b>diff MyClass.java tmp.java</b>
+</pre>
+</blockquote>
+変更が OK であることを確認後、次のようにします:
+<blockquote>
+<pre>
+% <b>mv tmp.java MyClass.java</b>
+</pre>
+</blockquote>
+<p>
+<li> 1.1 でプログラムのコンパイルを試みます。1.1 コンパイラを使用していることを<em>確認</em>します。次に UNIX システム上でのコンパイル例を示します:
+<blockquote>
+<pre>
+% <b>javac MyClass.java</b>
+</pre>
+</blockquote>
+     <p>
+コンパイルエラーまたは警告が表示される可能性があります。最も多いものは、プログラムが推奨されないメソッドを使用した、またはメソッドが見つからなかった、という警告です。
+     <p>
+プログラムが、ある理由から使用を推奨しない 1.1 以前のもののような、推奨されないメソッドを呼び出した場合、コンパイラは警告を表示します。
+例えば:
+
+<blockquote>
+<pre>
+% <b>javac MyClass.java</b>
+Note: MyClass.java uses a deprecated API.  Recompile with "-deprecation"
+for details.
+1 warning
+%
+</pre>
+</blockquote>
+     <p>
+
+     <strong>注:</strong> 
+1.1.1 Java コンパイラは、プログラムが推奨されないメソッドをオーバーライドするとき警告を出しますが、1.1 コンパイラは出しません。1.1 コンパイラが警告を出すのは、プログラムが推奨されないメソッドを<em>呼び出し</em>するときだけです。例えば、プログラムが <code>action</code> メソッドをオーバーライドする場合、<code>action</code> の実装のほとんどがスーパークラスの実装を呼び出ししないため、1.1 コンパイラは通常警告を出しません。
+     <p>
+各ソースファイルが推奨されないメソッドを使用しているかどうかの情報を得るためには、Java コンパイラの <code>-deprecation</code> オプションを使用します。例えば次のようになります:
+
+<blockquote>
+<pre>
+% <b>javac -deprecation MyClass.java</b>
+MyClass.java:18: Note: The method boolean handleEvent(java.awt.Event) in
+class java.awt.Component has been deprecated, and class MyClass overrides
+it.
+    public boolean handleEvent(Event event) {
+                   ^
+MyClass.java:26: Note: The method boolean handleEvent(java.awt.Event) in
+class java.awt.Component has been deprecated.
+        return super.handleEvent(event);
+                                ^
+Note: MyClass.java uses a deprecated API.  Please consult the
+documentation for a better alternative.
+2 warnings
+</pre>
+</blockquote>
+     <p>
+推奨されないメソッドの代替については、<a href=DeprecatedMethods.html>1.1 AWT の推奨されないメソッド</a>で調べることができます。(それは逆にイベント関連メソッドについては、このドキュメントを参照するように指示しています。)
+
+     <p>
+     メソッドを見つけることができなかったというコンパイラエラーを受け取った場合、<code>sed</code> スクリプトがメソッドの名前を不正に変更した可能性があります。この問題を修正するためのヘルプについては、<a href=NameChanges.html>単純な名前変更</a> を参照してください。
+<p>
+<li> プログラムのコンパイルで警告がなくなるまで、手作業で残りの変更を行います。手作業で行う変更には、1.1 イベントモデルへの変換があります。このドキュメントでは 1.1 イベントモデルの概要を示し、イベント処理コードの変換方法を説明します。
+<p>
+<li> プログラムを実行してテストします。
+</ol>
+   
+
+<h3>
+<a name=events>
+イベント処理コードの変換方法
+</a>
+</h3>
+
+まず最初に、1.1 以前でどのようにイベント処理がなされていたかを検証してみましょう。1.1 以前では、<code>Component handleEvent</code> メソッドが(<code>action</code> など、それが呼び出すメソッドと共に）イベント処理の中心でした。
+<code>Component</code> オブジェクトだけがイベントを処理でき、イベントを処理するコンポーネントは、イベントが発生するコンポーネントか、またはコンポーネント包含階層の上位コンポーネントでなければなりませんでした。
+
+<p>
+
+1.1 では、もはやイベント処理はコンポーネント包含階層のオブジェクトに限定されず、<code>handleEvent</code> メソッドはイベント処理の中心ではなくなりました。代わりに、どのタイプのオブジェクトでもイベントリスナとして登録できます。イベントリスナは、関心のある登録したイベントの型についてだけ通知を受け取ります。イベントを処理するためだけに <code>Component</code> サブクラスを生成する必要はもうなくなりました。
+
+<p>
+
+バージョン 1.1 へアップグレードするとき、イベント処理コードを変換する最も簡単な方法は、同じクラスにそれを残し、そのクラスをそのイベントの型のリスナにすることです。
+
+<p>
+
+別の可能性としては、イベント処理コードを、 1 つまたはそれ以上の非コンポーネントリスナに集中化することです。このアプローチを取れば、プログラムの GUI を実装の詳細から分離できます。このためには、実在するコードを修正し、リスナがコンポーネントから必要とするすべての状態の情報を得られるようにする必要があります。このアプローチは、プログラムのアーキテクチャを明瞭に保っておきたい場合に価値があります。
+
+<p>
+
+第 3 の可能性としては、<code>process<em>Xxx</em></code> メソッドの 1 つをオーバー
+ライドすることですが、Component を既に拡張している場合でない限り推奨しません。これらのイベント処理アプローチについては、設計ドキュメント
+ <a href=designspec/events.html><b>delegation イベントモデル</b></a> で取り上げます。
+
+<p>
+
+同じプログラム内で 1.0 イベントモデルと 1.1 イベントモデルを<b>混在させない</b>ことを推奨します。そうした場合の結果は予測不可であり、デバッグできない可能性があります。
+
+<h4>
+<a name=listener>
+コンポーネントのリスナ化
+</a>
+</h4>
+
+大半の 1.0 AWT 使用プログラムを 1.1 API に変換するとき、最も大きな仕事はイベント処理コードを変換することです。プログラムがどのイベントを処理するか、どのコンポーネントがイベントを生成するかを判断すれば、このプロセスは単純になります。1.1.1 Java コンパイラを使用している場合、<code>-deprecation</code> フラグ付でコンパイルすると、古いスタイルのイベント処理メソッドを含むリストが生成されます。(1.1.1 以前は、コンパイラが完全なリストを生成しなかったため、ソースファイルで "Event" を検索する必要がありました。) コード検索中に、どのクラスがイベント処理の目的のためだけに存在するかを注意しておく必要があります。そのようなクラスは削除ができます。
+
+<p>
+
+次に、1.0 コンポーネントをリスナに変換するときの手順を示します:
+
+<ul>
+<li> 次のように、ソースファイルを変更し、 <code>java.awt.event</code> パッケージをインポートするようにする:
+<blockquote>
+<pre>
+<b>import java.awt.event.*</b>
+</pre>
+</blockquote>
+<p>
+<li> どのコンポーネントがどのイベント型を生成するかを判断する。このドキュメントの最後に記載している <a href=#table>表</a> を見れば、なにを探せばよいかが分かり、手助けになる。例えば、メソッドにあるイベントコードを変換する場合、このドキュメントの最後に記載している表では、
+     <code>Button</code>、
+     <code>List</code>、
+     <code>MenuItem</code>、
+     <code>TextField</code>、
+     <code>Checkbox</code>、および
+     <code>Choice</code> オブジェクトを探すように指示している。
+<p>
+<li> クラス宣言を変更し、そのクラスが適当なリスナインタフェースを実装するように
+する（このドキュメントの最後に記載している <a href=#table>表</a> を参照)。例えば、<code>Button</code> によって生成されるアクションイベントを処理しようとする場合、この表では <code>ActionListener</code> インタフェースを実装するように指示している。
+<blockquote>
+<pre>
+public class MyClass extends SomeComponent
+             <b>implements ActionListener</b>
+</pre>
+</blockquote>
+
+<strong>代替:</strong>
+インタフェースを実装する代わりに、イベントアダプタクラスを拡張する内部クラスを宣言することができる。インタフェースのメソッドを 1 つだけ実装する必要があるとき、内部クラスは有効だが、インタフェースには他の多くのメソッドが含まれる。
+詳細については、<a href="#innerClass">イベント処理のための内部クラスの使用</a>を参照のこと。
+
+<p>
+<li> イベントを生成するコンポーネントをどこで作成するかを決定する。各コンポーネントを作成するコードの直後に、<code>this</code> を適当な型のリスナとして登録する。例えば:
+
+<blockquote>
+<pre>
+<b><em>newComponentObject</em>.addActionListener(this);</b>
+</pre>
+</blockquote>
+<strong>代替:</strong>
+イベントを処理するために内部クラスを使用する場合、代わりに内部クラスのインスタンスを登録する。
+詳細については、<a href="#innerClass">イベント処理のための内部クラスの使用</a>を参照のこと。
+
+<p>
+<li> すべてのメソッドの空の実装を、クラスが実装する必要のあるリスナインタフェースの中に作成する。イベント処理コードを適当なメソッドにコピーする。例えば、     <code>ActionListener</code> は <code>actionPerformed</code> というただ 1 つのメソッドを持つ。そこで新しいメソッドを作成する手っ取り早い方法として、次のように <code>action</code> メソッドのシグネチャを this から単純に変更することができる:
+<blockquote>
+<pre>
+public boolean action(Event event, Object arg) {
+</pre>
+</blockquote>
+     this に対して:
+<blockquote>
+<pre>
+<b>public void actionPerformed(ActionEvent <em>event</em>) {</b>
+</pre>
+</blockquote>
+<strong>代替:</strong>
+イベントを処理するために内部クラスを使用する場合、メソッドの空の実装を作成する必要はない。
+詳細については、<a href="#innerClass">イベント処理のための内部クラスの使用</a>を参照のこと。
+
+<p>
+<li> 次のような方法でイベント処理コードを修正する:
+     <ul>
+     <li> すべての <code>return</code> 文を削除する。
+     <li> <code><em>event</em>.target</code> への参照を <code><em>event</em>.getSource()</code> に変更する。 
+     <li> イベントがどのコンポーネントから来たかの不要なテストを行うコードをすべて削除する。(生成コンポーネントがリスナである場合のみイベントを送るとすると、希望しないコンポーネントからのイベントを受け取る心配をする必要はなくなる。) 
+     <li> プログラムを明瞭にコンパイルし、正しく実行するために必要な他の変更をすべて行う。 
+     </ul>
+</ul>
+
+<h4>
+<a name="innerClass">
+イベント処理のための内部クラスの使用
+</a>
+</h4>
+
+たくさんのメソッドを含む 1 つのインタフェースを実装する必要があるが、その内 1 つか 2 つのメソッドしか実装したくないとき、内部クラスは有効です。この節では、内部クラスにあまり深く立ち入らずに、それを使用してイベントハンドラを書く方法を説明します。
+内部クラスの詳細については、<a href="../innerclasses/index.html"><b>内部クラス</b></a>を参照してください。
+
+<p>
+
+イベント処理内部クラスの実装は、クラスにイベントリスナインタフェースを実装させる一種の変形です。以前と同様に、どのインタフェースをクラスが処理する必要のあるイベントに対応させるか判別します。しかし、インタフェースを実装する代わりに、そのインタフェースに対応しているアダプタを拡張する内部クラスを作成します。例えば、<code>WindowListener</code> を実装する代わりに、 <code>WindowAdapter</code> を拡張する内部クラスを実装できます。そして、単純に内部クラスのインスタンスを作成し、例えば <code>addWindowListener</code> メソッドで、それをリスナの適当な種類として登録します。次に例を示します:
+
+<blockquote>
+<pre>
+public class MyClass ... {
+    ...
+    <em>//Where the window is created:</em>
+        <b>newWindow.addWindowListener(new MyInnerClass());</b>
+    ...
+    <b>class MyInnerClass extends WindowAdapter {
+        public void windowClosing(WindowEvent event) {</b>
+            if (inAnApplet) {
+                dispose();
+            } else {
+                System.exit(0);
+            }
+        <b>}
+    }</b>
+    ...
+}
+
+</pre>
+</blockquote>
+
+コンパイル後、内部クラスバイトコードは、次のような名前の別個な <code>.class</code> ファイルに置かれます:
+<code>MyClass$MyInnerClass.class.</code>
+内部クラスを使用する完全な例としては、<a href="innerclass/DialogWindow.java"><code>innerclass/DialogWindow.java</code></a> を参照してください。
+
+<h2>
+<a name=example>
+例: DialogWindow の変換
+</a>
+</h2>
+
+この節では、DialogWindow と呼ばれるプログラムの 1.0 API から 1.1 API への変換方法を説明します。 DialogWindow はアプリケーションですが、<code>AppletButton</code>という名のクラスの支援を受けてアプレットとしても実行できます。
+(
+<em><a href=http://java.sun.com/books/Series/Tutorial/index.html>
+Java チュートリアル</a></em> を読んだ方なら、 
+<a
+href=http://java.sun.com/books/Series/Tutorial/ui/components/dialog.html>"Dialog の使い方"</a>の節にもこの例が出てくるので、このプログラムを理解しやすいかもしれません。）
+
+<p>
+
+次に <a href=1.0example/AppletButton.java>AppletButton</a> の助けを借り、アプレットとして動作しているバージョン 1.0 の DialogWindow(
+<a href=1.0example/AppletButton.java>ソースコード</a>へのリンクがあります) を示します:
+<p>
+<applet codebase=1.0example code=AppletButton.class width=450 height=60>
+<param name=windowClass value=DialogWindow>
+<param name=windowTitle value="Dialog Demo">
+<param name=buttonText value="Click here to get a window that can bring up a dialog">
+<param name=windowWidth value=500>
+<param name=windowHeight value=130>
+<hr>
+アプレットを実行できないので、ボタンで呼び出されるウィンドウ(<code>Frame</code>)のスナップショットが次にあります::
+<p>
+<img src=images/DialogWindow-f.gif width=500 height=172>
+<p>
+次には、そのウィンドウ用のダイアログのスナップショットがあります:
+<p>
+<img src=images/DialogWindow-d.gif width=350 height=125>
+<hr>
+</applet>
+
+<p>
+
+<h3>
+手順 1: コピーの作成
+</h3>
+
+1.0 ソースとバイトコードを安全な場所に移動し、修正可能なソースファイルのコピーを
+保持します。例えば、UNIX システム上では次のとおりです:
+<blockquote>
+<pre>
+% <b>mkdir 1.0example</b>
+% <b>mv DialogWindow.class 1.0example</b>
+% <b>cp DialogWindow.java 1.0example</b>
+</pre>
+</blockquote>
+
+<h3>
+手順 2: 自動的な変換
+</h3>
+
+できる限りの自動変換を行います。例えば次のとおりです:
+
+<blockquote>
+<pre>
+% <b>updateAWT DialogWindow.java &gt; tmp.java</b>
+% <b>diff DialogWindow.java tmp.java</b>
+33c33
+&lt;         dialog.show();
+---
+&gt;         dialog.setVisible(true);
+38c38
+&lt;         textArea.appendText(text + "\n");
+---
+&gt;         textArea.append(text + "\n");
+47c47
+&lt;         window.show();
+---
+&gt;         window.setVisible(true);
+87c87
+&lt;         hide();
+---
+&gt;         setVisible(false);
+% <b>mv tmp.java DialogWindow.java</b>
+</pre>
+</blockquote>
+
+<h3>
+手順 3: コンパイル 
+</h3>
+1.1 コンパイラを使用していることを確認し、DialogWindow をコンパイルします。例えば次のとおりです:
+
+<blockquote>
+<pre>
+% <b>which javac</b>
+/usr/local/java/jdk1.1.1/solaris/bin/javac
+% <b>javac DialogWindow.java</b>
+Note: DialogWindow.java uses a deprecated API.  Recompile with
+"-deprecation" for details.
+1 warning
+%
+</pre>
+</blockquote>
+
+<blockquote>
+<pre>
+% <b>javac -deprecation DialogWindow.java</b>
+DialogWindow.java:18: Note: The method boolean handleEvent(java.awt.Event) in
+class java.awt.Component has been deprecated, and class DialogWindow overrides
+it.
+    public boolean handleEvent(Event event) {
+                   ^
+DialogWindow.java:26: Note: The method boolean handleEvent(java.awt.Event) in
+class java.awt.Component has been deprecated.
+        return super.handleEvent(event);
+                                ^
+DialogWindow.java:29: Note: The method boolean action(java.awt.Event,
+java.lang.Object) in class java.awt.Component has been deprecated, and class
+DialogWindow overrides it.
+    public boolean action(Event event, Object arg) {
+                   ^
+DialogWindow.java:81: Note: The method boolean action(java.awt.Event,
+java.lang.Object) in class java.awt.Component has been deprecated, and class
+SimpleDialog overrides it.
+    public boolean action(Event event, Object arg) {
+                   ^
+Note: DialogWindow.java uses a deprecated API.  Please consult the
+documentation for a better alternative.
+5 warnings
+%
+</pre>
+</blockquote>
+
+ご覧になって分かるとおり、このクラスのコンパイルは成功していますが、推奨されないメソッド (<code>handleEvent</code> および <code>action</code>) を呼び出し、またはオーバーライドしています。
+
+
+<p>
+
+<h3>
+手順 4: 手作業による変更
+</h3>
+
+<p>
+
+<a href=#listener>コンポーネントのリスナ化</a>で前述したように、DialogWindowプログラムにとって、この手順はイベント処理コードの変換だけからなっています。<code>DialogWindow.java</code> で "Event" を検索すれば、このプログラムを包む 2 つのクラス(<code>DialogWindow</code> および <code>SimpleDialog</code>)でイベント処理コードを見つけることができます。
+
+<p>
+
+次に DialogWindow プログラム内のイベント処理の概要を示します:
+<p>
+<ul>
+<li> <code>DialogWindow</code> は、自分自身のために ウィンドウ破壊イベントを処理する。
+<li> <code>DialogWindow</code> は、そこに含まれるコンポーネントのためにアクショ
+ンイベントを処理する。よく調べると、 アクションイベントを生成できるコンポーネントがたった 1 つだけ含まれていることが分かる: <code>Button</code> である。
+<li> <code>SimpleDialog</code> そこに含まれるコンポーネントのために、アクションイベントを処理する。よく調べると、アクションイベントを生成できるコンポーネントが 3 つ含まれていることが分かる: 2 つの <code>Button</code> (キャンセルと設定)および <code>TextField</code> である。
+<li> <code>DialogWindow</code> および <code>SimpleDialog</code> には、非イベント処理コードが入っており、イベント処理コードをよそに移動してもこれらを排除できない。
+</ul>
+
+<p>
+
+イベント処理コードの現在のロケーションは理に適ったものです。<code>DialogWindow</code> にすべてのイベントを処理させることもまた、それがこのアプリケーションの制御クラスであるという理由から、意味をもちます。さらに他の可能性としては、アクションイベントすべてを処理する非 <code>Component</code> 制御クラスを導入することも考えられます。
+DialogWindow プログラムを変換するために、そのイベント処理コードを前と同じコンポーネントにおいて置き、コンポーネントにリスナインタフェースを実装させます。 
+
+<p>
+
+次の例は、<a href=DialogWindow.java>変換された DialogWindow</a> プログラム内のイ
+ベント関連コードの最重要部分を示しています。顕著な変更は<b>太字</b>で示します。
+
+<blockquote>
+<pre>
+<b>import java.awt.event.*;</b>
+
+public class DialogWindow extends Frame 
+			  <b>implements WindowListener,
+				     ActionListener</b> {
+    ...
+    public DialogWindow() {
+	...
+        Button button = new Button("Click to bring up dialog");
+	<b>button.addActionListener(this);</b>
+	...
+	<b>addWindowListener(this);</b>
+    }
+
+    <b>public void windowClosed(WindowEvent event) {
+    }
+
+    public void windowDeiconified(WindowEvent event) {
+    }
+
+    public void windowIconified(WindowEvent event) {
+    }
+
+    public void windowActivated(WindowEvent event) {
+    }
+
+    public void windowDeactivated(WindowEvent event) {
+    }
+
+    public void windowOpened(WindowEvent event) {
+    }
+
+    public void windowClosing(WindowEvent event) {</b>
+        if (inAnApplet) {
+            dispose();
+        } else {
+            System.exit(0);
+        }
+    }
+
+    <b>public void actionPerformed(ActionEvent event) {</b>
+        if (dialog == null) {
+            dialog = new SimpleDialog(this, "A Simple Dialog");
+        }
+        dialog.setVisible();
+    }
+    ...
+}
+
+class SimpleDialog extends Dialog <b>implements ActionListener</b> {
+    ...
+    SimpleDialog(Frame dw, String title) {
+	...
+        field = new TextField(40);
+	<b>field.addActionListener(this);</b>
+	...
+        Button b = new Button("Cancel");
+	<b>b.addActionListener(this);</b>
+        setButton = new Button("Set");
+	<b>setButton.addActionListener(this);</b>
+	...
+    }
+
+    <b>public void actionPerformed(ActionEvent event) {</b>
+	<b>Object source = event.getSource();</b>
+        if ( (source == setButton)
+           | (source == field)) {
+            parent.setText(field.getText());
+        }
+        field.selectAll();
+        setVisible(false);
+    }
+}
+</pre>
+</blockquote>
+
+<code>WindowListener</code> インタフェースを実装する代わりに、<code>DialogWindow</code> に、単純に <code>WindowAdapter</code> を拡張する内部クラスを含めることができます。次に<a href="innerclass/DialogWindow.java">内部クラスと共に実装された <code>DialogWindow</code> </a>の最重要点を示します。1.0 バージョンの顕著な変更点は、<b>太字</b>になっています。
+
+<blockquote>
+<pre>
+<b>import java.awt.event.*;</b>
+
+public class DialogWindow extends Frame 
+			  <b>implements ActionListener {</b>
+    ...
+    public DialogWindow() {
+	...
+        Button button = new Button("Click to bring up dialog");
+	<b>button.addActionListener(this);</b>
+	...
+	<b>addWindowListener(new DWAdapter());</b>
+    }
+
+    <b>class DWAdapter extends WindowAdapter {
+        public void windowClosing(WindowEvent event) {</b>
+            if (inAnApplet) {
+                dispose();
+            } else {
+                System.exit(0);
+            }
+        }
+    <b>}</b>
+
+    <b>public void actionPerformed(ActionEvent event) {</b>
+        if (dialog == null) {
+            dialog = new SimpleDialog(this, "A Simple Dialog");
+        }
+        dialog.setVisible(true);
+    }
+    ...
+}
+</pre>
+</blockquote>
+
+<h3>
+手順 5: テスト
+</h3>
+
+DialogWindow プログラムはアプリケーションであるため、 Java インタプリタでこれを実行しテストします。例えば次のとおりです:
+
+<blockquote>
+<pre>
+% <b>java DialogWindow</b>
+</pre>
+</blockquote>
+
+DialogWindowアプリケーションを使用することによって、これがすべてのイベントを正しく処理しているかを調べることができます。
+
+<p>
+
+<hr>
+
+<h2>
+<a name=table>
+イベント変換表
+</a>
+</h2>
+
+次の表は、1.0 イベントを、対応する 1.1 のイベントに割り当てます。第 1 列には、イベントに固有のメソッド名(もしあれば)と共に、各々の 1.0 イベント型を示します。メソッドが記載されていないところでは、イベントは常に 
+<code>handleEvent</code> メソッドで処理されます。第 2 列にはイベント型を生成できる 1.0 コンポーネントを示します。第 3 列には、リストアップされたイベントの 1.1 相当の処理を支援するリスナインタフェースを示します。第 4 列には各リスナインタフェースのメソッドを示します。
+
+<p>
+
+<table border>
+<tr>
+<th colspan=2>1.0<th colspan=2>1.1
+<tr><th>イベント/メソッド<th>生成元<th>インタフェース<th>メソッド
+
+<tr>
+<td rowspan=2><code>ACTION_EVENT/action</code>
+<td><a href=../../api/java.awt.Button.html><code>Button</code></a>,
+    <a href=../../api/java.awt.List.html><code>List</code></a>,
+    <a href=../../api/java.awt.MenuItem.html><code>MenuItem</code></a>,
+    <a href=../../api/java.awt.TextField.html><code>TextField</code></a>
+<td><a href=../../api/java.awt.event.ActionListener.html><code>ActionListener</code></a>
+<td><code>
+actionPerformed(ActionEvent)
+    </code>
+
+<tr>
+<td><a href=../../api/java.awt.Checkbox.html><code>Checkbox</code></a>,
+    <a href=../../api/java.awt.CheckboxMenuItem.html><code>CheckboxMenuItem</code></a>,
+    <a href=../../api/java.awt.Choice.html><code>Choice</code></a>
+<td><a href=../../api/java.awt.event.ItemListener.html><code>ItemListener</code></a>
+<td><code>itemStateChanged(ItemEvent)</code>
+
+<tr>
+<td><code>WINDOW_DESTROY</code>
+    <br>
+    <code>WINDOW_EXPOSE</code>
+    <br>
+    <code>WINDOW_ICONIFY</code>
+    <br>
+    <code>WINDOW_DEICONIFY</code>
+<td><a href=../../api/java.awt.Dialog.html><code>Dialog</code></a>,
+    <a href=../../api/java.awt.Frame.html><code>Frame</code></a>
+<td><a href=../../api/java.awt.event.WindowListener.html><code>WindowListener</code></a>
+<td><code>windowClosing(WindowEvent)</code>
+    <br>
+    <code>windowOpened(WindowEvent)</code>
+    <br>
+    <code>windowIconified(WindowEvent)</code>
+    <br>
+    <code>windowDeiconified(WindowEvent)</code>
+    <br>
+    <code>windowClosed(WindowEvent)</code>
+    <font size=-1>(1.0 に相当するものなし)</font>
+    <br>
+    <code>windowActivated(WindowEvent)</code>
+    <font size=-1>(1.0 に相当するものなし)</font>
+    <br>
+    <code>windowDeactivated(WindowEvent)</code>
+    <font size=-1>(1.0 に相当するものなし)</font>
+
+<tr>
+<td><code>WINDOW_MOVED</code>
+<td><a href=../../api/java.awt.Dialog.html><code>Dialog</code></a>,
+    <a href=../../api/java.awt.Frame.html><code>Frame</code></a>
+<td><a href=../../api/java.awt.event.ComponentListener.html><code>ComponentListener</code></a>
+<td><code>
+    componentMoved(ComponentEvent)
+    <br>
+    componentHidden(ComponentEvent)
+    <font size=-1>(1.0 に相当するものなし)</font>
+    <br>
+    componentResized(ComponentEvent)
+    <font size=-1>(1.0 に相当するものなし)</font>
+    <br>
+    componentShown(ComponentEvent)
+    <font size=-1>(1.0 に相当するものなし)</font>
+    </code>
+
+<tr>
+<td><code>SCROLL_LINE_UP</code>
+    <br>
+    <code>SCROLL_LINE_DOWN</code>
+    <br>
+    <code>SCROLL_PAGE_UP</code>
+    <br>
+    <code>SCROLL_PAGE_DOWN</code>
+    <br>
+    <code>SCROLL_ABSOLUTE</code>
+    <br>
+    <code>SCROLL_BEGIN</code>
+    <br>
+    <code>SCROLL_END</code>
+<td><a href=../../api/java.awt.Scrollbar.html><code>Scrollbar</code></a>
+<td><a href=../../api/java.awt.event.AdjustmentListener.html><code>AdjustmentListener</code></a>
+<br>
+(または新しい 
+<code><a href=../../api/java.awt.ScrollPane.html>ScrollPane</a></code>
+クラスを使用)
+<td><code>adjustmentValueChanged(AdjustmentEvent)</code>
+
+<tr>
+<td><code>LIST_SELECT</code>
+    <br>
+    <code>LIST_DESELECT</code>
+<td><a href=../../api/java.awt.Checkbox.html><code>Checkbox</code></a>,
+    <a href=../../api/java.awt.CheckboxMenuItem.html><code>CheckboxMenuItem</code></a>,
+    <a href=../../api/java.awt.Choice.html><code>Choice</code></a>,
+    <a href=../../api/java.awt.List.html><code>List</code></a>
+<td><a href=../../api/java.awt.event.ItemListener.html><code>ItemListener</code></a>
+<td><code>itemStateChanged(ItemEvent)</code>
+
+<tr>
+<td><code>MOUSE_DRAG/mouseDrag</code>
+    <br>
+    <code>MOUSE_MOVE/mouseMove</code>
+<td><a href=../../api/java.awt.Canvas.html><code>Canvas</code></a>,
+    <a href=../../api/java.awt.Dialog.html><code>Dialog</code></a>,
+    <a href=../../api/java.awt.Frame.html><code>Frame</code></a>,
+    <a href=../../api/java.awt.Panel.html><code>Panel</code></a>,
+    <a href=../../api/java.awt.Window.html><code>Window</code></a>
+<td><a href=../../api/java.awt.event.MouseMotionListener.html><code>MouseMotionListener</code></a>
+<td><code>mouseDragged(MouseEvent)</code>
+    <br>
+    <code>mouseMoved(MouseEvent)</code>
+
+<tr>
+<td><code>MOUSE_DOWN/mouseDown</code>
+    <br>
+    <code>MOUSE_UP/mouseUp</code>
+    <br>
+    <code>MOUSE_ENTER/mouseEnter</code>
+    <br>
+    <code>MOUSE_EXIT/mouseExit</code>
+<td><a href=../../api/java.awt.Canvas.html><code>Canvas</code></a>,
+    <a href=../../api/java.awt.Dialog.html><code>Dialog</code></a>,
+    <a href=../../api/java.awt.Frame.html><code>Frame</code></a>,
+    <a href=../../api/java.awt.Panel.html><code>Panel</code></a>,
+    <a href=../../api/java.awt.Window.html><code>Window</code></a>
+<td><a href=../../api/java.awt.event.MouseListener.html><code>MouseListener</code></a>
+<td><code>mousePressed(MouseEvent)</code>
+    <br>
+    <code>mouseReleased(MouseEvent)</code>
+    <br>
+    <code>mouseEntered(MouseEvent)</code>
+    <br>
+    <code>mouseExited(MouseEvent)</code>
+    <br>
+    <code>mouseClicked(MouseEvent)</code>
+    <font size=-1>(1.0に相当するものなし)</font>
+
+<tr>
+<td><code>KEY_PRESS/keyDown</code>
+    <br>
+    <code>KEY_RELEASE/keyUp</code>
+    <br>
+    <code>KEY_ACTION/keyDown</code>
+    <br>
+    <code>KEY_ACTION_RELEASE/keyUp</code>
+<td><a href=../../api/java.awt.Component.html><code>Component</code></a>
+<td><a href=../../api/java.awt.event.KeyListener.html><code>KeyListener</code></a>
+<td><code>keyPressed(KeyEvent)</code>
+    <br>
+    <code>keyReleased(KeyEvent)</code>
+    <br>
+    <code>keyTyped(KeyEvent)</code>
+    <font size=-1>(1.0に相当するものなし)</font>
+
+<tr>
+<td><code>GOT_FOCUS/gotFocus</code>
+    <br>
+    <code>LOST_FOCUS/lostFocus</code>
+<td><a href=../../api/java.awt.Component.html><code>Component</code></a>
+<td><a href=../../api/java.awt.event.FocusListener.html><code>FocusListener</code></a>
+<td><code>focusGained(FocusEvent)</code>
+    <br>
+    <code>focusLost(FocusEvent)</code>
+
+<tr>
+<td colspan=2> <em>1.0に相当するものなし</em>
+<td><a href=../../api/java.awt.event.ContainerListener.html><code>ContainerListener</code></a>
+<td><code>componentAdded(ContainerEvent)</code>
+    <br>
+    <code>componentRemoved(ContainerEvent)</code>
+
+<tr>
+<td colspan=2> <em>1.0に相当するものなし</em>
+<td><a href=../../api/java.awt.event.TextListener.html><code>TextListener</code></a>
+<td><code>textValueChanged(TextEvent)</code>
+
+</table>
+
+<p>
+
+<hr>
+<font size=-1>
+<a href=index.html>AWT の拡張の目次へ戻る </a>
+<hr>
+<em>
+By <a href=mailto:kwalrath@eng.sun.com>Kathy Walrath</a>
+</em>
+</font>
+</body>
+</html>
+
+

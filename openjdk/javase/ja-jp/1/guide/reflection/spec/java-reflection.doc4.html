@@ -1,0 +1,157 @@
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection.doc3.html">前項目</a>  | <a href="java-reflection.doc5.html">次項目</a>
+</font></td><td align=right><i>Java コアリフレクション</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+
+<a name="5157"></a>
+<h1>クラス java.lang.reflect.Method </h1><pre>    <a name="5159"></a><code>package java.lang.reflect;
+</code>
+    <a name="5160"></a><code>public final class Method extends Object implements Member
+</code>
+</pre><a name="5161"></a>
+<code>Method</code> は、クラスまたはインタフェースの 1 つのメソッドに関する情報およびそこへのアクセスを提供します。反射されるメソッドは、 <code>abstract</code> メソッド、クラス (<code>static</code>) メソッド、またはインスタンスメソッドのどれでも構いません。<p><a name="5162"></a>
+<code>Method</code> オブジェクトを生成できるのは、Java 仮想マシンだけです。ユーザコードは、クラス <code>Class</code> のメソッド <code>getMethod</code>, <code>getMethods</code>, <code>getDeclaredMethod</code>, および <code>getDeclaredMethods</code> から  <code>Method</code> 参照を獲得します。<p><a name="5163"></a>
+<code>Method</code> では、<code>invoke</code> への実効パラメータを基本メソッドの形式パラメータと突合わせるときに拡張変換が可能ですが、縮小変換が行われると <code>IllegalArgumentException</code> をスローします。<p>
+<hr>
+<a name="5164"></a>
+<h2>		 メソッド</h2>
+
+<a name="5165"></a>
+<h3>		 getDeclaringClass</h3>
+<pre>    <a name="5166"></a><code>public Class getDeclaringClass()
+</code>
+</pre><a name="5167"></a>
+この <code>Method</code> オブジェクトが表すメソッドを宣言する、クラスまたはインタフェースの <code>Class</code> オブジェクトを返します。<p>
+<a name="5168"></a>
+<h3>		 getName</h3>
+<pre>    <a name="5169"></a><code>public String getName()
+</code>
+</pre><a name="5170"></a>
+この <code>Method</code> オブジェクトが表すメソッドの単純名を返します。<p>
+<a name="5171"></a>
+<h3>		 getModifiers</h3>
+<pre>    <a name="5172"></a><code>public int getModifiers()
+</code>
+</pre><a name="5173"></a>
+この <code>Method</code> オブジェクトが表すメソッドの Java 言語修飾子を整数型にコード化して返します。修飾子の解読には、<code>Modifier</code> クラスを使います。<p><a name="5174"></a>
+修飾子のコード化は、<em>Java 仮想マシン仕様</em>の表 4.4 で定義されています。<p>
+<a name="5175"></a>
+<h3>		 getReturnType</h3>
+<pre>    <a name="5176"></a><code>public Class getReturnType()
+</code>
+</pre><a name="5177"></a>
+この <code>Method</code> オブジェクトが表すメソッドの、形式返却値の型を表す <code>Class</code> オブジェクトを返します。<p>
+<a name="5178"></a>
+<h3>		 getParameterTypes</h3>
+<pre>    <a name="5179"></a><code>public Class[] getParameterTypes()
+</code>
+</pre><a name="5180"></a>
+この <code>Method</code> オブジェクトが表すメソッドの形式パラメータ型を表す <code>Class</code> オブジェクトの配列を、宣言順に返します。基本メソッドがパラメータを取らない場合は、長さが <code>0</code> の配列を返します。<p>
+<a name="5181"></a>
+<h3>		 getExceptionTypes</h3>
+<pre>    <a name="5182"></a><code>public Class[] getExceptionTypes()
+</code>
+</pre><a name="5183"></a>
+この <code>Method</code> オブジェクトが表す基本メソッドがスローした、確認済み例外の型を表す <code>Class</code> オブジェクトの配列を返します。基本メソッドが確認済み例外をスローしない場合は、長さが <code>0</code> の配列を返します。<p>
+<a name="5184"></a>
+<h3>		 equals</h3>
+<pre>    <a name="5185"></a><code>public boolean equals(Object obj)
+</code>
+</pre><a name="5186"></a>
+この <code>Method</code> と指定オブジェクトを比較します。オブジェクトが同じ場合は <code>true</code> を、異なる場合は <code>false</code> を返します。2 つの <code>Method</code> オブジェクトの宣言クラス、名前、および形式パラメータ型が同じ場合、この 2 つは同じです。<p><a name="5187"></a>
+このメソッドは、クラス <code>Object</code> の <code>equals</code> メソッドをオーバーライドします。<p>
+<a name="5188"></a>
+<h3>		 hashCode</h3>
+<pre>    <a name="5189"></a><code>public int hashCode()
+</code>
+</pre><a name="5190"></a>
+この <code>Method</code> のハッシュコードを返します。ハッシュコードは、<code>Method</code> の宣言クラス名およびその単純名のハッシュコードの排他論理和として計算されます。<p><a name="5191"></a>
+このメソッドは、クラス <code>Object</code> の <code>hashCode</code> メソッドをオーバーライドします。<p>
+<a name="5192"></a>
+<h3>		 toString</h3>
+<pre>    <a name="5193"></a><code>public String toString()
+</code>
+</pre><a name="5194"></a>
+この <code>Method</code> オブジェクトが表す基本メソッドを記述する文字列を返します。文字列は基本メソッドの Java 言語修飾子としてフォーマットされ、もしあればその後に、メソッド返却値の型または <code>void</code> の完全修飾名、スペース、メソッドを宣言するクラスの完全修飾名、ピリオド、単純メソッド名、基本メソッドの形式パラメータ型の完全修飾名をコンマで区切ったリストの挿入句が続きます。基本メソッドが確認済み例外をスローする場合、パラメータリストのあとにスペース、単語 <code>throws</code>、スローする例外型の完全修飾名をコンマで区切ったリストが続きます。以下に例を示します:<p><pre>    <a name="5195"></a>
+
+    <a name="5196"></a>    public boolean java.lang.Object.equals(java.lang.Object)
+
+    <a name="5197"></a>    public final java.lang.String java.lang.Thread.getName()
+
+</pre><a name="5198"></a>
+メソッド修飾子は、<em>Java 言語仕様</em>に指定の、標準順序で置かれます。つまり、最初に <code>public</code>, <code>protected</code> または <code>private</code> がきて、その後に以下の順でその他の修飾子が入ります: <code>abstract</code>, <code>static</code>, <code>final</code>, <code>synchronized</code>, および <code>native</code><p><a name="5199"></a>
+このメソッドは、クラス <code>Object</code> の <code>toString</code> メソッドをオーバーライドします。<p>
+<a name="5200"></a>
+<h3>		 invoke</h3>
+<pre>    <a name="5201"></a><code>public Object invoke(Object obj, Object[] args)
+</code>
+    <a name="5202"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5203"></a><code>        IllegalAccessException, InvocationTargetException
+</code>
+</pre><a name="5204"></a>
+指定オブジェクト上のこの <code>Method</code> オブジェクトが表す基本メソッドを、指定パラメータを使って呼び出します。個々のパラメータは、プリミティブ形式パラメータに一致するように自動的にアンラップされ、プリミティブおよび参照の両パラメータは必要に応じて拡張変換に従います。基本メソッドが返す値がプリミティブ型を持つ場合、これは自動的にオブジェクトにラップされます。<p><a name="5205"></a>
+メソッド呼び出しの手順は以下のとおりです:<p>
+<ul><a name="5206"></a>
+<li>基本メソッドがクラス (<code>static)</code> メソッドの場合、指定オブジェクト引数を無視し、<code>null</code> にできる。<br><br>
+<a name="5207"></a>
+<li>それ以外の場合、基本メソッドは abstract メソッドまたはインスタンスメソッドである。指定オブジェクト引数が <code>null</code> の場合、呼び出しは <code>NullPointerException</code> をスローする。それ以外の場合、指定オブジェクト引数が基本メソッドの宣言クラスまたはインタフェースのインスタンスでないと、呼び出しは <code>IllegalArgumentException</code> をスローする。<br><br>
+<a name="5208"></a>
+<li>この <code>Method</code> オブジェクトが Java 言語アクセス制御を実行し、基本メソッドがアクセス不可能な場合、呼び出しは <code>IllegalAccessException</code> をスローする。<br><br>
+<a name="5209"></a>
+<li><code>args</code> から獲得した実効パラメータ数値が、基本メソッドに必要な形式パラメータ数値と異なる場合、呼び出しは <code>IllegalArgumentException</code> をスローする。基本メソッドがパラメータを取らない場合、<code>args</code> は <code>null</code> にできる。<br><br>
+<a name="5210"></a>
+<li>指定の <code>args</code> 配列内の各実効パラメータについて:<br><br>
+
+
+<ul>
+<a name="5211"></a>
+<li>対応する形式パラメータにプリミティブ型がある場合、オブジェクトのパラメータ値をプリミティブ型の値に変換するためにアンラッピング変換を試行する。オブジェクトのパラメータが <code>null</code> の場合、<code>NullPointerException</code> をスローして、変換が失敗する。オブジェクトのパラメータが標準 Java ラッパークラスのインスタンスでない場合、<code>IllegalArgumentException</code> をスローして、変換が失敗する。<br><br>
+<a name="5212"></a>
+<li>アンラッピングのあとで、識別変換または拡張変換を使ってパラメータ値を対応する形式パラメータ型に変換できない場合、呼び出しは <code>IllegalArgumentException</code> をスローする。<br><br>
+</ul>
+<a name="5213"></a>
+<li>基本メソッドがクラス (<code>static</code>) メソッドの場合、関連宣言クラスの基本メソッドと全く同じようにして呼び出される。<br><br>
+<a name="5214"></a>
+<li>基本メソッドがクラス (<code>static</code>) メソッドでない場合、<em>Java 言語仕様</em>のセクション 15.11.4.4 に記載のダイナミックメソッド検索を使って呼び出される。この場合、ターゲットオブジェクトのクラスに基づいたオーバーライドが発生する。<br><br>
+<a name="5215"></a>
+<li>制御は基本メソッドに移行する。<br><br>
+<a name="5216"></a>
+<li>例外をスローして基本メソッドを異常終了すると、この例外がキャッチされ、クラス <code>InvocationTargetException</code> の新規例外オブジェクトに入る。このあとで、この新規例外をスローして <code>invoke</code> を異常終了させる。<br><br>
+<a name="5217"></a>
+<li>基本メソッドが正常終了すると、<code>invoke</code> は、メソッドが戻す値を返す。値にプリミティブ型がある場合、値は最初に適切なオブジェクトにラップされる。基本メソッドが宣言された <code>void</code> の場合、<code>invoke</code> は <code>null</code> を返す。<br><br>
+</ul><a name="5894"></a>
+&nbsp;
+<p>
+
+<br>
+<hr> 
+<font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection.doc3.html">前項目</a>  | <a href="java-reflection.doc5.html">次項目</a>
+</font>
+<hr>
+
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<a href="java-reflection-copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>

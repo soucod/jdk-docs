@@ -1,0 +1,83 @@
+<html>
+<head>
+<title>RMI Documentation</title>
+</head>
+
+<BODY BGCOLOR="#FFFFFF" TEXT=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+<CENTER><P ALIGN=LEFT>
+<IMG SRC="../../images/smi.logo.gif" ALT=" Sun Microsystems, Inc " BORDER=0>
+</P></CENTER>
+
+
+<font size=-1><a href="../../index.html">JDK 目次</a></font>
+<HR SIZE=3 NOSHADE>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<center>
+           <h1>RMI - リモートメソッド呼び出し (Remote Method Invocation) </h1>
+</center>
+<blockquote>
+RMI の使用によりプログラマは分散した Java-to-Java アプリケーションを作成することがでるようになり、リモートにある Java オブジェクトのメソッドを別な Java の仮想マシン、別なホストの Java 仮想マシンから呼び出すことができるようになります。 
+Java プログラムは、リモートオブジェクトへの参照を得てからリモートオブジェクトへの呼び出しが可能になります。リモートオブジェクトへの参照を得る方法としては、RMI が提供するブートストラップ名前サービスからルックアップによるか、引数または返り値として得ることができます。クライアントはサーバのリモートオブジェクトを呼び出すことができますし、サーバは他のリモートオブジェクトに対してのクライアントにもなり得ます。
+RMI はオブジェクト直列化機能を使ってパラメータの整列、再整列を実行しますから型の切り詰めは行わず、真のオブジェクト指向ポリモーフィズムをサポートします。
+ 
+</blockquote>
+<font size=+2><b>RMI チュートリアル</b></font>
+<ul>
+   <LI><b><a href="getstart.doc.html">はじめましょう</a></b><br>
+RMI チュートリアル、はおなじみの Hello World プログラムの分散システム版を Java RMI (Remote Method Invocation) を使って作成する手順を順を追って示してくれます。
+Hello World アプレットはサーバへのリモートメソッド呼び出しを行い、そこから自分をダウンロードしてメッセージ "Hello World!"を取り出します。
+</ul>
+
+<font size=+2><b>RMI の例</b></font><br>
+<ul>
+   <LI>日本語ドキュメントリリースをダウンロードすると、その中の <code>docs/ja/guide/rmi/examples</code>ディレクトリに役に立つ例題が入っています。
+</ul>
+
+
+<font size=+2><b>RMI 仕様</b></font><br>
+<ul>
+   <LI><b><a href="spec/rmiTOC.doc.html">RMI 仕様</a></b>
+</ul>
+
+<font size=+2><b>RMI API リファレンス</b></font><br>
+<font size=-1>(javadoc)</font>
+<ul>
+   <LI><b><a href="../../api/Package-java.rmi.html">java.rmi Package</a></b>
+   <LI><b><a href="../../api/Package-java.rmi.dgc.html">java.rmi.dgc Package</a></b>
+   <LI><b><a href="../../api/Package-java.rmi.registry.html">java.rmi.registry Package</a></b>
+   <LI><b><a href="../../api/Package-java.rmi.server.html">java.rmi.server Package</a></b>
+</ul>
+
+<font size=+2><b>RMI ツール</b></font>
+<ul>
+   <LI><b>rmic</b> - Java RMI スタブコンパイラ - (<a href="../../tooldocs/win32/rmic.html"> Windows版</a>) (<a href="../../tooldocs/solaris/rmic.html"> Solaris版</a>)
+   <LI><b>rmiregistry</b> - Java リモートオブジェクトレジストリ - (<a href="../../tooldocs/win32/rmiregistry.html"> Windows版</a>) (<a href="../../tooldocs/solaris/rmiregistry.html"> Solaris版</a>)
+</ul>
+
+<font size=+2><b>リリースノート</b></font>
+<ul>
+   <LI><b><a href="release-notes.html">リリースノート</a></b> 
+</ul>
+
+
+<font size=+2><b>更に詳しい情報を得るには</b></font><br>
+<p>
+<b>JavaSoft webサイトをご覧ください。</b><br>
+JavaSoftの分散システムグループの概要および進行中のプロジェクトの最新情報を得るには<a href="http://chatsubo.javasoft.com/current/"> Java 分散システム (Java Distributed System) のホームページ</a>をご覧ください。この中には (JDK 1.0.2 をもとに) RMIを使ったアプレットを実行するための暫定的な Netscape 3.0 プラグインの説明もあります。
+
+
+
+
+<p>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE>
+
+<IMG SRC="../../images/JAVA.85.GIF" ALIGN=RIGHT>
+
+<FONT SIZE=-2>
+<A HREF="../../relnotes/SMICopyright.html">Copyright (C)</A> 1996 Sun Microsystems, Inc., 2550 Garcia Ave., Mtn. View, CA 94043-1100 USA. All rights reserved.
+</FONT>
+<br><br>
+
+</BODY>
+</HTML>

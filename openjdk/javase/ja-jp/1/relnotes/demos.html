@@ -1,0 +1,169 @@
+<html>
+<head>
+<title>JDK デモ</title>
+</head>
+
+<BODY BGCOLOR="#FFFFFF" TEXT=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+<CENTER><P ALIGN=LEFT>
+<IMG SRC="../images/smi.logo.gif" ALT=" Sun Microsystems, Inc " BORDER=0>
+</P></CENTER>
+
+<font size=-1><a href="../index.html">JDK 目次</a></font>
+<HR SIZE=3 NOSHADE>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<center>
+		  <h1>アプレットとアプリケーションのデモンストレーション</h1>
+</center>
+
+<h3>ブラウザの要件</h3>
+
+一般的に、アプレットは AppletViewer または以下に述べる Java 互換ブラウザで実行可能です。もちろん、新しい Java 1.1 API に依存するアプレットは Java 1.0 だけをサポートするブラウザでは動作しないので、バージョンの制限はあります。
+
+<ul>
+   <li><b>Java 1.0 アプレット</b> - Netscape 3.0、Internet Explorer 3.0、       HotJava プリベータ、AppletViewer 1.0 またはこれら以降のすべてのバージョンを使用   <li><b>Java 1.1 アプレット</b> - HotJava 1.0、AppletViewer 1.1 または Netscape か Internet Explorer の今後出る 1.1 互換バージョンを使用
+</ul>
+AppletViewer は JDK 1.1 ソフトウェアのリリースに添付して提供されます。
+<p>
+一般的に、JDK 1.0.2 で実行できるすべてのアプレットまたはアプリケーションは、JDK 1.1 でも正しく実行できるはずです。うまく実行できないとすれば、潜在的なセキュリティに関する問題を修正したか、または実装や設計のバグを修正するために互換性を犠牲にしたごく少ない場合を除いて、それはバグです。詳細については、<a href="http://java.sun.com/products/JDK/1.1/compatibility.html">互換性の項</a>を参照してください。
+<p>
+もちろん、 Java アプリケーションはブラウザでは実行できませんし、実行するには JDK または「Java ランタイム」だけが必要です。
+<p>
+
+
+<h3>アプレット</h3>
+
+以下にリストされているアプレットはソフトウェアバンドルの一部で、jdk1.1/demo ディレクトリに置かれています。
+<p>
+
+特記のない限り、デモアプレットは 1.0.2 API だけを使用しています。JDK1.1 API 用にアップデートしたアプレットは、JDK 1.1 をサポートしないブラウザでは<em>使えません</em>。
+
+
+<p>
+
+<ul compact plain>
+<li><a href="../../../demo/ArcTest/example1.html">Animator</a>
+    (<a href="../../../demo/Animator/index.html">ドキュメンテーション</a>,
+     <a href="../../../demo/Animator/example1.html">1</a>,
+     <a href="../../../demo/Animator/example2.html">2</a>,
+     <a href="../../../demo/Animator/example3.html">3</a>,
+     <a href="../../../demo/Animator/example4.html">4</a>)
+     <em> -- 1.1用にアップデート済み</em>
+<li><a href="../../../demo/ArcTest/example1.html">ArcTest</a>
+     <em> -- 1.1用にアップデート済み</em>
+<li><a href="../../../demo/BarChart/example1.html">BarChart</a>
+     <em> -- 1.1用にアップデート済み</em>
+<li><a href="../../../demo/Blink/example1.html">Blink</a>
+     <em> -- 1.1用にアップデート済み </em>
+<li><a href="../../../demo/CardTest/example1.html">CardTest</a>
+     <em> -- 1.1用にアップデート済み </em>
+<li><a href="../../../demo/Clock/index.html">Clock</a>
+     <em> -- 1.1用にアップデート済み</em>
+<li><a href="../../../demo/DitherTest/example1.html">DitherTest</a>
+<li><a href="../../../demo/DrawTest/example1.html">DrawTest</a>
+<li><a href="../../../demo/Fractal/example1.html">Fractal</a>
+<li>GraphLayout (<a href="../../../demo/GraphLayout/example1.html">1</a>,
+                 <a href="../../../demo/GraphLayout/example2.html">2</a>,
+                 <a href="../../../demo/GraphLayout/example3.html">3</a>,
+                 <a href="../../../demo/GraphLayout/example4.html">4</a>)
+<li><a href="../../../demo/GraphicsTest/example1.html">GraphicsTest</a>
+<li><a href="../../../demo/ImageMap/example1.html">ImageMap</a>
+<li><a href="../../../demo/JumpingBox/example1.html">JumpingBox</a>
+<li>MoleculeViewer (<a href="../../../demo/MoleculeViewer/example1.html">1</a>,
+                    <a href="../../../demo/MoleculeViewer/example2.html">2</a>,
+		    <a href="../../../demo/MoleculeViewer/example3.html">3</a>)
+<li><a href="../../../demo/NervousText/example1.html">NervousText</a>
+<li><a href="../../../demo/SimpleGraph/example1.html">SimpleGraph</a>
+<li><a href="../../../demo/SortDemo/example1.html">SortDemo</a>
+     <em> -- 1.1用にアップデート済み (イベント処理のために内部クラスを使用)</em>
+<li><a href="../../../demo/SpreadSheet/example1.html">SpreadSheet</a>
+<li><a href="../../../demo/TicTacToe/example1.html">TicTacToe</a>
+     <em> -- 1.1用にアップデート済み </em>
+<li>WireFrame (<a href="../../../demo/WireFrame/example1.html">1</a>,
+               <a href="../../../demo/WireFrame/example2.html">2</a>,
+	       <a href="../../../demo/WireFrame/example3.html">3</a>,
+	       <a href="../../../demo/WireFrame/example4.html">4</a>)
+     <em> -- 1.1用にアップデート済み </em>
+</ul>
+
+その他のアプレットは、<a href="http://java.sun.com/applets/applets.html">JavaSoft web サイトのアプレットページ</a>にあります。
+
+<p>
+
+<h3>JDK 1.1 の新しい機能のデモを実行するアプレットおよびアプリケーション</h3>
+
+この節のデモプログラムのいくつかは、jdk1.1/demo ディレクトリのソフトウェアダウンロードバンドルにあります;  また他のものは jdk1.1/docs/guide ディレクトリのドキュメンテーションダウンロードバンドル、または JavaSoft web サイトでも紹介されています。
+
+<ul compact plain>
+<li><b>国際化</b>
+  <ul compact>
+    <li><a href="../../../demo/i18n/Collate/example1.html">照合</A>
+    <li><a href="../../../demo/i18n/DateTimeFormat/example1.html">日時の形式設定</A>
+    <li><a href="../../../demo/i18n/MessageFormat/example1.html">メッセージの形式設定</A>
+    <li><a href="../../../demo/i18n/NumberFormat/example1.html">数値の形式設定</A>
+    <li><a href="../../../demo/i18n/TextBound/example1.html">テキスト境界</A>
+  </ul>
+<p>
+
+<li><b>セキュリティの例</b>
+<ul>
+  <li><a href="http://java.sun.com/security/signExample/index.html">署名付きアプレットの例</a>
+</ul>
+<p>
+
+<li><b>Abstract Window Toolkit (AWT)</b>
+<ul>
+   <li><a href="../../../demo/awt-1.1/index.html">JDK 1.1 AWT の例</a>
+</ul>
+<p>
+
+<li><b>JavaBeans<sup><font size=-2>TM</font></sup></b>
+<ul>
+   <li><a href="http://splash.javasoft.com/beans/">Beans Development Kit</a>には例があります。
+</ul>
+<p>
+
+<li><b>JAR</b> - の例はツール参照ページにあります:
+<ul>
+   <li><a href="../tooldocs/solaris/jar.html">Solaris の例</a> 
+   <li><a href="../tooldocs/win32/jar.html">Windows の例</a>
+</ul>
+<p>
+
+<li><b>リモートメソッド呼び出し</b>
+  <ul compact>
+    <li><a href="../guide/rmi/examples/hello/readme.html">ハローワールド!</a>
+    <li><a href="../guide/rmi/examples/stock/readme.html">株式相場</a>
+  </ul>
+<p>
+
+<li><b>内部クラス</b>
+  <ul compact>
+    <li><a href="../../../demo/SortDemo/example1.html">SortDemo</a>
+  </ul>
+<p>
+
+<li><b>Java ネイティブインタフェース(JNI)</b> -  プラットフォーム固有であるという JNI の特性から、すべてのプラットフォームで動作するデモを提供できません。代わりに JNI チュートリアルが用意されています。
+  <ul compact>
+    <li><A HREF="http://java.sun.com/nav/read/Tutorial/native1.1/index.html">JNI チュートリアル</a>
+  </ul>
+
+</ul>
+ <!-- シリアライゼーション、Nakul ホームページとは別のところで Reflection=real の簡単なデモおよびSandeep による ClassViewer のデモアプレットが必要です -->
+
+<p>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE>
+
+<IMG SRC="../images/JAVA.85.GIF" ALIGN=RIGHT>
+
+
+<font size=-1>コメントは、 <a href="mailto:jdk-comments@java.sun.com">jdk-comments@java.sun.com</a> 宛てに送ってください。</font>
+<p>
+
+
+<FONT SIZE=-2>
+<A HREF="SMICopyright.html">Copyright (C)</A> 1996, 1997 Sun Microsystems, Inc., 2550 Garcia Ave., Mountain View, CA 94043-1100 USA. All rights reserved.
+<br><br></FONT>
+</BODY>
+</HTML>
+

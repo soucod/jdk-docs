@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor="#ffffff">
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="SimpleSelect.doc.html">前項目</a>  | 次項目
+</font></td><td align=right><i>JDBC<sup><font size=-2>TM</font></sup> ガイド: 「はじめましょう」</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+<a name="996747"></a>
+<h1>10  - JDBC-ODBC ブリッジドライバ </h1>
+
+<a name="997135"></a>
+<h2>10.1	 &nbsp;&nbsp; JDBC-ODBC ブリッジ</h2>
+<a name="996910"></a>
+可能であれば、ブリッジや ODBC ドライバの代わりに純正の Java JDBC ドライバを使用します。これにより、ODBC が必要とするクライアント構成が完全に除去されます。また、ブリッジがもたらしたネイティブコード（たとえば、ブリッジネイティブライブラリ、ODBC ドライバマネージャライブラリ、ODBC ドライバライブラリ、およびデータベースクライアントライブラリ）の中のエラーによって Java VM が破壊されるおそれもなくなります。
+<p>
+<a name="996913"></a>
+<h3>10.1.1	 &nbsp; &nbsp; JDBC-ODBC ブリッジとは</h3>
+<a name="997016"></a>
+JDBC-ODBC ブリッジとは、JDBC 操作を ODBC 操作に翻訳することにより、JDBC 操作を実装する JDBC ドライバです。ODBC にとっては、通常のアプリケーションプログラムとして映ります。
+このブリッジは、ODBC ドライバが使用可能なあらゆるデータベースに JDBC を実装します。
+このブリッジは、<code>sun.jdbc.odbc</code> Java パッケージとして実装され、ODBC にアクセスするために使用されるネイティブライブラリが入っています。
+このブリッジは、Intersolv と JavaSoft のジョイント開発です。
+<p>
+<a name="996914"></a>
+<h3>10.1.2	 &nbsp; &nbsp; サポートされている ODBC のバージョン</h3>
+<a name="997019"></a>
+このブリッジは、ODBC 2.x をサポートします。これは、ほとんどの ODBC ドライバが現在サポートするバージョンです。また、将来の ODBC 3.x ドライバのほとんどでも機能するようですが、これはまだテストされていません。
+<p>
+<a name="996915"></a>
+<h3>10.1.3	 &nbsp; &nbsp; ブリッジの実装</h3>
+<a name="997026"></a>
+このブリッジは、Java に実装され、Java ネイティブメソッドを使用して ODBC を呼び出します。 
+<p>
+<a name="996916"></a>
+<h3>10.1.4	 &nbsp; &nbsp; インストール</h3>
+<a name="997033"></a>
+ブリッジは、パッケージ <code>sun.jdbc.odbc</code> として JDK で自動的にインストールされます。
+ODBC のインストールと構成についての詳細は、ODBC ドライバベンダにお問い合わせください。ブリッジのための特別な構成は必要ありません。
+クライアントのインストールと構成についての詳細は、データベースベンダにお問い合わせください。 
+Solaris では、ODBC ドライバマネージャの一部はそのライブラリを <code>libodbcinst.so</code> および <code>libodbc.so</code> と名付けます。このブリッジは、これらのライブラリが <code>libodbcinst.so.1</code> および <code>libodbc.so.1</code> という名前であることを期待するので、これらの名前についてシンボリックリンクが作成される必要があります。
+<p>
+<a name="996917"></a>
+<h2>10.2	 &nbsp;&nbsp; ブリッジの使用</h2>
+<a name="997040"></a>
+ブリッジは、URLを <code>odbc</code> サブプロトコルとともに使用し、JDBC 接続を開いて使用されます。URL の例については以下を参照してください。
+接続が達成される前に、ブリッジドライバクラス <code>sun.jdbc.odbc.JdbcOdbcDriver</code> は、<code>jdbc.drivers</code> という名前の <code>java.lang.System</code> プロパティに追加するか、Java クラスローダを使用して明示的にロードする必要があります。明示的ロードは、コードの以下の行によって行われます。 
+<pre><a name="996978"></a>    Class.forName(sun.jdbc.odbc.JdbcOdbcDriver); 
+</pre><a name="996979"></a>
+ロードすると、ODBC ドライバは（すべての優れた JDBC ドライバと同様）、それ自体のインスタンスを作成し、これを JDBC ドライバマネージャを使用して登録します。
+<p>
+<a name="996918"></a>
+<h3>10.2.1	 &nbsp; &nbsp; アプレットからのブリッジの使用</h3>
+<a name="997093"></a>
+<p>純正 Java JDBC ドライバで使用される JDBC は、アプレットで正常に機能します。ブリッジドライバはアプレットでは正常に機能しません。
+<p>
+<a name="996919"></a>
+<h3>10.2.2	 &nbsp; &nbsp; ほとんどのブラウザはブリッジをサポートしない</h3>
+<a name="997100"></a>
+ブリッジは JDK のオプションの構成要素なので、ブラウザによって提供されないこともあります。提供されていても、そのブリッジを使用することができるのは、信頼されるアプレット（ファイルに書き込むことができるアプレット）のみです。これは、アプレットサンドボックスのセキュリティを確保するために必要です。さらに、アプレットが信頼されていても、ODBC と DBMS クライアントライブラリが各クライアント上で構成されている必要があります。
+<p>
+<a name="996920"></a>
+<h3>10.2.3	 &nbsp; &nbsp; テスト済み構成</h3>
+<a name="997107"></a>
+Solaris からは、ブリッジを使用して、Solaris 上で稼動する Oracle 7.1.6 および Sybase Version 10 にアクセスしました。NT からは、ブリッジを使用して SQL Server 6.x にアクセスしました。 
+<p>
+<a name="996921"></a>
+<h3>10.2.4	 &nbsp; &nbsp; ブリッジと動作する ODBC</h3>
+<a name="997114"></a>
+Visigenic は、このブリッジでテストされた ODBC ドライバを提供します。ドライバは、Oracle、Sybase、Informix、Microsoft SQL Server、および Ingres について使用可能です。ODBC DriverSet 2.0 を購入するには、415-312-7197 で Visigenic の販売担当者に連絡するか、web サイト <code>www.visigenic.com</code> にアクセスしてください。
+INTERSOLV ODBC ドライバスイートは、JDBC-ODBC ブリッジと完全に互換なはずです。Oracle、xBASE、Sybase (Windows NT/95 のみ)、Microsoft SQL-Server、および Informix のドライバは、最小テストスイートを正常に通過しました。INTERSOLV ODBC ドライバの評価または購入については、1-800-547-4000 のオプション 2 、または WWW サイト <code>http://www.intersolv.com</code> 経由で INTERSOLV DataDirect Sales に連絡してください。 
+MS SQL Server ドライバもまた NT 上で正常に使用できました。
+他の多くの ODBC ドライブも同様に機能します。
+<p>
+<a name="996922"></a>
+<h3>10.2.5	 &nbsp; &nbsp; ODBC ドライバの非互換性</h3>
+<a name="997062"></a>
+Solarisでは、Sybase ctlib ベースドライバが機能しないことがわかっています。これは ctlib が Java VM と信号処理上競合するからです。NT では、NT Java VM が異なるため、これは問題ではないようですが、確認済みではありません。</p>
+いくつかの ODBC ドライバは、 1つのコネクションにつき 1つの結果セットをアクティブにすることのみ許可しています。 
+<p>
+<a name="996923"></a>
+<h3>10.2.6	 &nbsp; &nbsp; ブリッジにサポートされている JDBC のURL</h3>
+<a name="997123"></a>
+ブリッジドライバは、 <code>odbc</code> サブプロトコルを使用します。このサブプロトコルの URL は以下の形式を取ります。 
+<p><pre><a name="997124"></a>    <code>jdbc:odbc:&lt;data-source-name&gt;[&lt;attribute-name&gt;=&lt;attribute-value&gt;]*
+</code></pre><a name="997125"></a>
+以下に例を示します。 </p>
+<p>
+<pre><a name="997006"></a>    jdbc:odbc:sybase
+<a name="997007"></a>    jdbc:odbc:mydb;UID=me;PWD=secret
+<a name="997013"></a>    jdbc:odbc:ora123;Cachesize=300
+</pre>
+<a name="996924"></a>
+<h3>10.2.7	 &nbsp; &nbsp; デバッグ</h3>
+<a name="997077"></a>
+ブリッジは、<code>DriverManager</code> 追跡を有効にすると広範な追跡を行います。コードの以下の行は、追跡を有効にし、それを標準出力に出力します。
+<p><pre><a name="997072"></a>     java.sql.DriverManager.setLogStream(java.lang.System.out);
+</pre>
+<a name="996927"></a>
+<h2>10.3	 &nbsp;&nbsp; 一般的な参考情報</h2>
+<a name="997086"></a>
+このブリッジは、ODBC ドライバがリエントラントでないことを前提としています。つまりブリッジは、これらのドライバへのアクセスと同期する必要があります。結果、ブリッジの同時使用には限界があります。これはブリッジの限界です。ほとんどの純正 Java JDBC ドライバは、期待されるレベルの同時アクセスを提供します。
+<p><a name="996877"></a>
+<p>
+<br>
+<hr> 
+<font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="SimpleSelect.doc.html">前項目</a>  | 次項目
+</font>
+<hr>
+
+<address>
+<a href="mailto:jdbc@wombat.eng.sun.com">jdbc@wombat.eng.sun.com</a>
+または
+<a href="mailto:jdbc-odbc@wombat.eng.sun.com">jdbc-odbc@wombat.eng.sun.com</a>
+</address>
+
+<a href="copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>

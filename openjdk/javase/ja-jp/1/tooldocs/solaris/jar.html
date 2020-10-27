@@ -1,0 +1,196 @@
+<!-- \docs\tooldocs\solaris\jar.html -->
+
+
+<html>
+<head>
+<title>jar- Java アーカイブツール</title>
+<!-- Created by: Susan Keohan 30-Oct-1996 -->
+<!-- Updated by: Beth Stearns 18-Nov-1996 -->
+<!-- Updated by: Marianne Mueller 11-Dec-1996 -->
+</head>
+
+<BODY BGCOLOR="#FFFFFF">
+
+<H1>jar- Java アーカイブツール</H1>
+<blockquote>
+複数のファイルを 1 つの Java アーカイブ (JAR) ファイルに統合します。
+</blockquote>
+
+<h2>機能説明</h2>
+<blockquote>
+<pre>
+
+<strong>jar</strong> [ <a href="jar.html#Options">options</a> ] [manifest] destination input-file [input-files]
+
+</pre>
+</blockquote>
+
+<H2>説明</H2>
+<blockquote>
+
+<b>jar</b> ツールは、複数のファイルを 1 つの JAR アーカイブファイルに統合する java アプリケーションです。<b>jar</b> は、ZIP や <A HREF="http://www.cdrom.com/pub/infozip/zlib/">ZLIB</A> の圧縮形式を基本とした汎用アーカイブおよび圧縮ツールです。
+
+<b>jar</b> は、主として java アプレットやアプリケーションを 1 つのアーカイブにパッケージ化するのを容易にするために考案されました。java アプレットやアプリケーション (.class ファイル、イメージおよびサウンド) のコンポーネントが 1 つのアーカイブに統合されるとき、java エージェント (ブラウザなど) の１回の HTTP 処理だけでダウンロードできますので、各ファイルごとに新しく接続をする必要はありません。これでダウンロード時間が驚くほど短縮されます。<!-- REMIND: put a link to download benchmark statistics in here --> また <b>jar</b> はファイルを圧縮し、さらにダウンロード時間を短くします。さらに、作成元の認証を可能にするために、アプレット作成者による署名を、ファイルの個々のエントリに書き込むことができます。jar ツールの構文は、<code>tar</code> コマンドの構文とほぼ同じです。
+
+<p>
+
+jar ツールの 3 種類のインプットファイルは以下のとおりです。
+
+<ul> 
+<li>  manifest ファイル (オプション)
+<li> 出力先 jar ファイル 
+<li> アーカイブするファイル 
+</ul>
+
+<p>
+
+標準的な使い方は次のとおりです。
+
+<pre>
+	% jar cf myjarfile *.class 
+</pre>
+
+この例では、現在のディレクトリのクラスファイルはすべて、"myjarfile" という名前のファイルに置かれます。 manifest ファイルは、jar ツールによって自動的に生成され、jar ファイルの中で常に最初に置かれます。デフォルトでは、META-INF/MANIFEST.INF と名付けられます。 manifest ファイルには、アーカイブのメタ情報が格納されています。 manifest ファイルにメタ情報がどのようにして格納されるかについての詳細は、<a href="../../guide/jar/manifest.html">manifest 仕様</a> を参照してください。
+
+<p>
+
+jar ツールを既存の manifest ファイルに使用して、新しい jar アーカイブを作成する場合、-m オプション使用して指定することができます。
+
+<pre>
+	% jar cmf myManifestFile myJarFile *.class
+</pre>
+
+<p>
+
+jar アーカイブにファイルを追加する場合、ファイルの他に MD5 や SHA ハッシュを格納します。ハッシュは入力で manifest ファイルに入れます。 manifest ファイルは RFC822 ascii 形式を使用しているため、内容の表示や処理は容易に行えます。
+
+</blockquote>
+
+<a name=Options>
+<h2>オプション</h2>
+</a>
+<blockquote>
+
+<dl>
+
+<dt><b><code>c </code></b>
+<dd>
+標準出力に新規または空のアーカイブを作成します。
+<p>
+
+<dt><b><code>t </code></b>
+<dd>
+標準出力から内容を表形式でリストします。
+<p>
+
+<dt><b><code>x </code></b><var>file</var>
+<dd>
+すべてのファイルまたは指定のファイルだけを、標準入力から展開します。<var>file</var> の指定を省略した場合、すべてのファイルが展開されます。指定した場合は、指定のファイルを 1 つだけまたは複数展開します。
+<p>
+
+<dt><b><code>f </code></b>
+<dd>
+2 つ目の引数で、処理される jar ファイルを指定します。<b><code>c</code></b>reation オプションの場合、(標準出力の代わりに) 作成される jar ファイルとなります。<b><code>t</code></b>able または <b><code>x</code></b>tract では、2 つ目の引数はリストされる、または展開される jar ファイルです。
+<p>
+
+<dt><b><code>v </code></b>
+<dd>
+標準エラーに詳細を出力します。
+<p>
+
+</dl>
+</blockquote>
+
+<code>"files"</code> のいずれかがディレクトリである場合、そのディレクトリは再帰的に処理されます。
+<P>
+<h2>例</h2>
+<blockquote>
+<P><P>
+特定のディレクトリのファイルをすべて、アーカイブに追加する場合:
+<PRE>
+$ ls
+0.au            3.au            6.au            9.au            at_work.gif
+1.au            4.au            7.au            Animator.class  monkey.jpg
+2.au            5.au            8.au            Wave.class      spacemusic.au
+$ jar cvf bundle.jar *
+adding: 0.au
+adding: 1.au
+adding: 2.au
+adding: 3.au
+adding: 4.au
+adding: 5.au
+adding: 6.au
+adding: 7.au
+adding: 8.au
+adding: 9.au
+adding: Animator.class
+adding: Wave.class
+adding: at_work.gif
+adding: monkey.jpg
+adding: spacemusic.au
+$
+</PRE>
+html ディレクトリの中に、イメージ、オーディオファイルおよびクラス用のサブディレクトリがすでにある場合、1 つの jar ファイルの中に各ディレクトリをまとめることができます。
+<PRE>
+$ ls
+audio classes images
+$ jar cvf bundle.jar audio classes images
+adding: audio/1.au
+adding: audio/2.au
+adding: audio/3.au
+adding: audio/spacemusic.au
+adding: classes/Animator.class
+adding: classes/Wave.class
+adding: images/monkey.jpg
+adding: images/at_work.gif
+$ ls -l
+total 142
+drwxr-xr-x   2 brown    green        512 Aug  1 22:33 audio
+-rw-r--r--   1 brown    green      68677 Aug  1 22:36 bundle.jar
+drwxr-xr-x   2 brown    green        512 Aug  1 22:26 classes
+drwxr-xr-x   2 brown    green        512 Aug  1 22:25 images
+$ 
+</PRE>
+jar ツールと "t" オプションにより、jar ファイルの中のエントリ名を見ることができます。
+<PRE>
+$ ls
+audio bundle.jar classes images
+$ jar tf bundle.jar
+META-INF/MANIFEST.MF
+audio/1.au
+audio/2.au
+audio/3.au
+audio/spacemusic.au
+classes/Animator.class
+classes/Wave.class
+images/monkey.jpg
+images/at_work.gif
+$ 
+</PRE>
+"v" オプションを使用して詳細を列挙すると、サイズや最新の更新日など、アーカイブファイルについての情報がさらに増えます。
+
+<PRE>
+$ jar tvf bundle.jar
+   145 Thu Aug 01 22:27:00 PDT 1996 META-INF/MANIFEST.MF
+   946 Thu Aug 01 22:24:22 PDT 1996 audio/1.au
+  1039 Thu Aug 01 22:24:22 PDT 1996 audio/2.au
+   993 Thu Aug 01 22:24:22 PDT 1996 audio/3.au
+ 48072 Thu Aug 01 22:24:23 PDT 1996 audio/spacemusic.au
+ 16711 Thu Aug 01 22:25:50 PDT 1996 classes/Animator.class
+  3368 Thu Aug 01 22:26:02 PDT 1996 classes/Wave.class
+ 12809 Thu Aug 01 22:24:48 PDT 1996 images/monkey.jpg
+   527 Thu Aug 01 22:25:20 PDT 1996 images/at_work.gif
+$
+</PRE>
+
+<h2>参照</h2>
+<blockquote>
+<a href="../../guide/jar/jarGuide.html">jar ガイド</a><BR>
+<A href="javakey.html">javakey</A><BR>
+<A href="../../guide/jar/manifest.html">manifest ファイルフォーマット</A>
+</blockquote>
+
+</body>
+</html>
+
+

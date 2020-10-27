@@ -1,0 +1,245 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+   <TITLE>JDK 1.1.1 ドキュメンテーション</TITLE>
+</HEAD>
+
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000FF"
+      VLINK="#000077" ALINK="#FF0000">
+
+<!-- Created by: Doug Kramer, 19-Aug-1996 -->
+
+<TABLE BORDER="0" WIDTH="100%">
+<TR>
+<TD WIDTH=90>
+<IMG SRC="images/smi.logo.gif" ALT=" Sun Microsystems, Inc " BORDER=0 WIDTH=120 HEIGHT=43>
+</TD>
+
+<TD>
+<a href="#notes"><font size=-2>JDK リリースノート</font></a><br>
+<a href="#api"><font size=-2>JDK API リファレンス</font></a><br>
+<a href="#guide"><font size=-2>JDK 新機能ガイド</font></a><br>
+<a href="#tools"><font size=-2>JDK ツールドキュメンテーション</font></a><br>
+<a href="#demos"><font size=-2>JDK デモ</font></a><br>
+<a href="#tutorial"><font size=-2>Java チュートリアル</font></a><br>
+
+</TD>
+
+<TD ALIGN=RIGHT VALIGN=TOP>
+<b><i>JavaSoft</i></b>
+</TD>
+</TR>
+</TABLE>
+
+<FONT SIZE=-1>JDK 目次</FONT> 
+<HR SIZE=3 NOSHADE>
+
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<center>
+                 <H1>JDK<sup><font size=1>TM</font></sup> 1.1.1 ドキュメンテーション</H1>
+                 <h4>Java Development Kit</h4>
+</center>
+
+<!-- ============================================================= -->
+
+<blockquote><A NAME="notes"></a>
+<font size="+1"><b>JDK リリースノート</b></font><br>
+今回のリリースに関しての情報が記載されています。
+<P>
+<blockquote><A NAME="java"></a>
+<b>以下のファイルは JDK ソフトウェアダウンロードの中にバンドルされてます:</b><br>
+<A HREF="../../ja/README">README</A> <BR>
+<A HREF="../../ja/CHANGES">CHANGES</A> <BR>
+<A HREF="../../ja/COPYRIGHT">コピーライト</A> <BR>
+<A HREF="../../ja/LICENSE">ライセンス条項</A> <BR>
+<BR>
+
+<A NAME="docs"></a>
+<b>以下のファイルは JDK ドキュメンテーションダウンロードの中にバンドルされてます:</b><br>
+<A HREF="relnotes/intro.html">はじめに</A> <BR>
+<A HREF="relnotes/SMICopyright.html">ドキュメンテーションのコピーライトとライセンス条項</A> <BR>
+<A HREF="relnotes/features.html">新機能の概要</A> <BR>
+<A HREF="relnotes/classlist.html">クラスリスト</A>  <BR>
+<A HREF="relnotes/update.html">1.0 ソースファイルから 1.1 へのアップデート</A> <BR>
+<A HREF="relnotes/contacts.html">JavaSoft へのコンタクト方法</A> <BR>
+<BR>
+
+<A NAME="website"></a>
+<b>以下のファイルは JavaSoft webサイトにあります:</b><br>
+<A HREF="http://java.sun.com/products/jdk/1.1/jdkrelatedtech.html">JDK 関連技術</a> <BR>
+<A HREF="http://java.sun.com/products/jdk/1.1/performance/index.html">性能測定</a> <BR>
+<A HREF="http://java.sun.com/products/jdk/1.1/compatibility.html">互換性の問題</a> <BR>
+<A HREF="http://java.sun.com/products/jdk/1.1/compatible/index.html">互換性のあるプログラムの書き方</a> <BR>
+<A HREF="http://java.sun.com/products/jdk/1.1/knownbugs/index.html">既知のバグ</a> <BR>
+<A HREF="http://java.sun.com/products/jdk/1.1/fixedbugs/index.html">修正されたバグ</a> <BR>
+<A HREF="http://java.sun.com/cgi-bin/bugreport.cgi">バグの報告</a> <BR> 
+<A HREF="http://java.sun.com/products/jdk/1.1/docchanges.html">ドキュメンテーションの変更</a> <BR>
+<A HREF="http://java.sun.com/products/jdk/1.1/">JDK ダウンロードページ</a> <BR>
+<A HREF="http://java.sun.com/index.html">JavaSoft ホームページ</a> <BR>
+<BR>
+残りのファイルは、注意書きがあるものを除いて JDK ドキュメンテーションダウンロードの中にバンドルされてます。<br>
+
+</blockquote>
+<P>
+
+
+<!-- ============================================================= -->
+<A NAME="api"></a>
+<font size="+1"><b>JDK API リファレンス</b></font><br>
+パッケージ、クラス、メンバーのリファレンスで、javadocで作成されています。
+<blockquote>
+  <A HREF="api/packages.html">Java プラットフォーム Core API</A>
+</blockquote>
+<p>
+
+<!-- ============================================================= -->
+<A NAME="guide"></a>
+<font size="+1"><b>JDK 新機能ガイド</b></font><br>
+
+JDK を使い始めるにあたってのコンセプト、説明、および使用例が載っています。<br>
+JavaSoft の web サイトからこれらの <a href="http://java.sun.com/products/jdk/1.1/download-pdf-ps.html">PDF 版と PS版</a>をダウンロードすることができます（オプション）。<p>
+
+<OL>
+
+<LI><A HREF="guide/intl/index.html">国際化</A>  </LI>
+
+<LI><A HREF="guide/security/index.html">セキュリティと署名付きアプレット</A>  </LI>
+
+<LI><A HREF="guide/awt/index.html">AWT の拡張</A>  </LI>
+
+<LI><A HREF="guide/beans/index.html">JavaBeans</a><sup><font size=-2>TM</font></sup> </LI>
+
+<LI><A HREF="guide/jar/index.html">JAR ファイルフォーマット</A> 
+</LI>
+
+<LI><A HREF="guide/net/index.html">ネットワーク機能の拡張</A> 
+</LI>
+
+<LI><A HREF="guide/io/index.html">I/O の拡張</A> 
+</LI>
+
+<li><a href="guide/math/index.html">数値演算</a>
+
+<LI><A HREF="guide/rmi/index.html">リモートメソッド呼び出し</A>  </LI>
+
+<LI><A HREF="guide/serialization/index.html">オブジェクト直列化</A>  </LI>
+
+<LI><A HREF="guide/reflection/index.html">リフレクション</A> 
+</LI>
+
+<LI><A HREF="guide/jdbc/index.html">JDBC<SUP><FONT SIZE=-2>TM</FONT></SUP> - Java とデータベースの接続</A>  </LI>
+
+<LI><A HREF="guide/innerclasses/index.html">内部クラス</A> 
+
+<LI><A HREF="guide/jni/index.html">Java ネイティブインタフェース</A>  </LI>
+
+<LI><A HREF="guide/performance/performance.html">パフォーマンスの向上</A> <BR>
+
+<LI><A HREF="guide/misc/index.html">その他の機能</A> 
+
+<UL type=disc>
+<LI><A HREF="api/java.lang.Byte.html">Byte</a>,
+    <A HREF="api/java.lang.Short.html">Short</a> および
+    <A HREF="api/java.lang.Void.html">Void</a>
+    クラス </LI>
+
+<LI><A HREF="guide/misc/deprecated.html">@deprecated タグ</A>  </LI>
+
+<LI><A HREF="guide/misc/resources.html">リソースファイルへのアクセス</A>  </LI>
+
+<LI><A HREF="guide/misc/applet.html">APPLET タグ (HTML)</A>  </LI>
+</UL>
+</OL>
+<p>
+
+<!-- ============================================================= -->
+<A NAME="tools"></a>
+
+<font size="+1"><b>JDK ツールドキュメンテーション</b></font><br>
+
+JDKツールのリファレンスドキュメンテーションです。
+<p>
+
+<UL type=disc>
+<LI><A HREF="tooldocs/solaris/index.html">Solaris</A> 
+
+<LI><A HREF="tooldocs/win32/index.html">Windows</A>  </LI>
+</UL>
+<p>
+
+<!-- ============================================================= -->
+<A NAME="demos"></a>
+<font size="+1"><b>JDK デモ</b></font><br>
+Java アプレットとアプリケーションのサンプルコードです。
+<p>
+
+<UL TYPE=DISC>
+<LI><A HREF="relnotes/demos.html">アプレットとアプリケーションのデモンストレーション</A>
+</UL>
+
+<p>
+
+<!-- ============================================================= -->
+<A NAME="tutorial"></a>
+<font size="+1"><b>The Java チュートリアル</b></font><br>
+Javaをはじめて学ぶユーザ向けの入門書。<br>
+JDK 1.0.2 と同様 JDK 1.1 の内容を反映するため改訂中です。
+<P>
+
+<UL type=disc>
+<b>JavaSoft web サイトにあるドキュメント:</b><br>
+<LI><A HREF="http://java.sun.com/nav/read/Tutorial/index.html">Java チュートリアル:
+インターネットのためのオブジェクト指向プログラミング</A>
+</UL>
+<p>
+
+</blockquote>
+<font size=-1><em>注意 - JDK 1.1.1 はバグ修正リリースです。"JDK&nbsp;1.1" で参照されるドキュメンテーションは "JDK&nbsp;1.1.1" にも同様に適用されます。</em></font>
+<p>
+
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+<HR SIZE=3 NOSHADE><IMG SRC="images/JAVA.85.GIF" HEIGHT=85 WIDTH=49 ALIGN=RIGHT>
+<FONT SIZE=-2><A HREF="relnotes/SMICopyright.html">Copyright (c)</A> 1996, 1997 Sun Microsystems, Inc., 2550 Garcia Ave., Mountain View, CA 94043-1100 USA. All
+rights reserved. <BR>
+<BR>
+</FONT><FONT SIZE=-1>このページは Doug Kramer により維持されています。<BR>
+
+JDK に関するコメントや提案は、<a href="http://java.sun.com/mail/index.html">
+JavaSoft email アドレス</a>にあるリストの中からもっとも適切と思われる技術者のチームへ
+送って下さい。</FONT>
+
+<PRE>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

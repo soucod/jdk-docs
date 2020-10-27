@@ -1,0 +1,410 @@
+<html><head><title>サーバインタフェース
+</title></head>
+<body bgcolor=#ffffff>
+ 
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-client.doc.html">前項目</a> <a href="rmi-registry.doc.html">次項目</a>
+<hr><br>
+ 
+<a name="60">
+<h1>サーバインタフェース
+</h1>
+</a>
+<hr><p><a name="64">
+
+<p>
+</a>サーバを実装する場合、クライアントのインタフェースを利用することができ、またこれらを使ってリモートオブジェクトの定義、作成、エクスポートを拡張することができます。
+<p><h3><a name="3210">
+トピックス:
+</a></h3><ul><li><a href="rmi-server.doc.html#4597">RemoteObject クラス</a>
+<li><a href="rmi-server.doc.html#5462">RemoteServer クラス</a>
+<li><a href="rmi-server.doc.html#5794">UnicastRemoteObject クラス</a>
+<li><a href="rmi-server.doc.html#179">Unreferenced インタフェース</a>
+<li><a href="rmi-server.doc.html#1638">RMISecurityManager クラス</a>
+<li><a href="rmi-server.doc.html#1639">RMIClassLoader クラス</a>
+<li><a href="rmi-server.doc.html#6583">LoaderHandler インタフェース</a>
+<li><a href="rmi-server.doc.html#4175">RMISocketFactory クラス</a>
+<li><a href="rmi-server.doc.html#4381">RMIFailureHandler インタフェース</a>
+<li><a href="rmi-server.doc.html#1621">LogStream クラス</a>
+<li><a href="rmi-server.doc.html#5845">スタブ、スケルトンコンパイラ</a>
+</ul><h1><a name="4597">
+RemoteObject クラス
+</a></h1><code>java.rmi.server.RemoteObject</code> クラスはリモートオブジェクト向けに 
+<code>java.lang.Object</code> の動作を実装します。<code>hashCode</code> と <code>equals</code> メソッドの実装によりリモートオブジェクト参照をハッシュテーブルに保存して比較できるようになります。<code>equals</code> メソッドはもし2つの <code>Remote</code> オブジェクトが同一のリモートオブジェクトを参照している場合に true を返します。このメソッドは2つのリモートオブジェクトの参照同士を比較します。
+<p><code>toString</code> メソッドはリモートオブジェクトを説明した文字列を返します。この文字列の内容とシンタックスは実装に固有のものであり、変更されることもあります。
+<p><code>java.lang.Object</code> の他の全部のメソッドはオリジナルの実装のままです。
+<p><dl><a name="4601"><pre>package java.rmi.server;
+public abstract class RemoteObject
+	implements java.rmi.Remote, java.io.Serializable
+{
+	public int hashCode();
+	public boolean equals(Object obj);
+	public String toString();
+}
+</pre></a></dl><h1><a name="5462">
+RemoteServer クラス
+</a></h1><code>java.rmi.server.RemoteServer</code> クラスは全てのサーバの実装に共通なスーパークラスであり、広い範囲のリモート参照セマンティクスの枠組みを提供するものです。現在のところサポートされているサブクラスは 
+<code>UnicastRemoteObject</code>のみです。
+<p><dl><a name="3358"><pre>package java.rmi.server;
+public abstract class RemoteServer
+	extends RemoteObject {
+
+	public static String getClientHost()
+		throws ServerNotActiveException;
+
+	public static void setLog(java.io.OutputStream out);
+</pre></a><a name="4613"><pre>
+	public static java.io.PrintStream getLog();
+}
+</pre></a></dl><code>getClientHost</code> メソッドにより、アクティブメソッドは現在実行中のスレッドでアクティブなリモートメソッドをスタートさせたのがどのホストであるかを決定することができます。 
+現在のスレッドでアクティブなリモートメソッドがない場合には 
+<code>ServerNotActiveException</code> がスローされます。 <code>setLog</code> メソッドは RMI コールのログを作り、指定された出力ストリームへ出力します。 
+もし、出力ストリームが null である場合には、ログ操作は起動されません。 
+<code>getLog</code> メソッドは RMI コールのログに使われるストリームを返します。これによりアプリケーションに特有な情報をコールログに同期を取りながら記録することができます。
+<p><h1><a name="5794">
+UnicastRemoteObject クラス
+</a></h1><code>java.rmi.server.UnicastRemoteObject</code> クラスは TCP ベースのストリームを使ってポイント間でのアクティブオブジェクト参照をサポートします。 
+このクラスは次の特性を持ったリモートサーバオブジェクトを実装します。
+<p><ul><li>リモートオブジェクトへの参照は、それを生成したプロセスのライフサイクルが最長有効期限である。
+<li>TCP 接続をベースとするトランスポートを使用する。
+<li>呼び出し、パラメーター、そして結果がクライアントとサーバ間通信のストリームプロトコルを使う。
+<dl><a name="274"><pre>package java.rmi.server;
+public class UnicastRemoteObject extends RemoteServer {
+
+	protected UnicastRemoteObject()
+		throws java.rmi.RemoteException;
+
+	public Object clone()
+		throws java.lang.CloneNotSupportedException;
+
+	public static RemoteStub exportObject(java.rmi.Remote obj)
+		throws java.rmi.RemoteException;
+}
+</pre></a></dl></ul><h2><a name="2175">
+新しいリモートオブジェクトを作成する
+</a></h2>サーバとして実行中の Java 仮想マシン上では、開発者により定義されたリモートオブジェクトはサーバアプリケーションによって作成することができます。
+リモートオブジェクトのクラスが <code>UnicastRemoteObject</code> を拡張したクラスである場合には、構築子がリモートオブジェクトを生成してエクスポートします。構築子の呼び出しはリモートオブジェクトクラスの対応する構築子が行います。デフォルト構築子は無名ポートを使用して新規のユニキャストリモートオブジェクトを生成します。
+<p>初期値が同じである <code>UnicastRemoteObject</code> を作成するにはクローンメソッドを使用しますが、これはリモートコールを受け付けるためにエクスポートされ、オリジナルのオブジェクトとは明確に異なるものです。
+
+<p><h2><a name="728">
+RemoteObject からの拡張ではない実装のエクスポート
+</a></h2>&#32;<code>exportObject</code> メソッドは、<code>UnicastRemoteObject</code> クラスを拡張することによっては実装されない単純なピアツーピアリモートオブジェクトをエクスポートするために使用します。<code>exportObject</code> メソッドは、無名ポート上でエクスポート対象のオブジェクトを使用して呼び出します。そのオブジェクトは、パラメータまたは返り値として RMI コールに初めて渡される前にエクスポートして<em>置かなければなりません</em>。そうしない場合には、<code>java.rmi.server.</code><code>StubNotFoundException</code> が、リモートコールが試みられる中で「未エクスポートの」リモートオブジェクトが引数または返り値として渡されるときに発生します。
+<p>一度エクスポートされてしまえば、オブジェクトは RMI コールの引数、または RMI コールの返り値として渡すことができるようになります。リモートオブジェクトが渡され、転送のための一体化をされている間にそのリモートオブジェクト実装に一致するリモートスタブが検索され、もしあれば代わりにスタブが引数または返り値として渡されます。
+<p><code>exportObject</code> メソッドはリモートオブジェクト obj のスタブであり、リモートオブジェクトの代わりに RMI コールで渡された <code>RemoteStub</code> を返します。
+<p><h2><a name="6811">
+RMI コールで UnicastRemoteObject を渡す
+</a></h2>
+上述したように、RMI コールの中で <code>UnicastRemoteObject</code> 型のオブジェクトが渡されると、同オブジェクトは、リモートオブジェクトのスタブが取って代わります。リモートオブジェクトの実装は、それが作成された仮想マシン中に留まり、仮想マシンから (値渡しによってさえ) 移動されません。すなわち、リモートオブジェクトは、RMI コールでは参照渡しであり、値では渡すことができないということになります。
+
+<p><h2><a name="6785">
+UnicastRemoteObject を直列化する</a></h2>
+<code>UnicastRemoteObject</code> に含まれている情報は非常駐であり、その型のオブジェクトがユーザ定義の <code>ObjectOutputStream</code> に書き込まれ場合には保存されません (たとえば、オブジェクトが直列化を使用してファイルに書き込まれる場合)。ただし、<code>UnicastRemoteObject</code> のユーザ定義サブクラスのインスタンスであるオブジェクトは、そのオブジェクトが直列化された場合でも保存できる非常駐データでないデータを持つことができます。
+
+<p><code>UnicastRemoteObject</code> が <code>ObjectInputStream</code> から読み込まれる場合には、そのオブジェクトは、RMI コールを受け取れるように RMI ランタイムに自動的にエクスポートされます。オブジェクトのエクスポートが何らかの原因で失敗した場合には、オブジェクトの直列化復元は、例外とともに途中で終了します。
+<p><h1><a name="179">
+Unreferenced インタフェース
+</a></h1><dl><a name="182"><pre>package java.rmi.server;
+public interface Unreferenced {
+	public void unreferenced();
+}
+</pre></a></dl><code>java.rmi.server.Unreferenced</code> インタフェースを使うと、サーバオブジェクトは現在どのクライアントからも参照されていないという通知を受けることができます。 分散ガベージコレクションメカニズムは各リモートオブジェクトについて、そのリモートオブジェクトを参照しているクライアント仮想マシンのセットを保持しています。 あるクライアントがあるリモートオブジェクトに対するリモート参照を持っている間は、RMI ランタイムもそのリモートオブジェクトへのローカル参照を保持し続けます。「参照」のセットが空になると、(もしサーバが <code>Unreferenced</code> インタフェースを実装していれば）<code>Unreferenced.unreferenced</code> メソッドが呼び出されます。リモートオブジェクトが <code>Unreferenced</code> インタフェースをサポートするのは必須では<em>ありません。</em>
+<p>リモートオブジェクトに対するローカル参照が存在している間は、それをリモートコールで渡すこともできますし、クライアントへの返り値にもなります。
+参照を受け取ったプロセスはその参照に対するセットに追加されます。
+参照セットが空になったとき、<code>Unreferenced</code> が呼び出されます。
+このような動作をするため、<code>Unreferenced</code> メソッドは参照セットが新しく空になる度に何回でも呼び出されます。
+リモートオブジェクトはそれに対する参照（ローカル参照またはクライアントが保持している参照）がもはや無くなったときに回収されます。
+<p><h1><a name="1638">
+RMISecurityManager クラス</a></h1>
+<dl><a name="6741"><pre>package java.rmi;
+
+public class RMISecurityManager extends java.lang.SecurityManager {
+
+	// Constructor
+	public RMISecurityManager();
+
+	// Returns implementation specific security context 
+	public Object getSecurityContext();
+
+	// Disallow creating classloaders or execute ClassLoader methods
+	public synchronized void checkCreateClassLoader()
+		throws RMISecurityException;
+
+	// Disallow thread manipulation
+	public synchronized void checkAccess(Thread t)
+		throws RMISecurityException;
+
+	// Disallow thread group manipulation.
+	public synchronized void checkAccess(ThreadGroup g)
+		throws RMISecurityException;
+
+	// Disallow exiting the VM
+	public synchronized void checkExit(int status)
+		throws RMISecurityException;
+
+	// Disallow forking of processes
+	public synchronized void checkExec(String cmd)
+		throws RMISecurityException;
+
+	// Disallow linking dynamic libraries
+	public synchronized void checkLink(String lib)
+		throws RMISecurityException;
+
+	// Disallow accessing of all properties except those labeled OK
+	public synchronized void checkPropertiesAccess()
+		throws RMISecurityException;
+</pre></a><a name="6730"><pre>
+	// Access system property key only if key.stub is set to true
+	public synchronized void checkPropertyAccess(String key)
+		throws RMISecurityException;
+
+	// Check if a stub can read a particular file.
+	public synchronized void checkRead(String file)
+		throws RMISecurityException;
+
+	// No file reads are valid from a stub
+	public void checkRead(String file, Object context)
+		throws RMISecurityException;
+
+	// Check if a Stub can write a particular file.
+	public synchronized void checkWrite(String file)
+		throws RMISecurityException;
+
+	// Check if the specified system dependent file can be deleted.
+	public void checkDelete(String file)
+		throws RMISecurityException;
+
+	// Disllow opening file descriptor for reading unless via socket
+	public synchronized void checkRead(FileDescriptor fd)
+		throws RMISecurityException;
+
+	// Disallow opening file descriptor for writing unless via socket
+	public synchronized void checkWrite(FileDescriptor fd)
+		throws RMISecurityException;
+
+	// Disallow listening on any port.
+	public synchronized void checkListen(int port)
+		throws RMISecurityException;
+
+	// Disallow accepting connections on any port.
+	public synchronized void checkAccept(String host, int port)
+		throws RMISecurityException;
+
+	// Disallow stubs from using IP multicast.
+	public void checkMulticast(InetAddress maddr)
+		throws RMISecurityException;
+
+	// Disallow stubs from using IP multicast
+	public void checkMulticast(InetAddress maddr, byte ttl)
+		throws RMISecurityException;
+
+	// Downloaded classes (including stubs) can make connections if
+	// called through the RMI transport.
+	public synchronized void checkConnect(String host, int port)
+		throws RMISecurityException;
+
+	// Downloaded classes (including stubs) can make connections if
+	// called through the RMI transport.
+	public void checkConnect(String host, int port, Object context)
+		throws RMISecurityException;
+
+	// Allow caller to create top-level windows.
+	// Allow stubs to create windows with warnings.
+	public synchronized boolean checkTopLevelWindow(Object window)
+		throws RMISecurityException;
+
+	// Check if a stub can access a package.
+	public synchronized void checkPackageAccess(String pkg)
+		throws RMISecurityException;
+
+	// Check if a stub can define classes in a package.
+	public synchronized void checkPackageDefinition(String pkg)
+		throws RMISecurityException;
+
+	// Check if a stub can set a networking-related object factory.
+	public synchronized void checkSetFactory()
+		throws RMISecurityException;
+
+	// Disallow printing from stubs.
+	public void checkPrintJobAccess()
+		throws RMISecurityException;
+
+	// Disallow stubs from accessing system clipboard.
+	public void checkSystemClipboardAccess()
+		throws RMISecurityException;
+
+	// Disallow stubs from accessing AWT event queue.
+	public void checkAwtEventQueueAccess()
+		throws RMISecurityException;
+
+	// Checks to see if client code can access class members.
+	// Allow access to all public information. Allow non-stubs to
+	// access default, package, and private declarations and data).
+	public void checkMemberAccess(Class clazz, int which)
+		throws RMISecurityException;
+
+	// Stubs cannot perform security provider operations.
+	public void checkSecurityAccess(String provider)
+		throws RMISecurityException;
+}
+</pre></a></dl>アプリケーションが特別なセキュリティは必要としませんが、標準提供される保護が必要である場合に <code>RMISecurityManager</code> を使うことができます。
+この単純なセキュリティマネジャークラス定義とアクセスを除く全ての機能を利用できなくして、リモートオブジェクト以外のクラス、引数、返り値が必要に応じてロードできるようにします。ダウンロードクラスは、それが RMI トランスポートを介して開始されたものであれば、接続を作成することができます。
+<p>何のセキュリティマネージャも設定されていない場合は、スタブのローディングができなくなります。
+これは、どれかのセキュリティマネージャに、リモートメソッド呼び出しの一部としての、スタブやクラスのローディングの責任を負わせるためです。
+セキュリティマネージャは <code>System.setSecurityManager</code>を使って設定します。
+<p><h1><a name="1639">
+RMIClassLoader クラス
+</a></h1><code> java.rmi.server.RMIClassLoader</code> はアプリケーションが URL経由でクラスをロードするためのユーティリティクラスです。
+<p><dl><a name="6620"><pre>package java.rmi.server;
+
+public class RMIClassLoader {
+
+    public static Class loadClass(String name)
+	    throws MalformedURLException, ClassNotFoundException;
+
+    public static synchronized Class loadClass(URL codebase,
+		String name) throws MalformedURLException, 
+		ClassNotFoundException;
+
+	public static Object getSecurityContext(ClassLoader loader);
+}
+</pre></a></dl>最初の <code>loadClass</code> メソッドは、<code>java.rmi.server.codebase</code> プロパティで定義される URL を介して指定されたクラス名をロードします。そのクラスはロードされ、定義され、そして戻されます。
+<p>第二の形式の <code>loadClass</code> メソッドは指定されたクラス名を URL パラメーター codebase 経由でロードします。
+<p><code>getSecurityContext</code> メソッドは指定されたクラスローダ、ローダのセキュリティコンテキストを返します。セキュリティコンテキストは <code>LoaderHandler</code> の <code>getSecurityContext</code> メソッドを使って問い合わせることにより得られます。
+<p><em>RMI ランタイムは自分自身のクラスローダを使ってスタブ、スケルトン、そしてスタブやスケルトンが必要とする他のクラスのローディングを行います。
+これらのクラスと、その使用方法は、Java RMI ランタイムの安全性に対するプロパティをサポートするものです。このクラスローダは常にローカルに利用可能なクラスを優先します。 ローカルマシンとネットワーク間の選択が起こるのはセキュリティマネージャがそれを強制するときのみです。クラスローダはローダのキャッシュを持っていて、個々の URL (Uniform Resource Locator) とそこからロードされたクラスを記憶しています。
+スタブやスケルトンがロードされると、パラメータあるいは返り値として現れるどのクラス参照も（それらの発起側 codebase ホストから）ロードされ、同じセキュリティ規則に従うことになります。サーバプロセスは RMI ランタイムに対してクラス（スタブ、パラメーター/返り値）のロケーションを宣言しなければならず、この情報はクライアントも利用できます。 <code>java.rmi.server.codebase</code> プロパティは URL でなければならず、ここからスタブクラスと、スタブが使用するクラスが通常の http や fpt プロトコルを使ってロードされます。
+</em><p><h1><a name="6583">
+LoaderHandler インタフェース
+</a></h1><dl><a name="6586"><pre>package java.rmi.server;
+
+public interface LoaderHandler {
+
+    Class loadClass(String name)
+	    throws MalformedURLException, ClassNotFoundException;
+
+    Class loadClass(URL codebase,String name) 
+		throws MalformedURLException, ClassNotFoundException;
+
+	Object getSecurityContext(ClassLoader loader);
+}
+</pre></a></dl><code>LoaderHandler</code> インタフェースは必ず <code>LoaderHandler</code>というクラス名で実装しなければなりません。<code>LoaderHandler</code> クラスは <code>java.rmi.loader.packagePrefix</code>プロパティで指定されるパッケージの中で定義されていなければなりません。 
+<code>LoaderHandler</code>のメソッドは <code>java.rmi.server.RMIClassLoader</code> クラスがそのオペレーションを実行するために使用します。
+<p><h1><a name="4175">
+RMISocketFactory クラス
+</a></h1><code> java.rmi.server.RMISocketFactory </code> abstract クラスはトランスポートがソケットを取得する方法を指定するインタフェースを提供します。
+<p><dl><a name="4329"><pre>package java.rmi.server;
+public abstract class RMISocketFactory {
+
+	public abstract java.net.Socket createSocket(String h,int p)
+		throws IOException;
+
+	public abstract java.net.ServerSocket createServerSocket(int p)
+		throws IOException;
+
+	public static void setSocketFactory(RMISocketFactory fac)
+		throws IOException;
+
+	public static RMISocketFactory getSocketFactory();
+
+	public static void setFailureHandler(RMIFailureHandler fh);
+
+	public static RMIFailureHandler getFailureHandler();
+}
+</pre></a></dl>static メソッド <code>setSocketFactory</code> は RMI がソケットを取得するためのソケットファクトリを設定します。アプリケーションが自分の <code>RMISocketFactory</code> インスタンスのためにこのメソッドを呼び出せるのは一回だけです。
+アプリケーションの定義による <code>RMISocketFactory</code> の実装は、例えば接続要求に対して事前のフィルタリングを行って例外をスローし、あるいは自分自身を拡張による <code>java.net.Socket</code> または <code>java.net.ServerSocket</code> クラスを返して確実なコミュニケーションチャネルを確保します。 
+RMISocketFactory を設定できるのは実行中のセキュリティマネージャがソケットファクトリの設定を許している場合だけであることに注意してください。ソケットファクトリが許可されていない場合には、<code>SecurityException</code> がスローされます。
+<p>static メソッド <code>getSocketFactory</code> は RMI によるソケットファクトリを返します。 
+ソケットファクトリが設定されていなければこのメソッドは null を返します。
+<p>トランスポートレイヤは、トランスポートがソケット作成を必要とすると <code>getSocketFactory</code> メソッドが値を返した <code>RMISocketFactory</code> 上で <code>createSocket</code> と <code>createServerSocket</code> メソッドを呼び出します。
+<p>例えば:<p><dl><a name="4524"><pre>RMISocketFactory.getSocketFactory().createSocket(myhost, myport)
+</pre></a></dl><code>createSocket</code> メソッドは指定されたホストとポートに接続されたクライアントソケットを作成するものです。 
+<code>createServerSocket</code> は指定されたポート上にサーバソケットを作成するものです。 
+デフォルトトランスポートにおける <code>RMISocketFactory</code> の実装は次のように、HTTP を使ってファイアウオールを通り抜ける透過性のある RMI を提供します。
+<p><ul><li><code>createSocket</code> 上で、ファクトリは直接ソケット接続できないホストに自動的に HTTP 接続を試みる。
+<li><code>createServerSocket</code> 上で、ファクトリはサーバソケットを返し、新しく受け付けられた接続が HTTP POST リクエストかを自動検出する。もしそうならば、トランスポートへのリクエストの本体のみを透過的に伝え、出力を HTTP 応答として整形する。
+</ul><code>setFailureHandler</code> メソッドはサーバソケットの作成に失敗すると失敗用ハンドラを RMI ランタイムにより呼び出されるよう設定する。 
+失敗用ハンドラはブール値を返して、リトライを行ってよいかどうかを示します。 
+デフォルトの失敗用ハンドラは false を返し、デフォルト条件ではランタイムはソケット作成のリトライを行わないことを示します。
+<p><code>getFailureHandler</code> メソッドはソケット作成失敗の現在のハンドラを返し、もし失敗用ハンドラが設定されていなければ null を返します。
+<p><h1><a name="4381">
+RMIFailureHandler インタフェース
+</a></h1><code>java.rmi.server.RMIFailureHandler</code> インタフェースは、サーバソケットの作成に失敗した場合に、RMI ランタイムがどのように動作すればよいかを指定する手段を提供します。
+<p><dl><a name="4384"><pre>package java.rmi.server;
+</pre></a><a name="4393"><pre>public interface RMIFailureHandler {
+	public boolean failure(Exception ex);
+}
+</pre></a></dl><code>failure</code> メソッドは、RMI ランタイムが <code>java.net.Socket</code> や <code>java.net.ServerSocket</code> の作成に失敗した時の例外を引数として呼び出されます。 
+ランタイムがリトライするべきならはメソッドは true を返し、そうでないならば false を返します。
+<p>このメソッドが呼び出される前に、失敗用ハンドラが <code>RMISocketFactory.setFailureHandler</code> コールによって登録されていなければなりません。もし失敗用ハンドラが設定されていなければ、ソケット作成は試みられません。
+<p><h1><a name="1621">
+LogStream クラス
+</a></h1><code>LogStream</code> クラスはシステムをモニタしている人が興味を持つであろうエラーロギングのメカニズムを表現します。このクラスはサーバコールのログ作成のために内部使用されるものです。
+<p><dl><a name="4830"><pre>package java.rmi.server;
+
+public class LogStream extends java.io.PrintStream {
+
+	public static LogStream log(String name);
+
+	public static synchronized PrintStream getDefaultStream();
+
+	public static synchronized void setDefaultStream(
+</pre></a><a name="6209"><pre>		PrintStream newDefault);
+
+	public synchronized OutputStream getOutputStream();
+
+	public synchronized void setOutputStream(OutputStream out);
+
+	public void write(int b);
+
+	public void write(byte b[], int off, int len);
+
+	public String toString();
+
+	public static int parseLevel(String s);
+
+	// constants for logging levels
+	public static final int SILENT  = 0;
+	public static final int BRIEF   = 10;
+	public static final int VERBOSE = 20;
+}
+</pre></a></dl><code>log</code> メソッドは指定された名前の LogStream を返します。該当する名前のログが存在しなければ、デフォルトストリームを使ったログが作成されます。
+<p><code>getDefaultStream</code> メソッドは新規ログのために、現在のデフォルトストリームを返します。
+<p><code>setDefaultStream</code> メソッドは新規ログのためにデフォルトストリームの設定を行います。
+<p><code>getOutputStream</code> メソッドはこのログの出力が送られる現在のストリームを返します。
+<p><code>setOutputStream</code> メソッドはこのログ出力が送られるストリームを設定します。
+<p>1番目の形式のメソッド write は1データバイト（オクテット）をストリームに書き出します。 それが改行コード (new line) でなければ、そのバイトデータは内部のバッファにアペンドされ、 もし改行コードならばバッファリングされていた一行がログの出力ストリームへ適当なロギング前置子が付けられて出力されます。メソッド 2番目のメソッド write の形式はバイトのサブアレイを書き出します。
+<p><code>toString</code> メソッドはログの名前を文字列表現で返します。
+<p><code>parseLevel</code> メソッドはロギングレベルを文字列表現から整数による内部表現に変換します。
+<p><h1><a name="5845">
+スタブとスケルトンコンパイラ
+</a></h1><code>rmic</code> スタブ/スケルトンコンパイラは指定されたリモートオブジェクトを実装する適切なスタブとスケルトンをコンパイルします。
+コンパイラはそのリモートオブジェクトのパッケージ修飾されたクラス名を引数として呼び出されます。そのクラスは事前にコンパイルに成功したものでなければなりません。
+<p><ul><li>インポートされたクラスの置き場所は CLASSPATH 環境変数かまたは -classpath 引数で指定される。
+<li>コンパイルされたクラスファイルは、-d オプションが付けられて、その後に、<code>javac</code> と同じ形式でクラスファイルの場所が指定されていなければ、カレントディレクトリに置かれる。
+<li>-keepgenerated 引数が付けられると生成されたスタブとスケルトンの Java ソースファイルが残される。
+<li>-show オプションが付けられるとプログラムのグラフィックユーザインタフェースが表示される。
+<li><code>javac</code> の他のコマンドライン引数もすべて <code>rmic</code> に適用して使うことができる。
+</ul>
+<hr><br>
+ 
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-client.doc.html">前項目</a> <a href="rmi-registry.doc.html">次項目</a>
+<hr><br>
+ 
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.4 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email  -->
+<!-- -->
+<!-- Last updated: 03/18/97 12:59:59 -->
+
+</body>
+</html>
+

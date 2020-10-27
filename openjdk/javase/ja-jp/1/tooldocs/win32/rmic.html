@@ -1,0 +1,131 @@
+<!-- \docs\tooldocs\win32\rmic.html -->
+
+
+<html>
+<head>
+<title>rmic - Java RMI スタブコンパイラ</title>
+</head>
+<BODY BGCOLOR="#FFFFFF">
+
+<h1>rmic - Java RMI スタブコンパイラ</h1>
+<blockquote>
+<b>rmic</b> は、リモートオブジェクトのためのスタブとスケルトンを生成します。
+</blockquote>
+
+<h2>機能説明</h2>
+<blockquote>
+<pre>
+rmic [ <a href="rmic.html#Options">options</a> ] <i>package-qualified-class-name(s)</i>
+</pre>
+</blockquote>
+
+<h2>説明</h2>
+<blockquote>
+<b>rmic</b> コンパイラは、リモートオブジェクトの実装を含む Java クラスの名前から、リモートオブジェクトのためのスタブとスケルトンクラスファイルを生成します(リモートオブジェクトはインタフェース <code>java.rmi.Remote</code> を実装しているオブジェクトです)。<b>rmic</b> コマンドで名付けられたこのようなクラス名は、<b>javac</b> コマンドでコンパイルが成功したクラス、および完全な適格性をもつパッケージです。たとえば、クラスファイル名 <code>HelloImpl</code> で <b>rmic</b> を実行するには、次のようにします。
+<pre>
+rmic hello.HelloImpl
+</pre>
+<p>
+これにより、<code>HelloImpl_Skel.class</code>ファイルと<code>HelloImpl_Stub.class</code>ファイルが作成されます。
+<p>
+リモートオブジェクトのスケルトンはサーバ側のエンティティで、実際のリモートオブジェクト実装を呼び出すメソッドを含みます。
+<p>
+スタブとは、リモートオブジェクトの代理です。それは、リモートオブジェクトのメソッド呼び出しを、本物のリモートオブジェクトが常駐するサーバに転送する責任をもちます。したがって、クライアントのリモートオブジェクトへの参照は、実際は局所スタブへの参照となります。
+<p>
+スタブは、リモートインタフェースだけを実装し、リモートオブジェクトが実装するいかなる局所インタフェースも実装していません。スタブはリモートオブジェクト自身が実装するリモートインタフェースとまったく同じものを実装しているので、クライアントは、キャストや型チェックに Java 言語に組み込まれた演算子を使用することができます。
+<p>
+</blockquote>
+
+<a name=Options>
+<h2>オプション</h2>
+</a>
+<blockquote>
+
+<dl>
+
+<dt><b>-classpath path</b>
+<dd>
+<b>rmic</b>がクラスを探すためのパスを指定します。このオプションは、デフォルトや CLASSPATH 環境変数設定を上書きします。ディレクトリはセミコロンで分割します。したがって、<i>path</i>の一般形式は次のようになります。
+<blockquote>
+<pre>
+.;&lt;your_path&gt;
+</pre>
+</blockquote>
+たとえば、パスの指定は次のとおりです。
+<blockquote>
+<pre>
+.;C:\usr\local\java\classes
+</pre>
+</blockquote>
+<p>
+<dt><b>-d directory</b>
+<dd>
+クラス階層のルートディレクトリを指定します。省略した場合のデフォルト値は現在のディレクトリです。
+<p>
+
+<dt><b>-depend</b>
+<dd>
+コンパイラに、他のクラスが参照するクラスを再コンパイラするかどうか考えさせます。通常、ソースコードが参照するクラスが欠落したり、古くなったものだけを再コンパイルするだけです。
+<p>
+
+<dt><b>-g</b>
+<dd>
+デバッガ用のテーブルを生成します。デバッガ用のテーブルは行番号や局所変数に関する情報を含みます。この情報は Java デバッガツールが使用します。デフォルトでは、最適化 (<i>-O</i>オプション) がオフの場合、行番号だけが生成されます。
+<p>
+
+
+<dt><b>-keepgenerated</b>
+<dd>
+スタブやスケルトンのための <code>.java</code> ソースファイルを <code>.class</code> ファイルと同じディレクトリに残します。<i>-d</i> オプションが指定されていれば、その設定にしたがいます。
+<p>
+
+<dt><b>-nowarn</b>
+<dd>
+警告をオフにします。このオプションにより、コンパイラはいかなる警告も表示しません。
+<p>
+
+<dt><b>-O</b>
+<dd>
+static、final および private のメソッドをインライン化することによって、コンパイルされるコードを最適化します。クラスのサイズが大きすぎないように注意してください。
+<p>
+
+
+<dt><b>-show</b>
+<dd>
+<b>rmic</b> コンパイラ用の GUI (グラフィカルユーザインタフェース) を表示します。パッケージの資格をもつ 1 つ以上のクラス名 (スペースで分ける) を入力し、Enter キーまたは Show ボタンを押し、スタブやスケルトンを作成します。
+<p>
+
+
+<dt><b>-verbose</b>
+<dd>
+コンパイラやリンカに、コンパイルされているクラスやロードされているクラスファイルについて、メッセージを表示させます。
+<p>
+
+</dl>
+</blockquote>
+
+<h2>環境変数</h2>
+<blockquote>
+
+<dl>
+
+<dt><b>CLASSPATH</b>
+<dd>
+ユーザ定義クラスへのパスをシステムに指定します。ディレクトリは、UNIX や Macintosh ではコロンで、Win95 はセミコロンで分割します。たとえば、次のとおりです。
+<blockquote>
+<pre>
+.;C:\usr\local\java\classes
+</pre>
+</blockquote>
+
+</dl>
+</blockquote>
+
+<h2>参照</h2>
+<blockquote>
+The <a href="javac.html"><b>javac</b></a> command.
+</blockquote>
+</body>
+</html>
+
+

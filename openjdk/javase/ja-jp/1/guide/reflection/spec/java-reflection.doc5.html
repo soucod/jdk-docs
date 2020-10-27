@@ -1,0 +1,145 @@
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection.doc4.html">前項目</a>  | <a href="java-reflection.doc6.html">次項目</a>
+</font></td><td align=right><i>Java コアリフレクション</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+
+<a name="5218"></a>
+<h1>クラス java.lang.reflect.Constructor </h1><pre>    <a name="5220"></a><code>package java.lang.reflect;
+</code>
+    <a name="5221"></a>public final class Constructor extends Object implements Member
+
+</pre><a name="5222"></a>
+<code>Constructor</code> は、宣言クラスの 1 つの構築子に関する情報およびそこへのアクセスを提供します。クラスがインスタンス化できる場合は、<code>Constructor</code> を使って、反射された構築子を宣言するクラスの新規インスタンスを生成および初期化できます。<p><a name="5223"></a>
+<code>Constructor</code> オブジェクトを生成できるのは、Java 仮想マシンだけです。ユーザコードは、クラス <code>Class</code> のメソッド <code>getConstructor</code>, <code>getConstructors</code>, <code>getDeclaredConstructor</code>, および <code>getDeclaredConstructors</code> から <code>Constructor</code> 参照を獲得します。<p><a name="5224"></a>
+<code>Constructor</code> では、<code>newInstance</code> への実効パラメータを基本構築子の形式パラメータと突合わせるときに拡張変換が可能ですが、縮小変換が発生すると <code>IllegalArgumentException</code> をスローします。<p>
+<hr>
+<a name="5225"></a>
+<h2>		 メソッド</h2>
+
+<a name="5226"></a>
+<h3>		 getDeclaringClass</h3>
+<pre>    <a name="5227"></a><code>public Class getDeclaringClass()
+</code>
+</pre><a name="5228"></a>
+この <code>Constructor</code> オブジェクトが表す構築子を宣言するクラスの <code>Class</code> オブジェクトを返します。<p>
+<a name="5229"></a>
+<h3>		 getName</h3>
+<pre>    <a name="5230"></a><code>public String getName()
+</code>
+</pre><a name="5231"></a>
+この <code>Constructor</code> オブジェクトが表す構築子の名前を返します。これは、宣言クラスの完全な修飾名と同じです。<p>
+<a name="5232"></a>
+<h3>		 getModifiers</h3>
+<pre>    <a name="5233"></a><code>public int getModifiers()
+</code>
+</pre><a name="5234"></a>
+この <code>Constructor</code> オブジェクトが表す構築子の Java 言語修飾子を整数型にコード化して返します。修飾子の解読には、<code>Modifier</code> クラスを使います。<p><a name="5235"></a>
+修飾子のコード化は、<em>Java 仮想マシン仕様</em>の表 4.4 で定義されています。<p>
+<a name="5236"></a>
+<h3>		 getParameterTypes</h3>
+<pre>    <a name="5237"></a><code>public Class[] getParameterTypes()
+</code>
+</pre><a name="5238"></a>
+この <code>Constructor</code> オブジェクトが表す構築子の形式パラメータ型を表す <code>Class</code> オブジェクトの配列を、宣言順に返します。基本構築子がパラメータを取らない場合は、長さが <code>0</code> の配列を返します。<p>
+<a name="5239"></a>
+<h3>		 getExceptionTypes</h3>
+<pre>    <a name="5240"></a><code>public Class[] getExceptionTypes()
+</code>
+</pre><a name="5241"></a>
+この <code>Constructor</code> オブジェクトが表す基本構築子がスローする、確認済み例外のクラスを表す <code>Class</code> オブジェクトの配列を返します。構築子が確認済み例外をスローしない場合は、長さが <code>0</code> の配列を返します。<p>
+<a name="5242"></a>
+<h3>		 equals</h3>
+<pre>    <a name="5243"></a><code>public boolean equals(Object obj)
+</code>
+</pre><a name="5244"></a>
+この <code>Constructor</code> と指定オブジェクトを比較します。オブジェクトが同じ場合は <code>true</code> を、異なる場合は <code>false</code> を返します。2 つの <code>Constructor</code> オブジェクトの宣言クラスと形式パラメータ型が同じ場合、この 2 つは同じです。<p><a name="5245"></a>
+このメソッドは、クラス <code>Object</code> の <code>equals</code> メソッドをオーバーライドします。<p>
+<a name="5246"></a>
+<h3>		 hashCode</h3>
+<pre>    <a name="5247"></a><code>public int hashCode()
+</code>
+</pre><a name="5248"></a>
+この <code>Constructor</code> のハッシュコードを返します。ハッシュコードは、<code>Constructor</code> の宣言クラス名のハッシュコードと同じです<code>。</code><p><a name="5249"></a>
+このメソッドは、クラス <code>Object</code> の <code>hashCode</code> メソッドをオーバーライドします。<p>
+<a name="5250"></a>
+<h3>		 toString</h3>
+<pre>    <a name="5251"></a><code>public String toString()
+</code>
+</pre><a name="5252"></a>
+この <code>Constructor</code> オブジェクトが表す基本構築子を記述する文字列を返します。文字列は Java 言語修飾子としてフォーマットされ、もしあればその後に、基本構築子を宣言するクラスの完全な修飾名、構築子の形式パラメータ型の完全な修飾名をコンマで区切ったリストの挿入句が続きます。構築子が確認済み例外をスローするならば、パラメータリストの後にスペース、単語 <code>throws</code>、スローされた例外型の完全な修飾名をコンマで区切ったリストが続きます。以下に例を示します:<p><pre>    <a name="5253"></a>
+
+    <a name="5254"></a>    public java.util.Hashtable(int,float)
+
+</pre><a name="5255"></a>
+構築子に使える修飾子は <code>public</code>, <code>protected</code> または <code>private</code> のどれか 1 つだけ、あるいは構築子にデフォルト (パッケージ) アクセスがある場合はどれも認められません。<p><a name="5256"></a>
+このメソッドは、クラス <code>Object</code> の <code>toString</code> メソッドをオーバーライドします。<p>
+<a name="5257"></a>
+<h3>		 newInstance</h3>
+<pre>    <a name="5258"></a><code>public Object newInstance(Object initargs[])
+</code>
+    <a name="5259"></a><code>    throws InstantiationException, IllegalArgumentException,
+</code>
+    <a name="5260"></a><code>        IllegalAccessException, InvocationTargetException
+</code>
+</pre><a name="5261"></a>
+この <code>Constructor</code> オブジェクトが表す構築子を使い、指定の初期化パラメータを用いて構築子の宣言クラスの新規インスタンスを生成および初期化します。個々のパラメータは、プリミティブ形式パラメータに一致するように自動的にアンラップされ、プリミティブおよび参照の両パラメータは必要に応じて拡張変換に従います。新しく生成および初期化されたオブジェクトを返します。<p><a name="5262"></a>
+生成処理は、以下の手順で行います:<p>
+<ul><a name="5263"></a>
+<li>基本構築子を宣言するクラスが abstract クラスを表す場合は、生成は  <code>InstantiationException</code> をスローする。<br><br>
+<a name="5264"></a>
+<li>この <code>Constructor</code> オブジェクトが Java 言語アクセス制御を実行し、基本構築子がアクセス不可能な場合は、生成は <code>IllegalAccessException</code> をスローする。<br><br>
+<a name="5265"></a>
+<li><code>initargs</code> から獲得した実効パラメータ数値が、基本構築子に必要な形式パラメータ数値と異なる場合は、生成は <code>IllegalArgumentException</code> をスローする。基本構築子がパラメータを取らない場合は、<code>initargs</code> を <code>null</code> にできる。<br><br>
+<a name="5266"></a>
+<li>構築子の宣言クラスの新規インスタンスを生成し、フィールドをデフォルトの初期値に初期化する。<br><br>
+<a name="5267"></a>
+<li><code>initargs</code> 配列内の各実効パラメータについて:<br><br>
+
+
+<ul>
+<a name="5268"></a>
+<li>対応する形式パラメータにプリミティブ型がある場合、オブジェクトのパラメータ値をプリミティブ型の値に変換するためのアンラッピング変換を試行する。オブジェクトのパラメータが <code>null</code> の場合、<code>NullPointerException</code> をスローして、変換が失敗する。オブジェクトのパラメータが標準 Java ラッパークラスのインスタンスでない場合、<code>IllegalArgumentException</code> をスローして、変換が失敗する。<br><br>
+<a name="5269"></a>
+<li>アンラッピングのあとで、識別変換または拡張変換を使ってパラメータ値を対応する形式パラメータ型に変換できない場合、呼び出しは <code>IllegalArgumentException</code> をスローする。<br><br>
+</ul>
+<a name="5270"></a>
+<li>制御は、新規インスタンスを初期化するために基本構築子に移行する。<br><br>
+<a name="5271"></a>
+<li> 例外をスローして基本構築子が異常終了すると、この例外がキャッチされ、クラス <code>InvocationTargetException</code> の新規例外オブジェクトに入る。その後で、この新規例外をスローして <code>newInstance</code> を異常終了する。<br><br>
+<a name="5272"></a>
+<li>基本構築子が正常終了すると、新しく生成および初期化されたインスタンスが <code>newInstance</code> から返される。<br><br>
+</ul><a name="5897"></a>
+&nbsp;
+<p>
+
+<br>
+<hr> 
+<font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection.doc4.html">前項目</a>  | <a href="java-reflection.doc6.html">次項目</a>
+</font>
+<hr>
+
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<a href="java-reflection-copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>

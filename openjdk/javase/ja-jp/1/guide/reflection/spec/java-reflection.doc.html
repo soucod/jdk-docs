@@ -1,0 +1,313 @@
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection-copyright.doc.html">前項目</a>  | <a href="java-reflection.doc1.html">次項目</a>
+</font></td><td align=right><i>Java コアリフレクション</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+
+<a name="8589"></a>
+<h1>概要</h1>
+<a name="18285"></a>
+Java(TM) コアリフレクション API は、現在の Java 仮想マシン内のクラスやオブジェクトに関する内部情報の参照と変更をサポートする、小規模で、型に関する安全性の保証された API を提供します。セキュリティポリシーで認められる場合、API を使って次のことを実行できます: <p>
+<ul><a name="1202"></a>
+<li>新規クラスのインスタンスおよび新規配列の構築<br><br>
+<a name="1203"></a>
+<li>オブジェクトおよびクラスのフィールドへのアクセスと変更<br><br>
+<a name="1204"></a>
+<li>オブジェクトおよびクラスに関するメソッドの呼び出し<br><br>
+<a name="1205"></a>
+<li>配列要素へのアクセスと変更<br><br>
+</ul><a name="1206"></a>
+コアリフレクション API が定義する新規クラスおよびメソッドは、次のとおりです:<p>
+<ul><a name="4595"></a>
+<li>3 つの新規クラス - <code>Field</code>, <code>Method</code>, および <code>Constructor</code> - これらは、クラスとインタフェースのメンバ、および構築子を反射する。これらのクラスは、以下のものを提供する: <br><br>
+
+
+<ul>
+<a name="4596"></a>
+<li>基本メンバや構築子に関する反射的情報<br><br>
+<a name="4597"></a>
+<li>メンバや構築子を使った Java オブジェクトの型に関した安全な操作<br><br>
+</ul>
+<a name="17373"></a>
+<li><code>Field</code>, <code>Method</code>, および <code>Constructor</code> クラスの新規インスタンスを構築する、クラス <code>Class</code> の新規メソッド<br><br>
+<a name="16453"></a>
+<li>新規クラス - <code>Array</code> - これは、Java 配列をダイナミックに構築/アクセスするメソッドを提供する。<br><br>
+<a name="1235"></a>
+<li>新規ユーティリティクラス - <code>Modifier</code> - これは、クラスおよびそのメンバに関する Java 言語修飾子情報の解読に役立つ。<br><br>
+</ul><a name="19744"></a>
+リフレクションをサポートする <code>java.lang</code> パッケージにも、次の内容が追加されました:<p>
+<ul><a name="19745"></a>
+<li>2 つの新規クラス - <code>Byte</code> と <code>Short</code>。この新規クラスはクラス <code>Number</code> のサブクラスで、クラス <code>Integer</code> に類似している。これらの新規クラスのインスタンスは、型 <code>byte</code> および <code>short</code> のプリミティブ値用オブジェクトラッパとして、それぞれに機能する。<br><br>
+<a name="19746"></a>
+<li>実行時に、プリミティブ Java 型の <code>boolean</code>, <code>byte</code>, <code>char</code>, <code>short</code>, <code>int</code>, <code>long</code>, <code>float</code>, <code>double</code> およびキーワード <code>void</code> を表す新規オブジェクト、クラス <code>Class</code> のインスタンス。<br><br>
+<a name="19747"></a>
+<li>新規のインスタンスの生成ができないプレースホルダクラス -<code>Void</code> - これには、キーワード <code>void</code> を表す <code>Class</code> オブジェクトを表す参照が入る。<br><br>
+</ul>
+<a name="8591"></a>
+<h3>		 アプリケーション</h3>
+<a name="1245"></a>
+コアリフレクション API を使うと、次のような 2 種類のアプリケーションが作れるようになります。<p><a name="8863"></a>
+1 つは、実行クラスに基づくターゲットオブジェクトの、すべての <code>public</code> メンバを見つけ出して使う必要があるアプリケーションの集合です。これらのアプリケーションは、オブジェクトのすべての <code>public</code> フィールド、メソッド、および構築子に実行時にアクセスする必要があります。このカテゴリに入るアプリケーションには、<em>Java</em>(TM) Beans<a href="java-reflection.doc10.html">[1]</a>、あるいはオブジェクトインスペクタなどの簡易ツールがあります。これらのアプリケーションは、クラス <code>Class</code> のメソッド <code>getField</code>, <code>getMethod</code>, <code>getConstructor</code>, <code>getFields</code>, <code>getMethods</code>, および <code>getConstructors</code> から獲得したクラス <code>Field</code>, <code>Method</code>, および <code>Constructor</code> のインスタンスを使います。<p><a name="18289"></a>
+もう 1 つは、所定クラスが宣言したメンバを見つけ出して使う必要のある、複雑なアプリケーションの集合です。これらのアプリケーションは、<code>class</code> ファイルが指定したレベルのクラス実装への実行時アクセスが必要です。このカテゴリに入るアプリケーションには、デバッガ、インタプリタ、インスペクタ、クラスブラウザなどの開発ツールや、<em>Java</em>(TM) オブジェクト直列化<a href="java-reflection.doc10.html">[2]</a> などの実行サービスがあります。これらのアプリケーションは、クラス <code>Class</code> のメソッド <code>getDeclaredField</code>, <code>getDeclaredMethod</code>, <code>getDeclaredConstructor</code>, <code>getDeclaredFields</code>, <code>getDeclaredMethods</code>, および <code>getDeclaredConstructors</code> から獲得したクラス <code>Field</code>, <code>Method</code>, および <code>Constructor</code> のインスタンスを使います。<p>
+<hr>
+<a name="18290"></a>
+<h2>		 リフレクションモデル</h2>
+<a name="17713"></a>
+3 つのクラス <code>Field</code>, <code>Method</code>, および <code>Constructor</code> は <code>final</code> です。これらのクラスのインスタンスを生成できるのは、Java 仮想マシンだけです。これらのオブジェクトを使って基本オブジェクトを操作します。つまり:<p>
+<ul><a name="1326"></a>
+<li>基本メンバや構築子に関する反射的情報の獲得<br><br>
+<a name="4485"></a>
+<li>フィールド値の獲得と設定<br><br>
+<a name="1334"></a>
+<li>オブジェクトやクラスのメソッドの呼出し<br><br>
+<a name="1341"></a>
+<li>クラスの新規インスタンスの生成<br><br>
+</ul><a name="1589"></a>
+インスタンスの生成できない <code>final</code> クラス <code>Array</code> には、新規配列の作成、配列要素の獲得と設定を行えるようにする <code>static</code> メソッドが備わっています。<p>
+<a name="4607"></a>
+<h3>		 Member インタフェース</h3>
+<a name="17086"></a>
+クラス <code>Field</code>, <code>Method</code> および <code>Constructor</code> は、<code>Member</code> インタフェースを実装します。クラス <code>Member</code> のメソッドを使って、基本の識別情報に関する反射されたメンバを問い合わせます。識別情報には、メンバを宣言したクラスまたはインタフェース、メンバ名、およびメンバの Java 言語修飾子 (<code>public</code>, <code>protected</code>, <code>abstract</code>, <code>synchronized</code> など) が含まれます。<p>
+<a name="1359"></a>
+<h3>		 Field オブジェクト</h3>
+<a name="8595"></a>
+<code>Field</code> オブジェクトは、反射されたフィールドを表します。基本フィールドはクラス変数 (<code>static</code> フィールド) でもインスタンス変数 (非 <code>static</code> フィールド) でも構いません。クラス <code>Field</code> のメソッドを使って、基本フィールドの型を獲得し、オブジェクトの基本フィールド値を入手して設定します。<p>
+<a name="8596"></a>
+<h3>		 Method オブジェクト</h3>
+<a name="1363"></a>
+<code>Method</code> オブジェクトは、反射されたメソッドを表します。基本メソッドは、abstract メソッド、インスタンスメソッド、クラス (<code>static</code>) メソッドのどれでも構いません。<p><a name="4637"></a>
+クラス <code>Method</code> のメソッドを使って、基本メソッドの形式パラメータ型、返却値の型、および確認済み例外の型を獲得します。また、クラス <code>Method</code> の <code>invoke</code> メソッドを使って、ターゲットオブジェクトの基本メソッドを呼び出します。インスタンスおよび abstract メソッドの呼出しでは、ターゲットオブジェクトの実行クラスならびに反射されたメソッドの宣言クラス、名前、および形式パラメータ型に基づいた動的なメソッド解決法を使います。(従って、インタフェースを実装するクラスのインスタンスであるオブジェクトについて、反射されたインタフェースメソッドを呼び出すことが可能です)。メソッド呼出しでは、メソッドの宣言クラスの基本 static メソッドを使います。<p>
+<a name="8597"></a>
+<h3>		 Constructor オブジェクト</h3>
+<a name="1370"></a>
+<code>Constructor</code> オブジェクトは、反射された構築子を表します。クラス <code>Constructor</code> のメソッドを使って、基本構築子の形式パラメータ型と確認済みの例外の型を獲得します。さらに、クラスがインスタンスを実行できる場合は、クラス <code>Constructor</code> の <code>newInstance</code> メソッドを使って、構築子を宣言するクラスの新規インスタンスを生成して初期化します。<p>
+<a name="1379"></a>
+<h3>		 Array および Modifier クラス</h3>
+<a name="8900"></a>
+<code>Array</code> クラスはインスタンスを生成できないクラスです。これはクラスメソッドをエクスポートして、プリミティブまたはクラスコンポーネント型の Java 配列を生成します。クラス <code>Array</code> のメソッドを使って、配列を構成する値の獲得と設定も行います。<p><a name="16634"></a>
+<code>Modifier</code> クラスはインスタンスを生成できないクラスです。これはクラスメソッドをエクスポートして、クラスやメンバの Java 言語修飾子を解読します。言語修飾子は、<em>Java 仮想マシン仕様</em>で定義のコード化定数を使って整数型にコード化します。<p>
+<a name="16479"></a>
+<h3>		プリミティブ Java 型の表現</h3>
+<a name="1393"></a>
+最後に、新規 <code>Class</code> オブジェクトが 9 つあります。これらのオブジェクトを使って、8 つのプリミティブ Java 型と <code>void</code> を実行時に表現します。(これらは <code>Class</code> <em>オブジェクト</em>であって、クラスではないことに注意してください。）コアリフレクション API はこれらのClassオブジェクトを使って、次のものを識別します:<p>
+<ul><a name="1411"></a>
+<li>プリミティブフィールド型<br><br>
+<a name="1412"></a>
+<li>プリミティブメソッドおよび構築子のパラメータ型<br><br>
+<a name="1413"></a>
+<li>プリミティブメソッドの返却値の型<br><br>
+</ul><a name="5842"></a>
+Java 仮想マシンは、これらの 9 つの <code>Class</code> オブジェクトを生成します。これらのオブジェクト名は、それぞれが表す型と同じです。<code>Class</code> オブジェクトは、次の <code>public</code> <code>final</code> <code>static</code> 変数を介してのみ参照できます:<p><pre>    <a name="5847"></a>
+
+    <a name="5848"></a>    java.lang.Boolean.TYPE
+
+    <a name="5849"></a>    java.lang.Character.TYPE
+
+    <a name="5850"></a>    java.lang.Byte.TYPE
+
+    <a name="5851"></a>    java.lang.Short.TYPE
+
+    <a name="5852"></a>    java.lang.Integer.TYPE
+
+    <a name="5853"></a>    java.lang.Long.TYPE
+
+    <a name="5854"></a>    java.lang.Float.TYPE
+
+    <a name="5855"></a>    java.lang.Double.TYPE
+
+    <a name="5856"></a>    java.lang.Void.TYPE
+
+</pre><a name="5844"></a>
+特に、これらの <code>Class</code> オブジェクトは、クラス <code>Class</code> の <code>forName</code> メソッドからはアクセスできません。<p>
+<hr>
+<a name="5891"></a>
+<h2>		 セキュリティモデル</h2>
+<a name="17346"></a>
+Java セキュリティマネージャは、クラス単位でコアリフレクション API へのアクセスを制御します。セキュリティを安全に施行するには、次の 2 つのレベルを確認する必要があります:<p>
+<ul><a name="17169"></a>
+<li>メンバまたはクラスのメンバセットに反射的アクセスを付与するクラス <code>Class</code> の新規メソッドが、<code>Field</code>, <code>Method</code>, および <code>Constructor</code> のインスタンスのソースだけであること。これらのメソッドはまず最初に、システムセキュリティマネージャ (インストールされている場合) にセキュリティチェックを渡す。セキュリティマネージャは、反射的アクセス要求が拒否された場合に、<code>SecurityException</code> をスローする。<br><br>
+<a name="17170"></a>
+<li>システムマネージャがメンバに対する最初の反射的アクセスを獲得すると、任意のコードを使って反射されたメンバの識別情報を問い合わせることができる。ただし、<code>protected</code>、デフォルトの (パッケージ) アクセス、および <code>private</code> クラスとメンバについては、個々の反射されたメンバを使ってオブジェクトの基本メンバを操作する (つまり、フィールド値の獲得や設定、メソッドの呼出し、新規オブジェクトの生成と初期化をする) ときに、標準の Java 言語アクセス制御チェックが実行される。デバッガコードなどの特権コードには、無制限アクセス (標準の言語アクセス制御規則をオーバーライドするもの) を付与することができる。この仕様の今後のバージョンでは、インタフェースを定義することにより、無制限アクセスを実行できるようになる。<br><br>
+</ul><a name="17205"></a>
+ポリシー決定は、クラス <code>SecurityManager</code> の新規メソッドである <code>checkMemberAccess</code> メソッドで行います。<p><blockquote><a name="5887"></a>
+<code>void checkMemberAccess(Class,int) throws SecurityException</code><p>
+</blockquote><a name="8605"></a>
+第 1 パラメータは、アクセスが必要なメンバを持つクラスやインタフェースを指定します。第 2 パラメータはアクセスされるメンバセット (<code>Member.PUBLIC</code> または <code>Member.DECLARED</code> のいずれか) を指定します。<p><a name="18235"></a>
+指定クラスの指定メンバセットへのアクセス要求が拒否されると、メソッドは <code>SecurityException</code> をスローします。セットへのアクセスが付与されると、メソッドは返ります。<p><a name="4698"></a>
+既に説明したように、このセットの反射されたメンバを使って以下のような基本オブジェクトの操作を行うときは、標準の Java 言語アクセス制御が実行されます:<p>
+<ul><a name="1550"></a>
+<li><code>Field</code> を使ってフィールド値を獲得または設定するとき<br><br>
+<a name="1551"></a>
+<li><code>Method</code> を使ってメソッドを呼び出すとき<br><br>
+<a name="1553"></a>
+<li><code>Constructor</code> を使ってクラスの新規インスタンスを生成および初期化するとき<br><br>
+</ul><a name="1547"></a>
+この時点でアクセスが拒否されると、反射されたメンバは <code>IllegalAccessException</code> をスローします。<p>
+<a name="1626"></a>
+<h3>		 Java 言語ポリシー</h3>
+<a name="1627"></a>
+アプリケーションに関する Java 言語セキュリティポリシーは、任意のコードが、リンクする先の任意のクラスのすべてのメンバおよび構築子 (非 <code>public</code> メンバと構築子を含む) への反射的アクセスを獲得できるということです。メンバまたは構築子への反射的アクセスを獲得するアプリケーションコードが反射された再帰メンバまたは構築子を<em>使う</em>ことができるのは、標準の Java 言語アクセス制御がある場合だけです。<p>
+<a name="1628"></a>
+<h3>		 JDK 1.1 のセキュリティポリシー</h3>
+<a name="1653"></a>
+Sun の Java Development Kit 1.1 (JDK1.1) は、言語仕様には含まれ<em>ない</em>独自のセキュリティポリシーを実装しています。Sun の JDK1.1 では、クラス <code>AppletSecurity</code> が以下のポリシーを実装します:<p>
+<ul><a name="1630"></a>
+<li>安全性が保障されない (アプレット) コードに、以下へのアクセスを認める:<br><br>
+
+
+<ul>
+<a name="1631"></a>
+<li>安全性が保障されないコードと同じクラスローダがロードした、すべての <code>public</code> クラスのすべての <code>public</code> メンバ<br><br>
+<a name="1632"></a>
+<li><code>public</code> システムクラスのすべての <code>public</code> メンバ<br><br>
+<a name="1633"></a>
+<li>安全性が保障されないコードと同じクラスローダがロードした、すべてのクラスのすべての宣言されたメンバ (非 <code>public</code> を含む)<br><br>
+</ul>
+<a name="1634"></a>
+<li>安全性が保障される (アプレット) コード - 信頼されるエンティティが署名を付けたコード - には、システムクラスの全メンバへのアクセスが認められる。<br><br>
+<a name="1635"></a>
+<li>システムコード - <code>CLASSPATH</code> からロードされたコード - には、すべてのクラスローダがロードした全クラスへのアクセスが認められる。<br><br>
+</ul><a name="1636"></a>
+メンバへの反射的アクセスを獲得するコードは、標準の Java 言語アクセス制御がある場合にのみ、このアクセスを使うことができます。特権コードの概念はないので、標準の言語アクセス制御チェックをオーバーライドする手段はありません。<p><a name="1637"></a>
+このポリシーは、安全性が保障されないコードに関しては厳密で、Java 仮想マシンのリンカよりも厳しく限定されます。例えば、安全性が保障されないクラスだけでは、リフレクション経由でシステムスーパークラスの <code>protected</code> メンバにアクセスできません。これに対して、リンカ経由ではアクセス可能です。(ただし、システムコードがこのようなメンバにアクセスして、メンバを信頼されないコードに渡すことはできます)。<p><a name="1686"></a>
+JDK のセキュリティポリシーは、今後 Java のセキュリティフレームワークに発展していくと期待されています。<p>
+<hr>
+<a name="1702"></a>
+<h2>		 データ変換</h2>
+<a name="1703"></a>
+リフレクションパッケージの特定メソッドは、プリミティブ型とクラス型オブジェクト間のデータ変換を自動実行します。フィールドおよび配列のコンポーネント値を獲得/設定するための一般メソッド、ならびにメソッドと構築子呼出しのためのメソッドがあります。<p><a name="2536"></a>
+自動データ変換には次の 2 つの型があります。<em>ラッピング変換</em>は、プリミティブ型からクラス型オブジェクトの値に変換します。<em>アンラッピング変換</em>は、クラス型オブジェクトからプリミティブ型の値に変換します。これらの変換に関する規則は、<a href="java-reflection.doc.html#1705">「ラッピング変換とアンラッピング変換」</a>で定義します。<p><a name="1704"></a>
+さらに、フィールドアクセスとメソッド呼出しは、プリミティブ型および参照型について<em>拡張変換</em>を可能にします。これらの変換については、<em>Java 言語仕様</em>のセクション 5 を参照してください。より詳細な情報は、<a href="java-reflection.doc.html#1746">「拡張変換」</a> を参照してください。<p>
+<a name="1705"></a>
+<h3>		 ラッピング変換とアンラッピング変換</h3>
+<a name="1706"></a>
+プリミティブ値は、 <code>Field.get</code> または <code>Array.get</code> で獲得したり、<code>Method.invoke</code> から呼び出したメソッドによって返されると、自動的にオブジェクトにラップされます。<p><a name="1707"></a>
+同様にオブジェクト値は、プリミティブ型の値を必要とする、以下のコンテキストのパラメータとして提供されると、自動的にアンラップされます:<p>
+<ul><a name="1708"></a>
+<li><code>Field.set</code>、この場合基本フィールドはプリミティブ型を持つ<br><br>
+<a name="1709"></a>
+<li><code>Array.set</code>、この場合基本配列はプリミティブ要素型を持つ<br><br>
+<a name="1710"></a>
+<li><code>Method.invoke</code> または <code>Constructor.newInstance</code>、この場合基本メソッドまたは構築子に対応する形式パラメータはプリミティブ型を持つ<br><br>
+</ul><a name="4714"></a>
+以下は、プリミティブ型とクラス (ラッパ) 型の対応表です:<p>
+<Table Border="3">
+<strong></strong>
+<tr><td><a name="4717"></a>
+<code>boolean</code>
+<td><a name="4719"></a>
+<code>java.lang.Boolean</code>
+
+<tr><td><a name="4721"></a>
+<code>char</code>
+<td><a name="4723"></a>
+<code>java.lang.Character</code>
+
+<tr><td><a name="4725"></a>
+<code>byte</code>
+<td><a name="4727"></a>
+<code>java.lang.Byte</code>
+
+<tr><td><a name="4729"></a>
+<code>short</code>
+<td><a name="4731"></a>
+<code>java.lang.Short</code>
+
+<tr><td><a name="4733"></a>
+<code>int</code>
+<td><a name="4735"></a>
+<code>java.lang.Integer</code>
+
+<tr><td><a name="4737"></a>
+<code>long</code>
+<td><a name="4739"></a>
+<code>java.lang.Long</code>
+
+<tr><td><a name="4741"></a>
+<code>float</code>
+<td><a name="4743"></a>
+<code>java.lang.Float</code>
+
+<tr><td><a name="4745"></a>
+<code>double</code>
+<td><a name="4747"></a>
+<code>java.lang.Double</code>
+
+
+</Table>
+
+<Table>
+<tr><td>
+</Table>
+<p><a name="2667"></a>
+<code>void</code> 宣言されるメソッドは、<code>Method.invoke</code> から呼び出されると、<code>null</code> を返します。<p>
+<a name="1746"></a>
+<h3>		 拡張変換</h3>
+<a name="1747"></a>
+リフレクションパッケージでは、コンパイル時にメソッド呼出しコンテキストで認められるものと同じ拡張変換が可能です。これらの変換は、<em>Java 言語仕様</em>のセクション 5.3 で定義されます。<p><a name="1748"></a>
+拡張変換は、以下の実行時に行われます:<p>
+<ul><a name="1749"></a>
+<li><code>Field</code> および <code>Array</code> のメソッドを介して、フィールドまたは配列から値を獲得するとき<br><br>
+<a name="1750"></a>
+<li><code>Field</code> および <code>Array</code> のメソッドを介して、フィールドまたは配列に値を格納するとき<br><br>
+<a name="1751"></a>
+<li><code>Method.invoke</code> または <code>Constructor.newInstance</code> を介するメソッドあるいは構築子の呼出し中に、アンラップのパラメータ実効値を対応する形式パラメータに変換するとき<br><br>
+</ul><a name="4759"></a>
+認められる<em>拡張変換</em>には、次のものがあります:<p>
+<ul><a name="4760"></a>
+<li><code>byte</code> から <code>short</code>, <code>int</code>, <code>long</code>, <code>float</code>, または <code>double</code> への変換<br><br>
+<a name="4761"></a>
+<li><code>short</code> から <code>int</code>, <code>long</code>, <code>float</code>, または <code>double</code> への変換<br><br>
+<a name="4762"></a>
+<li><code>char</code> から <code>int</code>, <code>long</code>, <code>float</code>, または <code>double</code> への変換<br><br>
+<a name="4763"></a>
+<li><code>int</code> から <code>long</code>, <code>float</code>, または <code>double</code> への変換<br><br>
+<a name="4764"></a>
+<li> <code>long</code> から <code>float</code> または <code>double</code> への変換<br><br>
+<a name="4765"></a>
+<li><code>float</code> から <code>double</code> への変換<br><br>
+</ul><a name="4769"></a>
+認められる <em>拡張参照変換</em>には次のものがあります:<p>
+<ul><a name="4770"></a>
+<li><i>S</i> が <i>T</i> のサブクラスの場合、クラス型 <i>S</i> からクラス型 <i>T</i> への変換<br><br>
+<a name="4771"></a>
+<li><i>S</i> が <i>K</i> を実装する場合、クラス型 <i>S</i> からインタフェース型 <i>K</i> への変換<br><br>
+<a name="4772"></a>
+<li><i>J</i> が <i>K</i> のサブインタフェースの場合、インタフェース型 <i>J</i> からインタフェース型 <i>K</i> への変換<br><br>
+</ul>
+<hr>
+<a name="1774"></a>
+<h2>		 パッケージング</h2>
+<a name="1775"></a>
+コアリフレクション API は、<code>java.lang</code> の <code>java.lang.reflect</code> という名前の新規サブパッケージにあります。Java の既定パッケージのインポート規則に触れて互換性の問題が発生することはありません。<p>
+
+<br>
+<hr>
+<font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection-copyright.doc.html">前項目</a>  | <a href="java-reflection.doc1.html">次項目</a>
+</font>
+<hr>
+
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<a href="java-reflection-copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>

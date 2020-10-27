@@ -1,0 +1,1605 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+
+<TITLE>		 Java 暗号化アーキテクチャ</TITLE>
+
+<META NAME="AUTHOR" CONTENT="br">
+<META NAME="OPERATOR" CONTENT="br">
+</HEAD>
+
+<BODY>
+<HR>
+
+<center>
+<H1>Java<font size=-1><sup>TM</sup></font> 暗号化アーキテクチャ</H1>
+
+<H1>API 仕様 & 参照</H1><br>
+
+<H3><I>最終更新日: 1997 年 3 月 17 日</I></H3>
+
+</center>
+
+<HR>
+
+<p><dl>
+<dt><dd><a href="#Ack">
+<font size="+2"><b>謝辞</b></font>
+</a>
+<br>
+<br>
+
+<dt><dd><a href="#Introduction">
+<font size="+2"><b> はじめに</b></font>
+</a><dl>
+<dt><dd><a href="#Design">
+<b> 	設計方針				</b>
+</a><dt><dd><a href="#Architecture">
+<b> 	アーキテクチャ				</b>
+</a><dt><dd><a href="#Concepts">
+<b> 	概念				</b>
+</a></dl>
+<br>
+
+<dt><dd><a href="#CoreClasses">
+<font size="+2"><b> コアクラスとインタフェース</b></font>
+</a><dl>
+
+<dt><dd><a href="#Provider">
+<b>Provider クラス</b>
+</a><dl>
+<dt><dd><a href="#ProviderImplReq">
+<b>プロバイダ実装の要求および獲得方法</b>
+</a><dt><dd><a href="#ProviderInstalling">
+<b>プロバイダのインストール</b>
+</a></dl>
+
+<dt><dd><a href="#Security">
+<b>Security クラス</b>
+</a><dt><dd><a href="#MessageDigest">
+<b>MessageDigest クラス</b>
+</a><dt><dd><a href="#Signature">
+<b>Signature クラス</b>
+</a><dt><dd><a href="#Key">
+<b>Key インタフェース</b>
+</a><dt><dd><a href="#KeyPair">
+<b>KeyPair クラス</b>
+</a><dt><dd><a href="#KPG">
+<b>KeyPairGenerator クラス</b>
+</a><dt><dd><a href="#KeyManagement">
+<b>Key Management クラス</b>
+</a><dl>
+<dt><dd><a href="#Identity">
+<b>Identity クラス</b>
+</a><dt><dd><a href="#IdentityScope">
+<b>IdentityScope クラス</b>
+</a><dt><dd><a href="#Signer">
+<b>Signer クラス</b>
+</a></dl>
+
+<dt><dd><a href="#SecureRandom">
+<b>SecureRandom クラス</b>
+</a></dl>
+<br>
+
+<dt><dd><a href="#Examples">
+<font size="+2"><b>コード例</b></font>
+</a><dl>
+<dt><dd><a href="#MDEx">
+<b>MessageDigest オブジェクトの計算</b>
+</a><dt><dd><a href="#KPGEx">
+<b>鍵のペアの生成</b>
+</a><dt><dd><a href="#SigEx">
+<b>Signature の生成</b>
+</a><dt><dd><a href="#VerifyEx">
+<b>Signature の検証</b>
+</a></dl>
+<br>
+<br>
+
+<dt><dd><a href="#AppA">
+<font size="+2"><b> 付録 A: 標準名 </b></font>
+</a>
+<br>
+<br>
+<dt><dd><a href="#AppB">
+<font size="+2"><b> 付録 B: アルゴリズム </b></font>
+</a>
+
+</dl>
+
+
+
+<HR>
+
+<H1><a name="Ack">謝辞</a></H1>
+
+<blockquote>
+
+Java 暗号化アーキテクチャの設計では、JavaSoft や広範な Java 共同体の貢献者の方々のコメントを大いに参考にさせてもらいました。JDK 1.1 <code>java.security</code> API は、主に Benjamin Renaud の設計と実装によるものです。彼は API に顕著な影響を与えたフィードバックをしてくれた方々に特に感謝の意を表しています。その方々は次のとおりです(英字の順で): Josh Bloch, Dave Brown、Mary Dageforde、Satish Dharmaraj、Rachel Gollub, Li Gong、James Gosling、Surya Koneru、Jong Lee、Roger Riggs および Theron Tock。他にも数限りない方々に考え方やフィードバックで貢献して頂きましたが、ここに書ききれないため割愛させてもらいます。これらの方々には、ここで感謝の意を表します。
+
+</blockquote>
+
+
+<H1><a name="Introduction">はじめに</a></H1>
+
+<blockquote>
+
+<P>
+Java セキュリティ API は Java の新しいコア API で、<code>java.security</code> パッケージ (およびそのサブパッケージ) に組み込まれています。この API は、開発者が低レベルと高レベルの両方のセキュリティ機能を Java アプリケーションに組み込めるように設計されています。JDK 1.1 の最初のリリースの Java セキュリティには、デジタル署名とメッセージダイジェストの API を含む、セキュリティ機能のサブセットが入っています。さらに、鍵管理、認証管理、およびアクセス制御に関する abstract (抽象) インタフェースもあります。X.509 v3 認証およびその他の認証形式をサポートする特定 API、およびアクセス制御に関するより豊富な機能が、今後の JDK リリースで実現される予定です。
+
+<p>「Java 暗号化アーキテクチャ」(JCA) は、Java プラットフォームの暗号機能の開発とアクセスに関するフレームワークです。JCA は、暗号に関連した JDK 1.1 Java セキュリティ API の一部 (現在のところほとんどすべての API)、ならびにこのドキュメントに記載の規則および仕様セットを含む、多重かつ互いに操作可能な暗号の実装を可能にする <a href = "#ProviderArch">「プロバイダ」</a> アーキテクチャを導入します。
+
+<p>Java 暗号化拡張 (Cryptography Extension (JCE)) は、暗号化と鍵交換を組み込むように JCA API を拡張したものです。JCE と JCA により、完全なプラットフォーム独立型の暗号化 API が提供されます。JCE は現時点では米国外に輸出できないため、別のリリースで提供する予定です。
+
+<p>
+このドキュメントには、Java Development Kit (JDK) 1.1 に同梱の JCA API ならびにそのデフォルトのプロバイダについて、レベルの高い説明と仕様が記載されています。JCE API に関するドキュメントは、JCE のリリース時に別途提供します。
+
+<p>注意: この仕様の最新バージョンは、弊社の公開 Web サイト<a href = "http://java.sun.com/products/JDK/1.1/docs/guide/security/CryptoSpec.html">http://java.sun.com/products/JDK/1.1/docs/guide/security/CryptoSpec.html</a> にあります。
+
+
+</blockquote>
+
+
+<H2><a name="Design">設計方針</a></H2>
+
+<blockquote>
+
+<P>
+Java 暗号化アーキテクチャ (JCA) は、以下の方針に基づいて設計されました:
+<UL>
+<LI>実装の独立性と相互操作性<p>
+<LI>アルゴリズムの独立性と拡張性
+</UL>
+
+<P>
+実装の独立性とアルゴリズムの独立性は相補関係にあります。つまりこの 2 つの目的は、デジタル署名やメッセージダイジェストなどの暗号化<I>概念</I>について、 API ユーザが実装やこれらの概念を実装するアルゴリズムを意識しないで使えるようにすることです。完全なアルゴリズムの独立性が不可能なときは、JCA は標準化アルゴリズムの固有の API を開発者に提供します。実装の独立性が不要なときは、JCA は開発者に必要な特定の実装を示します。
+<P>
+実装の独立性は、「プロバイダ」ベースのアーキテクチャを使って実現されます。<a href = "#ProviderArch">暗号化パッケージプロバイダ</a> (略して「プロバイダ」) とは、デジタル署名アルゴリズム (DSA) や RSA 暗号化システム (RSA) などの特定アルゴリズムを実行するパッケージやパッケージセットを意味します。プログラムは単に、特定アルゴリズム (例えば DSA) を実行する特定型のオブジェクト (たとえば Signature オブジェクト) を要求するだけで、インストールされているプロバイダの 1 つから実装を獲得できます。必要に応じて、プログラムは特定プロバイダから実装を要求することもできます。例えば、より高速で安全性の高いバージョンが利用できるときは、プロバイダをアプリケーションに対して透過的に更新することができます。
+<P>
+アルゴリズムの独立性は、暗号化「エンジン」 (アルゴリズム) の型を定義し、これらの暗号化エンジンに機能を提供するクラスを定義して実現します。これらのクラスは<I>エンジンクラス</I>と呼ばれ、この例は <a href = "#MessageDigest">MessageDigest</a> クラスおよび <a href = "#Signature">Signature</a> クラスです。
+
+<P>
+実装の相互操作性とは、様々な実装が互いに機能でき、互いの鍵を使ったり、互いの署名を検証できることを意味します。つまり、1 つのプロバイダが生成した同じアルゴリズムや鍵を別のプロバイダが使ったり、あるプロバイダが生成した署名を別のプロバイダが検証するということです。
+
+<P>
+アルゴリズムの拡張性とは、サポートされるエンジンクラスの 1 つに当てはまる新規アルゴリズムを容易に追加できることを意味します。
+
+</blockquote>
+
+
+<H2><a name="Architecture">アーキテクチャ</a></H2>
+
+<blockquote>
+
+
+<H4><a name="ProviderArch">暗号化パッケージプロバイダ</a></H4>
+
+<p>Java 暗号化アーキテクチャに、 
+<em>暗号化パッケージプロバイダ</em> (略して「プロバイダ」) の概念が導入されました。これは、Java セキュリティ API の暗号化に関するサブセットの具体的な実装を提供するパッケージ (またはパッケージセット) です。例えば、プロバイダにデジタル署名 (DSA) または RSA 暗号化システム (RSA) (あるいはその両方) の実装を含めることができます。
+
+<p>プログラムは単に、特定アルゴリズム (例えば DSA) を実行する特定型のオブジェクト (たとえば Signature オブジェクト) を要求するだけで、インストールされているプロバイダの 1 つから実装を獲得できます。あるいは、特定プロバイダを要求することもできます。(各プロバイダは、それぞれの参照名を持ちます)。
+
+<p>JDK 1.1 には、"SUN" という名前のデフォルトのプロバイダが標準で搭載されています。"SUN" プロバイダパッケージには、以下のものが含まれています:
+
+<ul>
+
+<li>デジタル署名アルゴリズム (NIST FIPS 186) の実装<p>
+
+<li>MD5 (RFC 1321) および SHA-1 (NIST FIPS 180-1) メッセージダイジェストアルゴリズムの実装<p>
+
+</ul>
+
+<p>JDK では 1 つ以上のプロバイダパッケージがインストールされます。新規プロバイダは静的または動的に追加できます (<a href = "#Provider">Provider</a> クラスと <a href = "#Security">Security</a> クラスを参照してください)。Java 暗号化アーキテクチャには、インストールされているプロバイダについてユーザが問い合わせることができる API セットがあります。
+<P>
+クライアントは異なるプロバイダを用いて実行環境を構成し、各プロバイダの<i>優先順位</i>を指定できます。優先順位とは、特定プロバイダの指定がない場合に、要求アルゴリズムに関して検索されるプロバイダの順位です。 
+
+<H4>鍵管理</H4>
+
+<P>
+Java 仮想マシンごとに「システム識別スコープ」
+<a href = "#IdentityScope">IdentityScope</a>) があります。これは鍵、認証、および信頼レベルのレポジトリを管理します。このリポジトリは、認証や署名のためにそれを必要とするアプリケーションが使用できます。恒久データベースのデフォルトの IdentityScope は、"SUN" というデフォルトの暗号化パッケージプロバイダから入手できます。異なる IdentityScope は、必要に応じてシステムスコープとして使うことができます。
+
+
+</blockquote>
+
+
+<H2><a name="Concepts">概念</a></H2>
+
+<blockquote>
+
+<P>
+このセクションでは、API に導入された重要概念について説明します。
+
+
+<H4><a name="Engine">エンジンクラスとアルゴリズム</a></H4>
+
+<P>
+エンジンクラスとは暗号アルゴリズムの機能<I>型</I>を提供するクラスです。JCA は、各エンジンクラスごとに Java クラスを定義します。例えば、<a href = "#MessageDigest">MessageDigest</a> クラス、<a href = "#Signature">Signature</a> クラス、および <a href = "#KPG">KeyPairGenerator</a> クラスがあります。API のユーザは、これらのエンジンクラスを要求および利用して対応する処理を実行します。Signature インスタンスは、デジタル署名の実行および検証に、MessageDigest インスタンスは指定データのメッセージダイジェストの計算に、および KeyPairGenerator は指定のアルゴリズムに適した 公開鍵および秘密鍵のペアの生成に使います。
+
+<p>
+エンジンクラスは、特定な型のアルゴリズムの機能へのインタフェースを提供しますが、その実際の実装 (1 つ以上のプロバイダから) は特定アルゴリズムのためのものです。例えば Signature エンジンクラスは、デジタル署名アルゴリズムの機能へのアクセスを提供します。Signature サブクラスに実際に提供される実装は、DSA を使う SHA-1、RSA を使う SHA-1、または RSA を使う MD5 などの任意の種類の署名アルゴリズムとなり得ます。 
+
+<p>
+別の例として、MessageDigest はメッセージダイジェストアルゴリズムへのアクセスを提供します。この実装は、SHA-1、MD5、または MD2 などの各種メッセージダイジェストアルゴリズムにできます。
+
+
+<H4>実装とプロバイダ</H4>
+
+<P>
+各種エンジンクラスの実装は、JCA
+<a href = "#ProviderArch">暗号化パッケージプロバイダ</a>が提供します。プロバイダとは、特定アルゴリズムの 1 つまたは複数のエンジンクラスを実装する基本パッケージです。例えば、"SUN" という Java Development Kit のデフォルトのプロバイダは、DSN 署名アルゴリズムおよび MD5 と SHA-1 メッセージダイジェストアルゴリズムの実装を提供します。その他のプロバイダは、上記のアルゴリズムまたはその他のアルゴリズム (RSA ベースの署名アルゴリズムや MD2 メッセージダイジェストアルゴリズムなど) について、独自の実装を定義できます。
+
+<H4>実装インスタンスを獲得するためのファクトリメソッド</H4>
+
+<P>
+
+API の各エンジンクラスについては、エンジンクラス特有の<i>ファクトリメソッド</i>を呼び出すことによって特定の実装が要求され、インスタンスが生成されます。ファクトリメソッドは、クラスのインスタンスを返す static (スタティック) メソッドです。
+
+<p>例えば、該当の Signature オブジェクト獲得メカニズムは以下のとおりです: 
+ユーザは Signature クラスの 
+<code>getInstance</code> メソッドを呼び出してオブジェクトを要求します。署名アルゴリズム名 (DSA など) を指定し、オプションで必要な実装を持つプロバイダ名も指定します。
+<code>getInstance</code> メソッドが、指定のアルゴリズムおよびプロバイダのパラメータを満たす Signature サブクラスを検索します。プロバイダの指定がない場合、<code>getInstance</code> は優先順位に従って登録プロバイダを検索し、指定のアルゴリズムを実装する Signature サブクラスを持つものを見つけ出します。プロバイダの登録の詳細は、<a href= "#Provider">Provider クラス</a> を参照してください。
+
+
+</blockquote>
+
+
+<H1><a name="CoreClasses">コアクラスとインタフェース</a></H1>
+
+<blockquote>
+
+<P>
+このセクションでは、Java 暗号化アーキテクチャの一般リリースで提供するコアクラスとインタフェースについて説明します: 
+
+<ul>
+
+<li><a href = "#Provider">Provider</a> クラスと 
+<a href = "#Security">Security</a> クラス
+<li><a href = "#MessageDigest">MessageDigest</a> エンジンクラス、 
+<a href = "#Signature">Signature</a> エンジンクラス、および 
+<a href = "#KPG">KeyPairGenerator</a> エンジンクラス
+<li><a href = "#Key">Key</a> クラスおよび関連クラス
+
+</ul>
+
+<p>
+このセクションでは、各クラスおよびインタフェースのメインメソッドのシグネチャを示します。該当する <a href = "#Examples">例</a> のセクションには、クラス (MessageDigest、Signature、および KeyPairGenerator) の使用例があります。
+
+セキュリティ API パッケージの完全な参考文献は、以下にあります:
+<ul>
+   <LI><a href="../../api/Package-java.security.html">java.security package</a>
+   <LI><a href="../../api/Package-java.security.acl.html">java.security.acl package</a>
+   <LI><a href="../../api/Package-java.security.interfaces.html">java.security.interfaces package</a>
+</ul><p>
+
+
+</blockquote>
+
+
+<H2><a name="Provider">Provider クラス</a></H2>
+
+<blockquote>
+
+<p>「暗号化パッケージプロバイダ」 (短縮して「プロバイダ」) とは、特定の暗号化アルゴリズムを実装するパッケージまたはパッケージセットです。Provider <em>クラス</em>は、このようなパッケージやパッケージセットへのインタフェースです。プロバイダ名、バージョン番号、その他の情報にアクセスするためのメソッドを備えています。
+
+<p>実際に暗号化アルゴリズムの実装を提供するには、エンティティ (例えば開発グループ) は実装コードを作成し、Provider クラスのサブクラスを生成します。サブクラスの構築子は、プロバイダが実装したアルゴリズムやその他の機能を検索するために Java セキュリティ API に必要な各種プロパティの値を設定します。つまり、アルゴリズムを実装するクラス名を指定します。
+注意: Provider サブクラスは、必要なときにどこからでも情報を得ることができます。つまり、実行時にファイルに情報をハードワイヤしたり、ファイルから検索したりできます。
+
+<p>プロバイダパッケージが実装できるアルゴリズム型は、デジタル署名アルゴリズム (DSA や RAS を使う MD5)、メッセージダイジェストアルゴリズム (SHA-1 やMD5)、JCE がインストールされたもの、暗号化アルゴリズム (DES や RSA)、および埋込みスキーム (例えば PKCS#5) など様々です。
+
+<p>実装が異なると、文字も異なる場合があります。ソフトウェアベースのものもあれば、ハードウェアベースのものもあります。プラットフォーム独立のものもあれば、プラットフォーム固有のものもあります。また、レビューや評価用に使えるプロバイダコードもあれば、使えないものもあります。
+
+<p>Java 暗号化アーキテクチャ (JCA) では、エンドユーザと開発者の双方が独自のニーズを決定できます。このセクションでは、エンドユーザのための暗号実装のインストール方法とニーズへの合わせかた、および開発者のための必要な実装の要求方法を説明します。
+
+<H3><a name="ProviderImplReq">プロバイダ実装の要求および獲得方法</a></H3>
+
+<blockquote>
+
+この API の各 <a href = "#Engine">エンジンクラス</a>については、特定の実装が要求されそのエンジンクラスの <code>getInstance</code> メソッドを呼び出してインスタンスを生成します。このときに、希望するアルゴリズムの名前およびオプションで実装したいプロバイダの名前を指定します。
+
+<p>プロバイダを指定しない場合、<code>getInstance</code> は名前付きアルゴリズムの実装の登録プロバイダを検索します。どの Java 仮想マシン (JVM) でも、プロバイダは指定の<i>優先順位</i>で<a href = "#ProviderInstalling">インストール</a>されます。これは特定のプロバイダが要求されないときのプロバイダの検索順序です。例えば、JVM にプロバイダが 2 つインストールされているとします。1つは「PROVIDER_1」であり、もう1つは「PROVIDER_2」です。さらに、次のことを想定します。
+
+<ul>
+
+<li>PROVIDER_1 は DSA、SHA-1、MD5、DES、DES3 を実装<p>
+<li>PROVIDER_2 は DSA、MD5/RSA、MD2/RSA、MD2、MD5、RC4、RC5、DES、RSA を実装
+
+</ul>
+
+<p>「PROVIDER_1」 の優先順位が 1 (最高の優先順位) で、「PROVIDER_2」 の優先順位が 2 の場合、以下の動作が行われます。
+
+<ul>
+
+<li>MD5 実装を検索するとする。どちらのプロバイダもこの実装を供給する。PROVIDER_1 が最高の優先順位を持ち最初に検索されるので、PROVIDER_1 実装が返される。<p>
+
+<li>MD5/RSA 署名アルゴリズムを検索する場合、まず最初に PROVIDER_1 が検索される。実装が見つからないので次に PROVIDER_2 が検索される。実装が見つかるので、このプロバイダが返される。<p>
+
+<li>別に、SHA-1/RSA 署名アルゴリズムを検索するとする。これを実装するプロバイダはインストールされていないので、<code>NoSuchAlgorithmException</code> が出される。
+
+</ul>
+
+<p>プロバイダ引数を持つ <code>getInstance</code> メソッドは、必要なアルゴリズムを持つプロバイダを指定する開発者のためのものです。例えば、連邦認証を受け取ったプロバイダ実装を連邦局が使いたいとします。PROVIDER_1 の DSA 実装はこの認証を受け取っていないのに対し、PROVIDER_2 の DSA 実装がこれを受け取っていると仮定します。
+
+<p>連邦プログラムは以下の呼び出しを実行します。PROVIDER_2 が認証された実装を持つため、これを指定します:
+
+<pre>
+	Signature dsa = Signature.getInstance("DSA", "PROVIDER_2");
+</pre>
+
+<p>この場合、「PROVIDER_2」がインストールされていないと、インストールされている別のプロバイダが要求アルゴリズムを実装している場合であっても、<code>NoSuchProviderException</code> が出されます。 
+
+<p>プログラムは、( 
+<a href = "#Security">Security</a> クラスの <code>getProviders</code> メソッドを使って) インストールされているプロバイダの一覧を獲得し、一覧から選択することもできます。
+
+</blockquote>
+
+<H3><a name="ProviderInstalling">プロバイダのインストール</a></H3>
+
+<blockquote>
+
+<p>プロバイダのインストールは 2 つの部分に分かれます。つまり、プロバイダパッケージクラスのインストールとプロバイダの構成です。
+
+<H4>プロバイダクラスのインストール</H4>
+
+<p>JDK インストレーションディレクトリ内に <code>classes</code> ディレクトリを生成し、このディレクトリにプロバイダクラス (.class ファイル) をインストールします。例えば、JDK が <code>jdk1.1.1</code> というディレクトリにインストールされていて、プロバイダを実装するクラスが <code>COM.acme.provider</code> パッケージに入っている場合、クラスをディレクトリ <code>jdk1.1.1/classes/COM/acme/provider</code> にインストールします。
+
+<p>あるいは、クラスが入っている zip または JAR (Java ARchive) ファイルを、CLASSPATH の任意の場所に置くことができます。
+
+<H4>プロバイダの構成</H4>
+
+<p>次のステップは、認可プロバイダのリストにこのプロバイダを追加することです。この処理は、JDK の <code>lib/security</code> ディレクトリにある <code>java.security</code> ファイルを編集して静的に行います。つまり、JDK が <code>jdk1.1.1</code> というディレクトリにインストールされている場合は、ファイルは <code>jdk1.1.1/lib/security/java.security</code> です。
+
+<code>java.security</code> に設定できるプロパティ型の 1 つは、以下の形式を取ります:
+
+<pre>
+    security.provider.<i>n</i>=<i>masterClassName</i>
+</pre>
+
+<p>これはプロバイダを宣言し、その優先順位
+<i>n</i> を指定します。優先順位とは、特定プロバイダの指定がないときに、要求アルゴリズムについてプロバイダを検索する順序です。順位は 1 から始まり、1 が最優先で次に 2、3 ...と続きます。
+
+<p><i>masterClassName</i> は、プロバイダの「マスター」クラスを指定する必要があります。プロバイダのドキュメンテーションでそのマスタークラスを指定します。このクラスは常に Provider クラスのサブクラスです。サブクラス構築子は、プロバイダが実装したアルゴリズムやその他の機能を検索するために Java 暗号化 API に必要な各種プロパティの値を設定します。
+
+<p>マスタークラスが <code>COM.acme.provider.Acme</code> で、優先順位が 3 位のプロバイダとして <code>Acme</code> を構成したいとします。こうするには、次のラインを <code>java.security</code> ファイルに追加します:
+
+<pre>
+    security.provider.3=COM.acme.provider.Acme
+</pre>
+
+プロバイダは動的に登録することもできます。こうするには、<code>Security</code> クラスの <code>addProvider</code> または<code>insertProviderAt</code> のいずれかのメソッドを呼び出します。この登録は恒久的ではなく、「信頼される」プログラムでしか実行できません。<a href = "#Security">Security クラス</a> を参照してください。
+
+
+</blockquote>
+
+<H3>Provider クラスのメソッド</H3>
+
+<blockquote>
+
+<p>各 Provide クラスインタフェースは、名前 (現時点では大文字小文字を区別する)、バージョン番号、およびプロバイダとそのサービスの文字列記述を持ちます。以下のメソッドを呼び出して、これらの情報について Provider インスタンスを照会できます:
+
+<pre>
+    public String getName()
+    public double getVersion()
+    public String getInfo()
+</pre>
+
+
+</blockquote>
+
+</blockquote>
+
+
+<H2><a name="Security">Security クラス</a></H2>
+
+<blockquote>
+
+<p>
+Security クラスは、インストールされているプロバイダおよびセキュリティに関するプロパティを管理します。このクラスが含むのは、インスタンス実行しない static (スタティック) メソッドだけです。
+
+<p>注意: これらのメソッドを呼び出せるのは、信頼されるプログラムだけです。現時点での「信頼されるプログラム」は、以下のいずれかです 
+
+<ul>
+
+<li>ローカルアプリケーション、または<p>
+
+<li>JDK に同梱のアプレットビューアミニチュアブラウザで実行する、信頼されるアプレット。以下の場合に、アプレットは「信頼される」と見なされる<p>
+
+<ul>
+<li> (<b>javakey</b>を使って) 信頼されるエンティティが、<b>javakey</b> ツールを使って署名を付けた Java ARchive (JAR) ファイル内にある場合。<p>
+<li><b>javakey</b> が管理するデータベース内に、JAR ファイルに署名を付けたエンティティの公開鍵の認証コピーがあり、署名を認証できる場合。 
+</ul>
+
+<p>アプレットビューアを使うと、上記のようなアプレットがローカルアプリケーションと同じ完全な権限を持って実行できるようにします。<b>javakey</b> の詳細は、<a href="../../tooldocs/solaris/javakey.html">Solaris</a> または<a href="../../tooldocs/win32/javakey.html">Windows</a> のドキュメンテーションを参照してください。
+
+</ul>
+
+
+<H3>プロバイダの管理</H3>
+
+<blockquote>
+
+<p>セキュリティクラスを使って、インストールされているプロバイダを照会するだけでなく、実行時に新規のプロバイダをインストールすることもできます。 
+
+<H4>プロバイダの照会</H4>
+
+<pre>
+	public Provider[] getProviders()
+</pre>
+
+<p>このメソッドは、インストールされているすべてのプロバイダを含む配列 (つまり、各パッケージプロバイダの Provider サブクラス) を返します。配列内のプロバイダの順序は、優先順位に従います。
+
+<pre>
+	public Provider getProvider(String providerName)
+</pre>
+
+<p>このメソッドは、<code>providerName</code> という名前のプロバイダを返します。このプロバイダが見つからないと <code>null</code> を返します。
+
+
+<H4>プロバイダの追加</H4>
+
+<pre>
+	public void addProvider(Provider provider)
+</pre>
+
+<p>このメソッドは、使用可能な次の優先順位にプロバイダを追加します。プロバイダが追加された優先順位を返すか、すでにインストールされているためにプロバイダが追加されなかった場合は -1 を返します。
+
+<pre>
+	public int insertProviderAt(Provider provider, int position)
+</pre>
+
+<p>このメソッドは、指定位置に新規のプロバイダを追加します。位置とは、特定プロバイダの指定がない場合に、要求アルゴリズムについてプロバイダが検索される優先順位です。位置は 1 から始まり、1 が最優先で次に 2、3 ...と続きます。プロバイダが要求位置に必ず追加されるとは限らないことに注意してください。例えば、プロバイダを追加できても、一番最後の位置だけに限られる場合もあります。このような場合は、<code>position</code> 引数は無視されます。また、すでにインストール済みのプロバイダは追加できません。
+
+<p>このメソッドは、プロバイダが追加された実際の位置を返します。すでにインストールされているためプロバイダが追加されなかったときは、-1 を返します。
+
+<H4>プロバイダの削除</H4>
+
+<pre>
+	public void removeProvider(String name)
+</pre>
+
+<p>このメソッドは、指定名のプロバイダを削除します。プロバイダがインストールされていない場合は、何も返しません。
+
+
+</blockquote>
+
+<H3>セキュリティのプロパティ</H3>
+
+<blockquote>
+
+<p>Security クラスは、システムに関するセキュリティのプロパティリストを保持します。これらのプロパティは、以下のメソッドを使って、信頼されるプログラムからアクセスして設定できます:
+
+<pre>
+	public static String getProperty(String key)
+	public static void setProperty(String key, String datum)
+</pre>
+
+
+</blockquote>
+
+</blockquote>
+
+
+<H2><a name="MessageDigest">MessageDigest クラス</a></H2>
+
+<blockquote>
+
+<P>
+MessageDigest クラスは<a href = "#Engine">エンジンクラス</a>で、安全な暗号化メッセージダイジェスト (SHA-1 や MD5 など) の機能を提供するように設計されています。安全な暗号化メッセージダイジェストは、任意サイズの入力 (バイト配列) を取り、固定サイズ出力を生成します。これを<I>ダイジェスト</I>と言います。ダイジェストのプロパティは次のとおりです:
+<UL>
+<LI>計算によって、同じダイジェストを生成する別の入力文字列を検索できない<p>
+<LI>ダイジェストの生成に使った入力情報を明らかにしない
+</UL>
+
+<P>
+メッセージダイジェストを使い、固有で信頼できるデータ識別子を生成します。データ識別子をデータの「デジタル指紋」と呼ぶこともあります。
+
+
+<H3>MessageDigest オブジェクトの生成</H3>
+
+<blockquote>
+
+<P>
+ダイジェスト計算では、まず最初にメッセージダイジェストインスタンスを生成します。どのエンジンクラスの場合も同様に、MessageDigest クラスの static (スタティック) ファクトリメソッド <code>getInstance</code> を呼び出して、特定型のメッセージダイジェストアルゴリズムの MessageDigest オブジェクトを獲得します: 
+<P>
+
+<pre>
+    public static MessageDigest getInstance(String algorithm) 
+</pre>
+
+<P>
+呼び出し側は、オプションでプロバイダ名を指定できます。こうすると、要求アルゴリズムの実装を確実に指定プロバイダから得られます:
+<P>
+
+<pre>
+    public static MessageDigest getInstance(String algorithm, String provider)
+</pre>
+
+<P>
+<code>getInstance</code> を呼び出すと、初期化されたメッセージダイジェストオブジェクトが返ります。従って、この後で初期化を行う必要はありません。
+
+
+</blockquote>
+
+<H3>メッセージダイジェストオブジェクトのアップデート</H3>
+
+<blockquote>
+
+<P>
+データのダイジェストを計算するための次のステップは、初期化したメッセージダイジェストオブジェクトにデータを入れることです。次の <code>update</code> メソッドのどれか 1 つを 1 回または複数回呼び出して実行します:
+<P>
+
+<pre>
+    public void update(byte input)
+    public void update(byte[] input)
+    public void update(byte[] input, int offset, int len)
+</pre>
+
+
+</blockquote>
+
+<H3>ダイジェストの計算</H3>
+
+<blockquote>
+
+<P>
+<code>update</code> メソッドを呼び出してデータを入れたあとで、次の <code>digest</code> メソッドのうちのどれか 1 つを使ってダイジェストを計算します。
+<P>
+
+<pre>
+    public byte[] digest()
+    public byte[] digest(byte[] input)
+</pre>
+
+<P>
+後者のメソッドの呼び出しは、以下の呼び出しと同じです。
+
+<pre>
+    public void update(byte[] input)
+</pre>
+
+入力を指定し、その後に引数を持たない <code>digest</code> メソッドの呼び出しが続きます。
+
+<p>
+詳細は<a href = "#MDEx">例</a> のセクションを参照してください。
+
+</blockquote>
+
+</blockquote>
+
+
+<H2><a name="Signature">Signature クラス</a></H2>
+
+<blockquote>
+
+Signature クラスは<a href = "#Engine">エンジンクラス</a>で、DSA や MD5 を使う RSA などの暗号化デジタル署名機能を提供するように設計されています。安全な暗号化署名アルゴリズムは任意サイズの入力と秘密鍵を取り、<i>署名</i>と呼ばれる比較的短い (固定サイズの場合もよくある) バイト文字列を生成します。このプロパティは次のとおりです:
+
+<UL>
+<LI>署名の生成に使う秘密鍵に対応する公開鍵が与えられる。これは入力の認証性および整合性を検証できる。<p>
+<LI>署名および公開鍵は、秘密鍵に関する情報を明らかにはしない。
+</UL>
+
+<P>
+Signature オブジェクトを使って、データに署名を付けることができます。また、指定の署名が、関連データの実際の認証署名かどうかを検証することもできます。
+
+データの署名および検証の例は、<a href = "#SigEx">例</a>のセクションを参照してください。
+
+<H3>Signature オブジェクトの状態</H3>
+
+<blockquote>
+
+Signature オブジェクトはモデルオブジェクトです。つまり、Signature オブジェクトは常に指定の状態にあり、この状態で 1 つの型のオペレーションだけを実行できます。状態は、個々のクラス (例えば Signature など) で定義した final (ファイナル) 整数の定数で表されます。
+<P>
+Signature オブジェクトに可能な状態は、次の 3 つです:
+<UL>
+<LI>UNINITIALIZED<p>
+<LI>SIGN<p>
+<LI>VERIFY
+</UL>
+
+Signature オブジェクトが初めて生成されるときは、UNINITIALIZED の状態です。Signature クラスは、状態を <code>SIGN</code> に変更する
+<code>initSign</code> と、状態を <code>VERIFY</code> に変更する <code>initVerify</code> の 2 つの初期化メソッドを定義します。
+
+</blockquote>
+
+<H3>Signature オブジェクトの生成</H3>
+
+<blockquote>
+
+署名を付ける/検証するには、最初に Signature インスタンスを生成します。どのエンジンメソッドの場合も同様に、Signature クラスの <code>getInstance</code> static (スタティック) ファクトリメソッドを呼び出して、特定型の署名アルゴリズムの Signature オブジェクトを獲得します:
+
+<pre>
+    public static Signature getInstance(String algorithm)
+</pre>
+
+<P>
+呼び出し側は、オプションでプロバイダ名を指定できます。こうすると、要求アルゴリズムの実装を確実に指定プロバイダから得られます:
+<P>
+
+<pre>
+    public static Signature getInstance(String algorithm, 
+                                        String provider)
+</pre>
+
+</blockquote>
+
+<H3>Signature オブジェクトの初期化</H3>
+
+<blockquote>
+<P>
+Signature オブジェクトを使うには、最初に必ずこれを初期化します。初期化メソッドは、オブジェクトを最初に署名用に使うか検証用に使うかに応じて異なります。
+
+<p>署名で使う場合、オブジェクトは最初に、署名を生成するエンティティの秘密鍵を使って初期化する必要があります。この初期化は、以下のメソッドを呼び出して実行します:
+<P>
+    public final void initSign(PrivateKey privateKey)
+<P>
+このメソッドでは、Signature オブジェクトは SIGN 状態になります。
+
+<p>Signature オブジェクトを検証で使う場合は、まず最初に、署名を検証するエンティティの公開鍵を使って初期化する必要があります。この初期化は、以下のメソッドを呼び出して実行します:
+<P>
+
+<pre>
+    public final void initVerify(PublicKey publicKey)
+</pre>
+
+<P>
+このメソッドでは、Signature オブジェクトは VERIFY 状態になります。
+
+</blockquote>
+
+<H3>署名</H3>
+
+<blockquote>
+
+<P>
+Signature オブジェクトを署名用に初期化した場合 (このオブジェクトが SIGN 状態の場合)、署名を付けるデータをオブジェクトに入れることができます。これは、以下の <code>update</code> メソッドのどれか 1 つを 1 回または複数回呼び出して実行します:
+
+<P>
+
+<pre>
+    public final void update(byte b)
+    public final void update(byte[] data)
+    public final void update(byte[] data, int off, int len)
+</pre>
+
+<P>
+署名を付けるデータがすべて Signature オブジェクトに入るまで、<code>update</code> メソッドを呼び出します。
+
+<P>
+署名を生成するには、単に <code>sign</code> メソッドを呼び出します:
+<P>
+
+<pre>
+    public final byte[] sign()
+</pre>
+
+<P>
+これは、署名をバイト配列に入れて返します。署名は、2 つの整数型 <code>r</code> および <code>s</code> の標準 ASN.1/DER シーケンスとしてコード化されます。Java 暗号化アーキテクチャでの ASN.1 および DER コード化の使用方法については、 
+<a href = "#AppB">付録 B</a> を参照してください。 
+
+<p><code>sign</code> メソッドを呼び出すと、signature (署名) オブジェクトは、<code>initSign</code> を呼び出して最初に署名用に初期化されたときの状態にリセットされます。つまり、オブジェクトをリセットするので、必要であれば <code>update</code> と 
+<code>sign</code> を呼び出して、同じ署名者の別の署名を生成できます。 
+
+<p>あるいは異なる秘密鍵を指定し、(異なるエンティティの署名を生成するために Signature オブジェクトを初期化する目的で) <code>initSign</code> への新規呼び出しを作成したり、(署名を検証するために Signature オブジェクトを初期化する目的で) <code>initVerify</code> への新規呼び出しを作成できます。
+  
+
+</blockquote>
+
+
+<H3>検証</H3>
+
+<blockquote>
+
+<P>
+Signature オブジェクトを検証用に初期化した場合 (VERIFY 状態にある場合) は、指定の署名が、それに関連したデータの実際の認証署名であるかどうかを検証できます。この処理を開始するには、検証データ (署名自体ではない) をオブジェクトに入れます。これは、以下の <code>update</code> メソッドのどれか 1 つを 1 回または複数回呼び出して実行します:
+
+<pre>
+    public final void update(byte b)
+    public final void update(byte[] data)
+    public final void update(byte[] data, int off, int len)
+</pre>
+
+<P>
+すべてのデータが Signature オブジェクトに入るまで、<code>update</code> メソッドを呼び出します。
+
+<P>
+このあとで、<code>verify</code> メソッドを呼び出して署名を検証できます:
+<P>
+
+<pre>
+    public final boolean verify(byte[] encodedSignature)
+</pre>
+
+<P>
+引数は、2 つの整数型 <code>r</code> および <code>s</code> の標準 ASN.1/DER シーケンスとしてコード化した署名を含むバイト配列であることが必要です。これは頻繁に使用する標準コード化です。<code>sign</code> メソッドが生成するものと同じです。 
+
+<p>
+<code>verify</code> メソッドは、コード化した署名が <code>update</code> メソッドに入れたデータの認証署名かどうかを示す <code>boolean</code> を返します。
+
+<p><code>verify</code> メソッドを呼び出すと、signature (署名) オブジェクトは、<code>initVerify</code> を呼び出して最初に検証用に初期化されたときの状態にリセットされます。つまり、オブジェクトをリセットするので、<code>initVerify</code> への呼び出しで指定した公開鍵を持つ識別の別の署名を検証できます。     
+
+<p>あるいは異なる秘密鍵を指定し、(異なるエンティティの署名を検証するために Signature オブジェクトを初期化する目的で) <code>initVerify</code> への新規呼び出しを作成したり、(署名を生成するために Signature オブジェクトを初期化する目的で) <code>initSign</code> への新規呼び出しを作成できます。
+
+</blockquote>
+
+</blockquote>
+
+
+<H2><a name="Key">Key インタフェース</a></H2>
+
+<blockquote>
+
+<P>
+Key インタフェースは、すべての鍵に関するトップレベルのインタフェースです。すべての鍵オブジェクトが共有する機能を定義します。すべての鍵は、次の 3 つの特性を持ちます:
+
+<UL>
+
+<LI>アルゴリズム
+
+<P>
+鍵に対するの鍵のアルゴリズムである。通常、鍵のアルゴリズムは、暗号化または非対称オペレーションアルゴリズム (DSA や RSA など) で、これらのアルゴリズムや関連アルゴリズム (RSA を使う MD5、RSA を使う SHA-1、Raw DSA など) と連携して機能する。鍵のアルゴリズム名は、以下のメソッドを使って獲得する。
+<P>
+
+<pre>
+    public String getAlgorithm()
+</pre>
+
+<p>
+
+<LI>コード化形式
+
+<P>
+これは鍵の外部コード化形式で、鍵を別のパーティに転送する際に、鍵の標準表示が Java 仮想マシンの外部で必要なときに使う。鍵は標準形式 (X.509 や PKCS#8 など) に従ってコード化され、以下のメソッドを使って返される:
+<P>
+
+<pre>
+    public byte[] getEncoded()
+</pre>
+
+<p>
+
+<LI>フォーマット
+
+<P>
+これはコード化した鍵のフォーマット名である。以下のメソッドから返される。
+<P>
+
+<pre>
+    public String getFormat()
+</pre>
+
+<P>
+
+</UL>
+
+鍵は一般的に、鍵生成子、認証、および鍵管理で使う各種 Identity クラスから獲得します。コード化した鍵および認証の解析機能は、このリリースには備わっていません。
+
+<H3>PublicKey および PrivateKey インタフェース</H3>
+
+<blockquote>
+
+<P>
+PublicKey および PrivateKey インタフェースはメソッドを使わないインタフェースで、型の安全性および型の識別に使います。
+
+</blockquote>
+
+</blockquote>
+
+
+<H2><a name="KeyPair">KeyPair クラス</a></H2>
+
+<blockquote>
+
+<P>
+KeyPair クラスは鍵のペア (公開鍵と秘密鍵) の簡単なホルダーで、2 つの public メソッドがあります。1 つは秘密鍵を返し、もう 1 つは公開鍵を返します:
+
+<pre>
+    public PrivateKey getPrivate()
+    public PublicKey getPublic()
+</pre>
+
+</blockquote>
+
+
+
+<H2><a name="KPG">KeyPairGenerator クラス</a></H2>
+
+<blockquote>
+
+<P>
+KeyPairGenerator クラスは<a href = "#Engine">エンジンクラス</a>で、public および秘密鍵のペアの生成に使います。鍵生成は時として、アルゴリズムの独立性に反する領域です。例えば、鍵ファミリーのパラメータ (p, q および g) を指定して DSA 鍵のペアを生成することができるのに対し、RSA 鍵のペアは生成できません。つまり、これらのパラメータは DSA には適用できて RSA には適用できません。
+<P>
+従って、鍵のペアの生成方法には、アルゴリズム独立型の方法とアルゴリズム特定型の方法の 2 つがあります。この 2 つの唯一の相違点は、オブジェクトの初期化にあります。
+
+以下のメソッドの呼び出し例は、<a href = "#KPGEx">例</a>のセクションを参照してください。
+
+<H3>KeyPairGenerator の生成</H3>
+
+<blockquote>
+
+<P>
+すべての鍵のペアは、まず最初に KeyPairGenerator を使って生成します。これは、KeyPairGenerator の以下のファクトリメソッドのいずれか 1 つを使って実行します。
+<P>
+
+<pre>
+    public static KeyPairGenerator getInstance(String algorithm)
+    public static KeyPairGenerator getInstance(String algorithm, 
+        String provider)
+</pre>
+
+</blockquote>
+
+<H3>KeyPairGenerator の初期化</H3>
+
+<blockquote>
+
+<P>
+まず最初に鍵のペアを初期化してからでなければ、鍵のペアは鍵を生成できません。ほとんどの場合、アルゴリズム独立型の初期化で十分です。ただし、所定のアルゴリズムに特有のパラメータを制御したい場合は、アルゴリズム特定型の初期化を使います。
+
+<H4>アルゴリズム独立型の初期化</H4>
+
+<P>
+すべての鍵生成子は、「強度」およびランダム性のソースの概念を共有します。強度は、すべてのアルゴリズムが例外なく共有しますが、アルゴリズムごとに解釈が異なります。(特定アルゴリズムの強度の詳細は、<a href = "#AppB">付録 B</a>: アルゴリズムを参照してください)。ランダム性のソースは、<a href = "#SecureRandom">SecureRandom</a> オブジェクトとして提供する必要があります。KeyPairGenerator クラスの <code>initialize</code> メソッドは、一般的に共有されるこの 2 つの型の引数を取ります。署名は次のようになります:
+
+<pre>
+    public void initialize(int strength, SecureRandom random)
+</pre>
+
+<P>
+このアルゴリズム独立型 <code>initialize</code> メソッドを呼び出すときは、その他のパラメータは指定しないため、アルゴリズムパラメータや public 指数などのその他の値はすべて、標準値にデフォルト化されます。特定アルゴリズムのデフォルト値の詳細は、<a href = "#AppB">付録 B</a>: アルゴリズムを参照してください。
+
+<H4>アルゴリズム特定型の初期化</H4>
+
+<P>
+場合によっては、アルゴリズム特定型セマンティクスを使って、鍵のペア生成子オブジェクトを初期化する必要があります。例えば、所定のパラメータセット <code>p</code>, <code>q</code> および <code>g</code> について DSA 鍵生成子を初期化したい場合や、所定の public 指数 <code>e</code> について RSA 鍵生成子を初期化したい場合などです。
+<P>
+これは、アルゴリズム特定型の標準インタフェースを介して実行します。アルゴリズム独立型の KeyPairGenerator の <code>initialize</code> メソッドを呼び出すのではなく、鍵のペア生成子をアルゴリズム特定型のインタフェースにキャストして、特殊なパラメータ初期化メソッドの 1 つを呼び出します。この例として DSAKeyPairGenerator (<code>java.security.interfaces</code> から) が挙げられます。これは以下の特殊パラメータ初期化メソッドを呼び出します:
+
+<pre>
+    public void initialize(DSAParams params, SecureRandom random)
+</pre>
+
+<p>詳細は<a href = "#KPGEx">例</a>のセクションを参照してください。
+
+</blockquote>
+
+<H3>鍵のペアの生成</H3>
+
+<blockquote>
+
+<P>
+鍵のペアの生成は、初期化 (およびアルゴリズム) に関係なく、常に同じです。必ず KeyPairGenerator から以下のメソッドを呼び出します:
+<P>
+
+<pre>
+    public KeyPair generateKeyPair()
+</pre>
+
+<P>
+generateKeyPair を呼び出すたびに、異なる鍵のペアが作られます。
+
+</blockquote>
+
+</blockquote>
+
+
+
+<H2><a name="KeyManagement">Key Management クラス</a></H2>
+
+<blockquote>
+
+
+<H3><a name="Identity">Identity クラス</a></H3>
+
+<blockquote>
+
+<P>
+Identity クラスは基本の鍵管理エンティティです。 
+
+<p>このクラスは識別を表します。これは、公開鍵を使って認証できる識別を持つ人、会社、または組織などの実際のオブジェクトです。
+
+<p>Identity オブジェクトはすべて、名前と公開鍵を持ちます。名前は不変です。識別はスコープ指定も可能です (<a href = "#IdentityScope">IdentityScope</a> を参照してください)。つまり、特定スコープを持つように Identity を指定した場合、この Identity の名前と公開鍵はそのスコープ内で固有です。
+
+<p>Identity には認証セットもあります (すべての認証が独自の公開鍵を認証します)。
+注意: X.509 v3 などの特定の認証フォーマットのサポートは JDK 1.1 では不可能ですが、次回の JDK リリースに含まれる予定です。
+
+<P>
+Identity クラスのメインメソッドは、クラス名、その公開鍵、およびスコープを返すメソッドです:
+<P>
+
+<pre>
+    public String getName()
+
+    public PublicKey getPublicKey()
+
+    public IdentityScope getScope()
+</pre>
+
+<P>
+識別名とスコープは、Identity を固有に識別します。同様に (鍵と識別は 1 対 1 のマッピングなので)、鍵は Identity を固有に識別します。
+
+</blockquote>
+
+
+<H3><a name="IdentityScope">IdentityScope クラス</a></H3>
+
+<blockquote>
+
+<P>
+IdentityScope クラスは 
+<a href = "#Identity">Identity</a> クラスのサブクラスです。これは、Identity オブジェクト (および Identity のサブクラスのオブジェクト) のレポジトリに関する一般的な抽象として機能します。例として、識別データベース、識別サーバ、および PGP 鍵リングなどがあります。これらのレポジトリは、セキュアクラスローダなどの各種メカニズムで使用してクラスを検証し許可を代入したり、署名ツールで使用して秘密鍵を取得しデジタル署名を生成します。一般的に、公開鍵のレポジトリと秘密鍵のレポジトリは別々に保存します。
+
+<H4>名前と鍵のスコープの指定</H4>
+
+IdentityScope オブジェクトそのものが Identity なので名前があります。また、スコープを持つこともできます。任意指定で公開鍵と関連認証を持つことも可能です。
+
+<p>鍵と識別は 1 対 1 のマッピングなので、スコープ内では鍵のコピーは 1 つだけです。つまり、同じスコープ内で 2 つの Identity オブジェクトが同じ公開鍵や同じ名前を持つことはありません。
+
+<p>IdentityScope は、すべての種類の Identity オブジェクトを含めることができます。これには他の IdentityScopes も含まれます。例えば、"Sun" という名前の IdentityScope に (Sun の運営する他の会社と一緒に) 別のスコープ "JavaSoft" を入れ、この JavaSoft にも別のスコープ「セキュリティグループ」を入れることができます。このスコープには、"Duke" という名前の Identity オブジェクトを含む、各種 Identity オブジェクトを入れることができます。
+
+<p>世界には複数の「セキュリティグループ」があることは明白です。仮想マシンごとに 1 つ以上のセキュリティグループがある場合もありますが、スコープ "Sun"/"JavaSoft" 内のセキュリティグループは 1 つだけです。同様に、世の中には "Duke" という名前の人が他にもいるでしょう。ただし "Sun"/"JavaSoft"/「セキュリティグループ」/"Duke" のスコープ内に入る Duke はただ 1 人だけです。
+
+<p>名前と公開鍵は 1 対 1 の対応関係 (1 つの Identity オブジェクトが持つ公開鍵は 1 つだけ) なので、公開鍵についても同様のスコープの固有性が存在します。従って、例えば Identity 名が "Duke" の公開鍵は、そのスコープ内で必ず固有です。(同様に、公開鍵に対応する秘密鍵は 1 つだけなので、このスコープの固有性は秘密鍵に対しても存在します)。
+
+<H4>IdentityScope メソッド</H4>
+
+すべての型の Identity オブジェクトは、同じメソッドを使ってリトリーブ、追加、および削除できます。異なる型の識別スコープを、様々な型の Identity での各種オペレーションの異なるポリシーに適用することが可能ですし、実際に当然のことと考えられています。以下はメインの IdentityScope メソッドです:
+<P>
+
+<pre>
+    /* Return the identity with the specified name. */
+    public Identity getIdentity(String name)
+
+    /* Add the specified identity to this identity scope. */
+    public void addIdentity(Identity identity)
+
+    /* Remove the specified identity from this identity scope. */
+    public void removeIdentity(Identity identity)
+
+    /* Return an enumeration of all identities in this identity scope. */
+    public Enumeration identities()
+</pre>
+
+
+<H4><a name="SysIdScope">システム識別スコープ</a></H4>
+
+Java 仮想マシンごとに、鍵、認証、および信頼レベルのレポジトリを管理する「システム識別スコープ」 (IdentityScope オブジェクト) があります。このリポジトリは、認証や署名のためにそれを必要とするアプリケーションが使用できます。恒久データベースのデフォルトの IdentityScope は、"SUN" というプロバイダから入手できます。これは <code>sun.security.provider.IdentityDatabase</code> (IdentityScope のサブクラス) です。このクラスのインスタンスは、Java プログラムが実行するたび、またはアプレットビューアが開始するたびに生成されます。
+
+<p>必要に応じて、異なる IdentityScope をシステムスコープとして使用できます。権限を持つユーザは、インストレーションディレクトリ内の <code>lib/security</code> ディレクトリの <code>java.security</code> ファイルにある <code>system.scope</code> プロパティを変更して、システムスコープを JVM 全体で使うように変更できます。つまり、JDK のインストール先ディレクトリが <code>jdk1.1.1</code> の場合、ファイルは <code>jdk1.1.1/lib/security/java.security</code> になります。システムスコープに関するファイル内のデフォルトのエントリは、以下のようになります。
+
+<pre>
+    system.scope=sun.security.provider.IdentityDatabase
+</pre>
+
+<code>system.scope</code> プロパティの値は、システムスコープとしてインスタンス実行するクラスを指定します。システムスコープを変更するには、
+<code>sun.security.provider.IdentityDatabase</code> 以外の異なる IdentityScope を指定します。
+
+あるいは、プログラムの現行セッション中に排他的に使用するよう、プログラムでシステムスコープを変更できます。(JVM の全ユーザを対象とした、より恒久的なスコープ変更とは対照的です)。プログラムは IdentityScope の <code>setSystemScope</code> メソッドを呼び出して、この変更を行います:
+
+<pre>
+    public void setSystemScope(IdentityScope scope)
+</pre>
+
+以下のメソッドを呼び出して、システム識別スコープを随時獲得できます:
+
+<pre>
+    public IdentityScope getSystemScope()
+</pre>
+
+<p>一般的に、公開鍵のレポジトリと秘密鍵のレポジトリは別個に保存します。これは必ずしも容易ではありません。システムスコープは通常 public データベースであるのに対し、所定ユーザの private スコープはユーザのホームディレクトリなどの private ディレクトリ内の場合があるためです。 
+
+
+</blockquote>
+
+
+<H3><a name="Signer">Signer クラス</a></H3>
+
+<blockquote>
+
+Signer クラスは <a href = "#Identity">Identity</a> のサブクラスです。データに署名を付けることができる Identity を表すために使います。このようなエンティティには「鍵のペア」が必要です。つまり、公開鍵と関連した秘密鍵のことです。(秘密鍵はデータに署名を付けるために必要で、関連した公開鍵は署名の検証に必要です)。このため Signer クラスは、鍵のペアを設定するための以下のメソッドを追加します: 
+
+<pre>
+    public final void setKeyPair(KeyPair pair) 
+</pre>
+
+秘密鍵を返すためのメソッドも追加します (公開鍵は Identity クラスの <code>getPublicKey</code> メソッドから返されます) :
+
+<pre>
+    public PrivateKey getPrivateKey()
+</pre>
+
+
+</blockquote>
+
+</blockquote>
+
+
+<H2><a name="SecureRandom">SecureRandom クラス</a></H2>
+
+<blockquote>
+
+<P>
+SecureRandom クラスは、ソフトウェアベース、プラットフォーム独立型、高品質の乱数生成子を提供するためのものです。 
+
+<H3>SecureRandom オブジェクトの生成</H3>
+
+<blockquote>
+
+<P>
+SecureRandom インスタンスを実行する方法は 2 つあります。1 つはデフォルトのシードメカニズムを使う方法で、もう 1 つはシードを提供する方法です。SecureRandom オブジェクトに一度シードが入れられると、これはオリジナルのシードと同じようにランダムにビットを生成します:
+<P>
+
+<pre>
+    public SecureRandom()
+
+    public SecureRandom(byte[] seed)
+</pre>
+
+<P>
+現在 JDK 1.1 に実装されているデフォルトのシーディングメカニズムは実験的なもので、暗号化セキュア乱数を必要とするアプリケーションは暗号化セキュアシードを使って SecureRandom インスタンスをシードする必要があります。
+
+</blockquote>
+
+<H3>SecureRandom オブジェクトの使い方</H3>
+
+<blockquote>
+
+<P>
+ランダムバイトを得るには、呼び出し側は単純に任意の長さの配列を渡します。すると、この配列にランダムバイトが入ります:
+<P>
+
+<pre>
+     public void nextBytes(byte[] bytes)
+</pre>
+
+
+</blockquote>
+
+<H3>SecureRandom オブジェクトの再シード</H3>
+
+<blockquote>
+
+<P>
+以下のメソッドを使って、SecureRandom オブジェクトを随時再シードできます:
+<P>
+
+<pre>
+    public void setSeed(byte[] seed)
+</pre>
+
+<P>
+これはシードをリセットします。指定のシードは、既存のシードを置換するのではなく、補足するものです。このため、繰返して呼び出してもランダム性は決して減少しません。 
+
+
+</blockquote>
+
+</blockquote>
+
+<p>
+
+
+<H1><a name="Examples">コード例</a></H1>
+
+<blockquote>
+
+
+<H3><a name="MDEx">MessageDigest オブジェクトの計算</a></H3>
+
+<blockquote>
+
+<P>
+まず最初に、以下の例のようにして<a href = "#MessageDigest">メッセージダイジェスト</a>を生成します。
+<P>
+
+<pre>
+    MessageDigest sha = MessageDigest.getInstance("SHA-1");
+</pre>
+
+<P>
+この呼び出しは、正しく初期化されたメッセージダイジェストオブジェクトを 変数<code>sha</code> に代入します。このオブジェクトは、National Institute for
+Standards and Technology の (NIST) FIPS 180-1 ドキュメントの定義に従って、ソースハッシュアルゴリズム (SHA-1) を実装します。<a href = "#AppA">付録 A</a> を参照してください。
+
+<P>
+次に、3 つのバイト配列 <code>i1</code>、<code>i2</code> および <code>i3</code> があるとします。計算するメッセージダイジェストを持つ合計入力は、この 3 つの配列から形成されます。このダイジェスト (または「ハッシュ」) は、以下の呼び出しを使って計算できます:
+
+
+<pre>
+    sha.update(i1);
+    sha.update(i2);
+    sha.update(i3);
+    byte[] hash = sha.digest();
+</pre>
+
+
+<P>
+以下の一連の呼び出しを使っても同じです:
+
+
+<pre>
+    sha.update(i1);
+    sha.update(i2);
+    byte[] hash = sha.digest(i3);
+</pre>
+
+
+<P>
+メッセージダイジェストが計算されると、メッセージダイジェストオブジェクトは自動的にリセットされ、新しいデータをレビューしてそのダイジェストを計算できる状態になります。以前の状態 (例えば <code>update</code> コールで入れたデータ) はすべて失われます。
+
+<P>
+ハッシュ実装によっては、クローン (コピー) を介して中間ハッシュをサポートするものもあります。以下について、別々のハッシュを計算するとしましょう:
+
+<ul>
+<li><code>i1</code>
+<li><code>i1 and i2</code>
+<li><code>i1, i2, and i3</code>
+
+</ul>
+
+<p>
+次のように処理します:
+<P>
+
+<pre>
+    /* compute the hash for i1 */
+    sha.update(i1); 
+    byte[] i1Hash = sha.clone().digest();
+
+    /* compute the hash for i1 and i2 */
+    sha.update(i2); 
+    byte[] i12Hash = sha.clone().digest(); 
+
+    /* compute the hash for i1, i2 and i3 */
+    sha.update(i3); 
+    byte[] i123hash = sha.digest();
+</pre>
+
+<P>
+これは、SHA-1 実装がクローン (コピー) 可能な場合にのみ機能します。メッセージダイジェストの実装の中には、クローン (コピー) 可能なものもあれば、不可能なものもあります。以下は、指定のメッセージダイジェストのインスタンスがクローン (コピー) 可能かどうかのテスト方法です:
+<P>
+
+<pre>
+    boolean cloneable = sha instanceof Cloneable;
+</pre>
+
+<P>
+メッセージダイジェストがクローン (コピー) 不可能な場合は、別の多少紛らわしい方法を使います。つまり、複数のダイジェストを生成して中間ダイジェストを計算します。この場合、計算する中間ダイジェストの数を前もって知っておくことが必要です:
+
+<pre>
+    MessageDigest i1 = MessageDigest.getMessageDigest("SHA-1");
+    MessageDigest i12 = MessageDigest.getMessageDigest("SHA-1");
+    MessageDigest i123 = MessageDigest.getMessageDigest("SHA-1");
+
+    byte[] i1Hash = i1.digest(i1);
+
+    i12.update(i1);
+    byte[] i12Hash = i12.digest(i2);
+
+    i123.update(i1);
+    i123.update(i2);
+    byte[] i123Hash = i123.digest(i3);
+</pre>
+
+
+</blockquote>
+
+
+<H3><a name="KPGEx">鍵のペアの生成</a></H3>
+
+<blockquote>
+
+<P>
+この例では、「DSA」 (デジタル署名アルゴリズム) という名前のアルゴリズムについて、公開 - 秘密 の鍵のペアを生成します。<code>userSeed</code> というユーザ作成のシードを使って、1024 ビットモジュラスの鍵を生成します。ここでは、アルゴリズム実装を提供するプロバイダは考慮しません。
+
+<H4><a href = "#KPG">鍵のペア生成子</a>の生成</H4>
+
+<blockquote>
+
+<P>
+最初のステップは、DSA アルゴリズムの鍵を生成するための鍵のペア生成子オブジェクトの獲得です:
+
+<pre>
+    KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DSA");
+</pre>
+
+</blockquote>
+
+<H4>鍵のペア生成子の初期化</H4>
+
+<blockquote>
+
+次のステップは、鍵のペア生成子の初期化です。たいていの場合、アルゴリズム独立型の初期化で十分です。ただし、DSA アルゴリズムに特定のパラメータを制御したい場合は、アルゴリズム特定型の初期化を使います。
+
+<H5>アルゴリズム独立型の初期化</H5>
+
+<P>
+すべての鍵生成子は、「強度」およびランダム性のソースの概念を共有します。一般的な KeyPairGenerator クラスの <code>initialize</code> メソッドには、2 つの型の引数があります。つまり鍵を生成するには、1024 の長さのモジュラスと <code>userSeed</code> 値を使ってシードした新規の
+<a href = "#SecureRandom">SecureRandom</a> オブジェクトを指定し、以下のコードを使います: 
+
+<pre>
+    keyGen.initialize(1024, new SecureRandom(userSeed));
+</pre>
+
+<H5>アルゴリズム特定型の初期化</H5>
+
+<P>
+アルゴリズム独立型の初期化を行うときは、アルゴリズム特定型パラメータの値については、実装のデフォルト値を使います (ただし、強度は例外)。
+
+<p>DSA 特定パラメータのセット <code>p</code>、 
+<code>q</code>、および <code>g</code> があり、これを使って鍵のペアを生成したいので、パラメータデフォルト値を使いたくないとしましょう。
+
+<p>KeyPairGenerator の <code>initialize</code> メソッドを呼び出すかわりに、<code>KeyPairGenerator.getInstance</code> から獲得した KeyPairGenerator オブジェクトを適切なインタフェースにキャストします。このサンプルケースでは、「DSA」 アルゴリズムの鍵のペア生成子を要求します。このようなアルゴリズムは、<code>DSAKeyPairGenerator</code> インタフェースを (<code>java.security.interfaces</code> から) 実装します。従って、生成子を DSAKeyPairGenerator に対してキャストしたあとで、インタフェースから <code>initialize</code> メソッドを呼び出して DSA 特定パラメータを指定することができます。
+
+<p>DSA 特定パラメータをグループ分けするための、<code>java.security.interfaces.DSAParams</code> インタフェースがあります。DSAKeyPairGenerator の 
+<code>initialize</code> メソッドは、次の 2 つの引数を取ります。つまり、<code>p</code>、 
+<code>q</code>、および <code>g</code> パラメータを指定する DSAParams オブジェクトと、ランダム性のソースである SecureRandom オブジェクトです。前者の引数を構築するには、DSAParams インタフェースを実装する単純クラスのインスタンスを構築してから、BigInteger オブジェクトとして表される p、q、および g パラメータをこれに渡します。後者の引数の場合、アルゴリズム独立型メソッドと同じコードを使ってランダム性のソースを指定します。DSAParams を実装するクラス名が <code>DSAParamsClass</code> と仮定し、以下のようにして鍵のペア生成子を初期化します:
+
+<pre>
+    DSAParams dsaParams = new DSAParams(p, q, g);
+    DSAKeyPairGenerator dsaKeyGen = (DSAKeyPairGenerator)keyGen;
+    dsaKeyGen.initialize(dsaParams, new SecureRandom(userSeed));
+</pre>
+
+(注意: 名前が p のパラメータは、長さがモジュラスのプライム数値です。従って、モジュラス長を指定するために他のメソッドを呼び出す必要はありません。)
+
+</blockquote>
+
+<H4>鍵のペアの生成</H4>
+
+<blockquote>
+
+最終ステップは、鍵のペアの生成です。使用した初期化の型 (アルゴリズム独立型またはアルゴリズム特定型) に関係なく、同じコードを使って<a href = "#KeyPair">鍵のペア</a>を生成します。
+
+<pre>
+    KeyPair pair = keyGen.generateKeyPair();
+</pre>
+
+<P>
+
+
+</blockquote>
+
+</blockquote>
+
+
+
+<H3><a name="SigEx">署名の生成</a></H3>
+
+<blockquote>
+
+<P>
+まず最初に<a href = "#Signature">署名</a>オブジェクトを生成します。
+<P>
+
+<pre>
+    Signature dsa = Signature.getInstance("DSA"); 
+</pre>
+
+<P>
+次に 
+<a href = "#KPGEx">鍵のペアの例</a>で生成した鍵のペアを使い、秘密鍵を指定してオブジェクトを初期化します。この後で<code>data</code> というバイト配列に署名を付けます。
+<P>
+
+<pre>
+    /* Initializing the object with a private key */
+    PrivateKey priv = pair.getPrivate();
+    dsa.initSign(priv);
+
+    /* Update and sign the data */
+    dsa.update(data);
+    byte[] sig = dsa.sign();
+</pre>
+
+
+<P>
+
+
+</blockquote>
+
+<H3><a name="VerifyEx">署名の検証</a></H3>
+
+<blockquote>
+
+<P>
+署名の検証は簡単です。(注意: ここでも、 <a href = "#KPGEx">鍵のペアの例</a>で生成した鍵のペアを使います)。
+<P>
+
+<pre>
+    /* Initializing the object with the public key */
+    PublicKey pub = pair.getPublic();
+    dsa.initVerify(pub);
+
+    /* Update and verify the data */
+    dsa.update(data);
+    boolean verifies = dsa.verify(sig);
+    System.out.println("signature verifies: " + verifies);
+</pre>
+
+
+</blockquote>
+
+</blockquote>
+
+
+
+
+<HR>
+
+
+<H1><a name="AppA">付録 A: 標準名</a></H1>
+
+<blockquote>
+
+<P>
+「Java セキュリティ API」は様々なアルゴリズム、埋込みスキーム、プロバイダなどの標準名を必要とし、これらを使用します。ここに記載の仕様は、標準名として以下の名前を確立するものです。アルゴリズムの仕様については、付録 B を参照してください。
+
+<P>
+SHA-1 (および SHA): セキュアハッシュアルゴリズム、セキュアハッシュ標準 NIST FIPS 180-1 で定義
+<P>
+MD5: メッセージダイジェストアルゴリズム RSA-MD5、RFC 1321 の RSA DSI で定義
+<P>
+MD2: メッセージダイジェストアルゴリズム RSA-MD2、RFC 1423 の RSA DSI で定義
+<P>
+RawDSA: NIST FIPS 186 に記載の非対称変換、ダイジェストの生成の前で 「DSA 署名オペレーション」 および 「DSA 検証オペレーション」 として説明。RawDSA への入力は必ず 20 バイトの長さ。
+<P>
+RSA: Rivest, Shamir and Adleman AsymmetricCipher アルゴリズム、RSA Laboratory のテクニカルノート PKCS#1 で RSA 暗号として定義。
+<P>
+DSA: デジタル署名アルゴリズム、デジタル署名標準 NIST FIPS 186 で定義。この標準は、RawDSA 非対称変換と SHA-1 メッセージダイジェストアルゴリズムを併用するデジタル署名アルゴリズムを定義します。
+<P>
+MD5/RSA: RSA AsymmetricCipher アルゴリズムと MD5 MessageDigest アルゴリズムを組み合わせた Signature アルゴリズム。
+<P>
+MD2/RSA: RSA AsymmetricCipher アルゴリズムと MD2 MessageDigest アルゴリズムを組み合わせた Signature アルゴリズム。
+<P>
+SHA-1/RSA: RSA AsymmetricCipher アルゴリズムと SHA-1 MessageDigest アルゴリズムを組み合わせた Signature アルゴリズム。
+<P>
+DES: データ暗号化標準、NIST の FIPS 46-1 および 46-2 で定義。
+<P>
+IDEA: 国際データ暗号化アルゴリズム (IDEA)、スイスの ASCOM Systec によるもの。
+<P>
+RC2: RSA DSI が独占権を持つ SymmetricCipher アルゴリズム。
+<P>
+RC4: RSA DSI が独占権を持つ SymmetricCipher アルゴリズム。
+
+</blockquote>
+
+
+<HR>
+
+<H1><a name="AppB">付録 B: アルゴリズム</a></H1>
+
+<blockquote>
+
+<p>この付録では、付録 A で定義したいくつかのアルゴリズムに関する詳細を示します。一覧されているアルゴリズムの実装を与えるプロバイダは、この付録の仕様に従うことが必要です。
+注意: このドキュメントの最新バージョンは、JavaSoft の公開 Web サイトから入手できます。
+
+<p>ここに記載のない新しいアルゴリズムを追加するには、まず最初にプロバイダパッケージの供給先に問い合わせて、該当アルゴリズムが追加済みでないかどうかを確認します。既に追加されている場合は、可能であれば開示されている定義を使います。まだ追加されていない場合は、アルゴリズムの仕様を添えて、この付録 B に記載のテンプレートに類似した使用可能なテンプレートを作成します。 
+
+<H3>仕様テンプレート</H3>
+
+<blockquote>
+
+以下のアルゴリズム仕様には、次のフィールドが含まれます。
+
+<H4>名前</H4>
+  
+<p>アルゴリズムの認識名。これは、既存のアルゴリズムオブジェクト名を判別するために、(アルゴリズムの要求時に) <code>getInstance</code> メソッドに渡される名前で、<code>getAlgorithm</code> メソッドによって返されます。この 2 つのメソッドは、次の関連エンジンクラス内にあります:。
+<a href = "#Signature">Signature</a>, 
+<a href = "#MessageDigest">MessageDigest</a>, 
+and <a href = "#KPG">KeyPairGenerator</a>.
+
+<H4>型</H4>
+
+<p>アルゴリズムの型: Signature, MessageDigest, または KeyPairGenerator
+
+<H4>記述</H4>
+
+<p>アルゴリズムに関する一般的なメモ。アルゴリズム、該当する特許権などが実装する標準も含みます。
+
+<H4>KeyPair アルゴリズム (オプション指定)</H4>
+
+<p>このアルゴリズムの keypair アルゴリズム
+
+<H4>強度 (オプション指定)</H4>
+
+<p>鍵のアルゴリズムや鍵生成アルゴリズムの場合: 鍵生成や鍵初期化の正しい強度
+
+<H4>パラメータのデフォルト値 (オプション指定)</H4>
+
+<p>鍵生成アルゴリズムの場合: デフォルトのパラメータ値
+
+<H4>Signature フォーマット (オプション指定)</H4>
+
+<p>Signature アルゴリズムの場合: 署名のフォーマット。つまり、検証メソッドの入力と署名メソッドの出力。
+
+</blockquote>
+
+<H3>アルゴリズムの仕様</H3>
+
+<blockquote>
+
+<H4>SHA-1 メッセージダイジェストアルゴリズム</H4>
+
+<p>名前: SHA-1
+
+<p>型: MessageDigest
+
+<p>説明: NIST の FIPS 180-1 で定義したメッセージダイジェストアルゴリズム。このアルゴリズムの出力は 160 ビットのダイジェストです。「SHA」 という用語が頻繁に使われますが、これは SHA-1 を意味します。FIPS 180 で開示した最初の SHA は、現在は使われていません。このアルゴリズムの正しい Java 暗号化アーキテクチャ名は SHA-0 です。
+
+
+<H4>MD2 メッセージダイジェストアルゴリズム</H4>
+
+<p>名前: MD2
+
+<p>型: MessageDigest
+
+<p>説明: RFC 1319 で定義したメッセージダイジェストアルゴリズム。このアルゴリズムの出力は 128 ビット (16 バイト) のダイジェストです。
+
+
+<H4>MD5 メッセージダイジェストアルゴリズム</H4>
+
+<p>名前: MD5
+
+<p>型: MessageDigest
+
+<p>説明: RFC 1321 で定義したメッセージダイジェストアルゴリズム。このアルゴリズムの出力は 128 ビット (16 バイト) のダイジェストです。 
+
+
+<H4>デジタル署名アルゴリズム</H4>
+
+<p>名前: DSA
+
+<p>型: Signature
+
+<p>説明: このアルゴリズムは、NIST FIPS 186 に記述の署名アルゴリズムです。DSA は SHA-1 メッセージダイジェストアルトリズムを使います。
+
+<p>KeyPair アルゴリズム: DSA
+
+<p>署名フォーマット: 2 つの ASN.1 INTEGER 値の DER シーケンス
+<code>r</code> および <code>s</code> (この順序):
+
+	SEQUENCE ::= {
+		r INTEGER,
+		s INTEGER }
+
+
+
+<H4>RSA ベースの署名アルゴリズム、MD2, MD5 または SHA-1 を使用</H4>
+
+<p>名前: MD2/RSA, MD5/RSA および SHA-1/RSA
+
+<p>型: Signature
+
+<p>説明: それぞれに MD2, MD5, および SHA-1 メッセージアルゴリズムを RSA 暗号化と一緒に使う署名アルゴリズムです。
+
+<p>KeyPair アルゴリズム: RSA
+
+<p>署名フォーマット: RSA Laboratory の公開鍵暗号化標準ノート #1 で定義の DER コード化 PKCS#1 ブロック。暗号化データは署名付きデータのダイジェストです。
+
+
+<H4>DSA KeyPair 生成アルゴリズム</H4>
+
+<p>名前: DSA
+
+<p>型: KeyPairGenerator
+
+<p>説明: このアルゴリズムは、DSA 対応 NIST FIPS 186 に記載の鍵のペア生成アルゴリズムです。
+
+<p>強度: モジュラス <code>p</code> の長さ (ビット単位)。512 以上で 8 の倍数の任意の整数にできます。
+
+<p>パラメータのデフォルト値: 以下のデフォルトのパラメータ値は、512、768、および 1024 ビットの強度用に使います。
+
+<blockquote>
+
+<H5>512 ビットの鍵パラメータ</H5>
+
+<pre>
+SEED = b869c82b 35d70e1b 1ff91b28 e37a62ec dc34409b
+
+counter = 123
+
+p = fca682ce 8e12caba 26efccf7 110e526d b078b05e decbcd1e b4a208f3
+    ae1617ae 01f35b91 a47e6df6 3413c5e1 2ed0899b cd132acd 50d99151
+    bdc43ee7 37592e17
+
+q = 962eddcc 369cba8e bb260ee6 b6a126d9 346e38c5
+	 
+g = 678471b2 7a9cf44e e91a49c5 147db1a9 aaf244f0 5a434d64 86931d2d
+    14271b9e 35030b71 fd73da17 9069b32e 2935630e 1c206235 4d0da20a
+    6c416e50 be794ca4
+
+</pre>
+
+<H5>768 ビットの鍵パラメータ</H5>
+
+<pre>
+SEED = 77d0f8c4 dad15eb8 c4f2f8d6 726cefd9 6d5bb399
+
+counter = 263
+
+p = e9e64259 9d355f37 c97ffd35 67120b8e 25c9cd43 e927b3a9 670fbec5
+    d8901419 22d2c3b3 ad248009 3799869d 1e846aab 49fab0ad 26d2ce6a
+    22219d47 0bce7d77 7d4a21fb e9c270b5 7f607002 f3cef839 3694cf45
+    ee3688c1 1a8c56ab 127a3daf
+
+q = 9cdbd84c 9f1ac2f3 8d0f80f4 2ab952e7 338bf511
+
+g = 30470ad5 a005fb14 ce2d9dcd 87e38bc7 d1b1c5fa cbaecbe9 5f190aa7
+    a31d23c4 dbbcbe06 17454440 1a5b2c02 0965d8c2 bd2171d3 66844577
+    1f74ba08 4d2029d8 3c1c1585 47f3a9f1 a2715be2 3d51ae4d 3e5a1f6a
+    7064f316 933a346d 3f529252
+
+</pre>
+
+
+<H5>1024 ビットの鍵パラメータ</H5>
+
+<pre>
+SEED = 8d515589 4229d5e6 89ee01e6 018a237e 2cae64cd
+
+counter = 92
+
+p = fd7f5381 1d751229 52df4a9c 2eece4e7 f611b752 3cef4400 c31e3f80
+    b6512669 455d4022 51fb593d 8d58fabf c5f5ba30 f6cb9b55 6cd7813b
+    801d346f f26660b7 6b9950a5 a49f9fe8 047b1022 c24fbba9 d7feb7c6
+    1bf83b57 e7c6a8a6 150f04fb 83f6d3c5 1ec30235 54135a16 9132f675
+    f3ae2b61 d72aeff2 2203199d d14801c7
+
+q = 9760508f 15230bcc b292b982 a2eb840b f0581cf5
+	 
+p = f7e1a085 d69b3dde cbbcab5c 36b857b9 7994afbb fa3aea82 f9574c0b
+    3d078267 5159578e bad4594f e6710710 8180b449 167123e8 4c281613
+    b7cf0932 8cc8a6e1 3c167a8b 547c8d28 e0a3ae1e 2bb3a675 916ea37f
+    0bfa2135 62f1fb62 7a01243b cca4f1be a8519089 a883dfe1 5ae59f06
+    928b665e 807b5525 64014c3b fecf492a
+
+</pre>
+
+</blockquote>
+
+
+
+<H4>RSA KeyPair 生成アルゴリズム</H4>
+
+<p>名前: RSA
+
+<p>型: KeyPairGenerator
+
+<p>説明: このアルゴリズムは、PKCS#1 に記載の鍵のペア生成アルゴリズムです。
+
+<p>強度: 512 以上で 8 の倍数の任意の整数。
+
+
+</blockquote>
+
+</blockquote>
+
+
+
+
+
+
+
+<p>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE>
+ 
+<IMG SRC="../../images/JAVA.85.GIF" ALIGN=RIGHT>
+ 
+<FONT SIZE=-2>
+<A HREF="../../relnotes/SMICopyright.html">Copyright (C)</A> 
+1996, 1997 Sun Microsystems, Inc., 2550 Garcia Ave., Mtn. View, CA 94043-1100 USA. All rights reserved.
+</FONT>
+
+<br><br>
+<FONT SIZE=-1>
+ご意見は <a href="mailto:java-security@java.sun.com">
+java-security@java.sun.com</a> までお寄せください。
+</FONT>
+ 
+
+
+</BODY>
+
+</HTML>
+
+

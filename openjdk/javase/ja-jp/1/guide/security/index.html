@@ -1,0 +1,115 @@
+<HTML>
+<HEAD>
+   <TITLE>セキュリティと署名付きアプレット </TITLE>
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000FF" VLINK="#000077" 
+ALINK="#FF0000">
+
+<P><IMG SRC="../../images/smi.logo.gif" ALT="Sun Microsystems, Inc" > </P>
+
+<P><FONT SIZE=-1><A HREF="../../index.html">JDK 目次 </A></FONT>
+<HR SIZE=3 NOSHADE><!-- 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --></P>
+
+<H1 ALIGN=CENTER>セキュリティと署名付きアプレット </H1>
+
+<BLOCKQUOTE>
+<P>Java Security API は、低レベルおよび高レベルのセキュリティ機能を Java
+アプリケーションに組み込むことができるように設計されています。JDK1.1 の
+Java Security の最初のリリースでは、デジタル署名やメッセージダイジェストなど、この
+機能のサブセットが含まれていましす。加えて、キー管理や証明管理、アクセスコントロー
+ルの
+abstract インタフェースがありました。X.509 v3 証明やその他の証明フォーマット、アク
+セスコントロール領域での豊富な機能をサポートする専用の
+API は、次の JDK リリースで提供します。 </P>
+
+<P>また、JDK 1.1 は、Java ARchive (JAR) ファイルに署名することのできるツールを提供
+します。これにはクラスやその他のデータ（画像や音声など）を格納することができます。
+アプレットビューワでは、信頼できるエントリによって（ツールを使用して）署名を付けら
+れたJAR
+ファイル内のダウンロードされたアプレットを、ローカルアプリケーションとまったく同じ
+権限で実行することができます。つまり、この種のアプレットは、オリジナルの
+Java セキュリティモデルの「サンドボックス」制限の対象になりません。将来のリリー
+スで
+は、許容信頼レベルにおける細分性を強化するなど、より高度なセキュリティ原則を提供し
+ます。
+</P>
+</BLOCKQUOTE>
+
+<P><B><FONT SIZE=+2>セキュリティガイド </FONT></B><BR>
+</P>
+
+<UL>
+<LI><B><A HREF="JavaSecurityOverview.html">セキュリティ API 概要</A></B></LI>
+
+<LI><B><A HREF="CryptoSpec.html">Java 暗号化アーキテクチャ API 仕様 &amp;
+リファレンス</A></B></LI>
+</UL>
+
+<P><BR>
+<B><FONT SIZE=+2>セキュリティの例</FONT></B><BR>
+</P>
+
+<UL>
+<P><B>次の JavaSoft Web サイトを参照してください:</B> </P>
+
+<LI><B><A HREF="http://java.sun.com/security/signExample/index.html">署名付きア
+プレ
+ットの例</A></B>
+</LI>
+</UL>
+
+<P><BR>
+<B><FONT SIZE=+2>セキュリティ API リファレンス <BR>
+</FONT></B><FONT SIZE=-1>(javadoc)</FONT> </P>
+
+<UL>
+<LI><B><A HREF="../../api/Package-java.security.html">java.security パッケージ
+</A></B>
+</LI>
+
+<LI><B><A HREF="../../api/Package-java.security.acl.html">java.security.acl
+パッケージ</A></B> </LI>
+
+<LI><B><A 
+HREF="../../api/Package-java.security.interfaces.html">java.security.interfaces
+パッケージ</A></B> </LI>
+</UL>
+
+<P><BR>
+<B><FONT SIZE=+2>セキュリティツール </FONT></B><BR>
+</P>
+
+<UL>
+<LI><B>javakey</B> - Java セキュリティツール - (<A 
+HREF="../../tooldocs/solaris/javakey.html">Solaris
+用 </A>) (<A HREF="../../tooldocs/win32/javakey.html">Windows 用 </A>)
+</LI>
+</UL>
+
+<P><BR>
+<B><FONT SIZE=+2>詳細について</FONT></B><BR>
+</P>
+
+<UL>
+<P><B>次の JavaSoft Web サイトを参照してください:</B> </P>
+
+<LI><B><A HREF="http://java.sun.com/security">セキュリティホームページ</A></B>
+</LI>
+</UL>
+
+<P><BR>
+</P>
+
+<P><!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE><IMG SRC="../../images/JAVA.85.GIF"  ALIGN=RIGHT> <FONT 
+SIZE=-2><A HREF="../../relnotes/SMICopyright.html">Copyright
+(C)</A> 1996, 1997 Sun Microsystems, Inc., 2550 Garcia Ave., Mtn. View,
+CA 94043-1100 USA. All rights reserved. <BR>
+<BR>
+</FONT><FONT SIZE=-1>ご意見は <A 
+HREF="mailto:java-security@java.sun.com">java-security@java.sun.com</A>
+までお寄せください。 </FONT></P>
+
+</BODY>
+</HTML>

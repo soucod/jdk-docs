@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Euro Support</title>
+  </head>
+
+<BODY BGCOLOR="#FFFFFF" TEXT=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+<CENTER><P ALIGN=LEFT>
+<IMG SRC="../../images/smi.logo.gif" ALT=" Sun Microsystems, Inc " BORDER=0>
+</P></CENTER>
+
+
+<font size="-1"><a href="index.html">Internationalization Contents</a></font>
+<HR SIZE=3 NOSHADE>
+      <h1>Euro Support</h1>
+<blockquote>
+This release includes support for the new European Union currency, 
+<a href="http://europa.eu.int/euro/">the euro</a>. In order for the JDK software's support for the 
+euro character 
+to function properly, you may need to install euro-support patches for 
+your operating system.  For Windows&nbsp;NT and Windows&nbsp;95, you can 
+obtain the required patches from the 
+<a href="http://www.microsoft.com/windows/euro.asp">Microsoft euro support 
+web page</a>. No patch is required for Windows&nbsp;98.  
+<p>
+Euro-support patches are also required if you are using versions of 
+Solaris prior to Solaris&nbsp;7.  
+See the <a href="http://java.sun.com/products/jdk/1.2/install-solaris-patches.html">Solaris patches web page</a> for information on the Solaris patches 
+required for euro support.
+<p>
+The addition of euro support will not affect existing code, except for
+character conversion code that relies on changed encodings. No APIs
+were changed.
+
+</blockquote>
+
+<h3>Encodings and Euro Support</h3>
+<blockquote>
+The following encodings have been modified to support the euro currency
+character. Code point 0x88 was modified on Cp1251, code point 0x80 on
+all the other encodings. These code points were previously unused.
+<blockquote>
+<table cellborder=0 cellspacing=3>
+<tr><td>Cp874</td><td>Windows Thai</td></tr>
+<tr><td>Cp1250</td><td>Windows Eastern European</td></tr>
+<tr><td>Cp1251</td><td>Windows Cyrillic</td></tr>
+<tr><td>Cp1252</td><td>Windows Latin-1</td></tr>
+<tr><td>Cp1253</td><td>Windows Greek</td></tr>
+<tr><td>Cp1254</td><td>Windows Turkish</td></tr>
+<tr><td>Cp1255</td><td>Windows Hebrew</td></tr>
+<tr><td>Cp1256</td><td>Windows Arabic</td></tr>
+<tr><td>Cp1257</td><td>Windows Baltic</td></tr>
+<tr><td>Cp1258</td><td>Windows Vietnamese</td></tr>
+</table>
+</blockquote>
+There are also 12 new encodings. Of special interest is ISO8859_15.
+This encoding supports ISO&nbsp;8859-15, a character set standard not yet
+approved. ISO&nbsp;8859-15 is ISO&nbsp;8859-1 with various changes, including
+accented French and Finish characters and the euro currency symbol. 
+ISO&nbsp;8859-15 is also known as Latin&nbsp;9, Latin&nbsp;0, and IBM&nbsp;923.
+<p>
+Before JDK&nbsp;1.1.7, the default encoding under Microsoft Windows for 
+Western European locales was ISO8859_1. Starting with JDK&nbsp;1.1.7, the 
+default encoding for Western European Locales under Microsoft Windows 
+has been changed to Cp1252. Cp1252 does not implement a reversible 
+byte/character translation. It may appear to some programmers that this 
+introduces an incompatibility. The real problem is a programming 
+technique that unintentionally relies on the features of specific 
+locales.
+<p>
+For more information, see the list of <a href="encoding.doc.html">Supported 
+Encodings</a>.
+</blockquote>
+
+<h3>Locales and Euro Support</h3>
+<blockquote>
+No existing locale resources have been modified for the euro. Instead,
+new variant locale resources are provided for each country adopting the
+euro. Previously, there were no Luxembourg locale resources. In this
+release, Luxembourg gets both base and euro variant locales.
+<p>
+For more information, see the list of 
+<a href="http://java.sun.com/products/jdk/1.1/docs/guide/intl/locale.doc.html">Supported Locales</a>.
+<p>
+Since the Java&nbsp;1.1 platform specification is frozen, no API was added
+to find the euro variant of a non-euro locale. The following example
+code locates the euro variant of a non-euro locale. This example
+assumes that only the locale resources provided with the Java 
+Development Kit are available. A more general solution would be much 
+more complicated. 
+<blockquote><pre>
+if (source.getVariant().indexOf("EURO") >= 0)
+    newLocale = source;
+else
+    newLocale = new Locale(source.getLanguage(),
+        source.getCountry(),
+	source.getVariant().length() > 0 ?
+	    (source.getVariant() + "_EURO") :
+	    "EURO");
+</pre></blockquote>
+</blockquote>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE>
+
+<IMG SRC="../../images/JAVA.85.GIF" ALIGN=RIGHT>
+
+<FONT SIZE="-2">
+<A HREF="../../relnotes/SMICopyright.html">Copyright &#169;</A> 1996-1999 Sun Microsystems, Inc., 901 San Antonio Road, Palo Alto, CA 94303 USA. All rights reserved.
+<br><br>
+<FONT SIZE="-1">
+Please send comments to: <a href="mailto:java-intl@java.sun.com">java-intl@java.sun.com</a> 
+</FONT>
+
+</BODY>
+
+</html>

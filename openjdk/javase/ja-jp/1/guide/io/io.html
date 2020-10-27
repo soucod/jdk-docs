@@ -1,0 +1,163 @@
+<html>
+<head>
+<title>JDK 1.1 における文字ストリーム</title>
+</head>
+<body>
+<h1>JDK 1.1 における文字ストリーム</h1>
+
+Java Development Kit のバージョン 1.1 は<i>文字ストリーム</i>のサポートを <a
+href="../../api/Package-java.io.html"><tt>java.io</tt></a> パッケージに導入します。
+
+<p>このバージョン以前では、標準 I/O 機能は <a href="../../api/java.io.InputStream.html"><tt>InputStream</tt></a> および <a href="../../api/java.io.OutputStream.html"><tt>OutputStream</tt></a> クラスとそのサブクラスを経由して、バイトストリームだけをサポートしていました。文字ストリームはバイトストリームのようなものですが、8 ビットバイトでなく 16 ビット Unicode{tm} 文字を含んでいます。これらは <a href="../../api/java.io.Reader.html"><tt>Reader</tt></a> および <a href="../../api/java.io.Writer.html"><tt>Writer</tt></a> クラスとそのサブクラスによって実装されます。<tt>Reader</tt> および <tt>Writer</tt> は、 <tt>InputStream</tt> および <tt>OutputStream</tt> と同様な操作を基本的にサポートします。異なる点は、バイトストリームメソッドがバイトまたはバイト配列上で動作するのに対して、文字ストリームは文字、文字配列、文字列上で動作するという点です。
+
+<p> バイトストリームで使用可能なほとんどの機能は、また文字ストリームでも提供されます。これは各文字ストリームクラスの名前に反映されており、この前置は、通常対応するバイトストリームクラスと共有されています。例えば、<a href="../../api/java.io.PushbackReader.html"><tt>PushbackReader</tt></a> というクラスがあり、これはバイトストリームで<a href="../../api/java.io.PushbackInputStream.html"><tt>PushbackInputStream</tt></a>が提供する機能と同じものを、文字ストリームでも提供します。
+
+
+<h3>なぜ文字ストリームを使用するのか?</h3>
+
+文字ストリームの大きな利点は、固有の文字エンコーディングに依存せず、そのため<a href="../intl/index.html">国際化</a>が簡単なプログラムを書くのが容易になるという点です。
+
+<p>Java は、国際標準文字エンコーディングである Unicode{tm} に文字列を格納します。これはほとんど世界中の記述言語を表すことができます。しかし、代表的なユーザが読むテキストファイルは、 Unicode{tm} または ASCII にさえも必ずしも関係しないエンコーディングを使用します。そして、このようなエンコーディングは多数あります。文字ストリームは、バイトストリームと文字ストリームの間の架け橋として機能する 2 つのクラスを提供して、これらのエンコーディングを取扱う複雑さを覆い隠します。<a href="../../api/java.io.InputStreamReader.html"><tt>InputStreamReader</tt></a> クラスは文字入力ストリームを実装し、これはバイト入力ストリームからバイトを読み込み、そして指定されたエンコーディングに従って文字に変換します。同様に、<a href="../../api/java.io.OutputStreamWriter.html"><tt>OutputStreamWriter</tt></a></i> クラスは文字出力ストリームを実装し、これは指定されたエンコーディングに従って文字をバイトに変換し、そしてバイト出力ストリームに書き込みます。
+
+<p>文字ストリームの第 2 の利点は、潜在的にバイトストリームよりかなり効率的であることです。Java の当初のバイトストリームの実装の多くは、バイト単位の読み書き操作を指向しています。文字ストリームクラスは対照的に、バッファ単位の読み書き操作を指向します。この差異はもっと効率的なロック方式と組み合わされて、文字ストリームクラスが多くのケースでエンコーディング変換の追加されたオーバーヘッドを補完できるようにします。
+
+
+<h3>API の概要</h3>
+
+新しい文字ストリームクラスは、既存のバイトストリームクラスと <tt>java.io</tt> パッケージで併行するように設計されています。上述のように、各文字ストリームクラスの名前は、適当であれば <tt>Reader</tt> または <tt>Writer</tt> で終わり、前置は、もしあれば、対応するバイトストリームクラスと通常共有されます。次の表では、新しいクラスをまとめています; 左の列のインデントはスーパークラスとの関係を示します。
+
+<p>
+<center>
+<table border=0 cellpadding=0 cellspacing=0>
+<tr><td valign=top><i>文字ストリームクラス</i></td>
+    <td valign=top><i>内容説明</i></td>
+    <td valign=top><i>対応するバイトクラス</i></td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td valign=top><a href="../../api/java.io.Reader.html"><tt>Reader</tt></a></td>
+    <td valign=top>文字入力ストリームの abstract クラス</td>
+    <td valign=top><a href="../../api/java.io.InputStream.html"><tt>InputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.BufferedReader.html"><tt>BufferedReader</tt></a></td>
+    <td valign=top>入力のバッファリング、行の分解</td>
+    <td valign=top><a href="../../api/java.io.BufferedInputStream.html"><tt>BufferedInputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.LineNumberReader.html"><tt>LineNumberReader</tt></a>&nbsp;&nbsp;&nbsp;&nbsp</td>
+    <td valign=top>行番号の追跡</td>
+    <td valign=top><a href="../../api/java.io.LineNumberInputStream.html"><tt>LineNumberInputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.CharArrayReader.html"><tt>CharArrayReader</tt></a></td>
+    <td valign=top>文字配列の読み込み</td>
+    <td valign=top><a href="../../api/java.io.ByteArrayInputStream.html">ByteArrayInputStream</a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.InputStreamReader.html"><tt>InputStreamReader</tt></a></td>
+    <td valign=top>バイトストリームの文字ストリームへの変換</td>
+    <td valign=top><i>(なし)</i></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.FileReader.html"><tt>FileReader</tt></a></td>
+    <td valign=top>ファイルのバイトを文字ストリームに変換&nbsp;&nbsp;&nbsp;&nbsp</td>
+    <td valign=top><a href="../../api/java.io.FileInputStream.html"><tt>FileInputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.FilterReader.html"><tt>FilterReader</tt></a></td>
+    <td valign=top>フィルタをかけられた文字入力の abstract クラス</td>
+    <td valign=top><a href="../../api/java.io.FilterInputStream.html"><tt>FilterInputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.PushbackReader.html"><tt>PushbackReader</tt></a></td>
+    <td valign=top>文字の押し戻しの許可</td>
+    <td valign=top><a href="../../api/java.io.PushbackInputStream.html"><tt>PushbackInputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.PipedReader.html"><tt>PipedReader</tt></a></td>
+    <td valign=top><tt>PipedWriter</tt> の読み込み</td>
+    <td valign=top><a href="../../api/java.io.PipedInputStream.html"><tt>PipedInputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.StringReader.html"><tt>StringReader</tt></a></td>
+    <td valign=top><tt>String</tt> の読み込み</td>
+    <td valign=top><a href="../../api/java.io.StringBufferInputStream.html"><tt>StringBufferInputStream</tt></a></td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td valign=top><a href="../../api/java.io.Writer.html"><tt>Writer</tt></a></td>
+    <td valign=top>文字出力ストリームの abstract クラス</td>
+    <td valign=top><a href="../../api/java.io.OutputStream.html"><tt>OutputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.BufferedWriter.html"><tt>BufferedWriter</tt></a></td>
+    <td valign=top>出力のバッファリング、プラットフォームの行区切り文字の使用</td>
+    <td valign=top><a href="../../api/java.io.BufferedOutputStream.html"><tt>BufferedOutputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.CharArrayWriter.html"><tt>CharArrayWriter</tt></a></td>
+    <td valign=top>文字配列への書き込み</td>
+    <td valign=top><a href="../../api/java.io.ByteArrayOutputStream.html"><tt>ByteArrayOutputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.FilterWriter.html"><tt>FilterWriter</tt></a></td>
+    <td valign=top>フィルタをかけられた文字出力の abstract クラス</td>
+    <td valign=top><a href="../../api/java.io.FilterOutputStream.html"><tt>FilterOutputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.OutputStreamWriter.html"><tt>OutputStreamWriter</tt></a></td>
+    <td valign=top>文字ストリームのバイトストリームへの変換</td>
+    <td valign=top><i>(なし)</i></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.FileWriter.html"><tt>FileWriter</tt></a></td>
+    <td valign=top>文字ストリームのバイトファイルへの変換</td>
+    <td valign=top><a href="../../api/java.io.FileOutputStream.html"><tt>FileOutputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.PrintWriter.html"><tt>PrintWriter</tt></a></td>
+    <td valign=top><tt>Writer</tt> への値とオブジェクトの印刷</td>
+    <td valign=top><a href="../../api/java.io.PrintStream.html"><tt>PrintStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.PipedWriter.html"><tt>PipedWriter</tt></a></td>
+    <td valign=top><tt>PipedReader</tt> への書き込み</td>
+    <td valign=top><a href="../../api/java.io.PipedOutputStream.html"><tt>PipedOutputStream</tt></a></td></tr>
+<tr><td valign=top>&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../api/java.io.StringWriter.html"><tt>StringWriter</tt></a></td>
+    <td valign=top><tt>String</tt> への書き込み</td>
+    <td valign=top><i>(なし)</i></td></tr>
+</table>
+</center>
+<p>
+
+<h3>関連した変更</h3>
+
+<h4>PrintStream</h4>
+
+<a href="../../api/java.io.PrintStream.html"><tt>PrintStream</tt></a> クラスは、プラットフォームのデフォルト文字エンコーディングとプラットフォームのデフォルト行終了子を使用するよう、修正されました。こうして、各 <tt>PrintStream</tt> は <a href="../../api/java.io.OutputStreamWriter.html"><tt>OutputStreamWriter</tt></a> を取り込み、出力用のバイトを生成するために、このライターをとおしてすべての文字を渡します。<tt>println</tt> メソッドはプラットフォームのデフォルト行終了子を使用しますが、この終了子はシステムプロパティ <tt>line.separator</tt> によって定義され、必ずしも単一の改行文字 (<tt>'\n'</tt>) ではありません。既存の <tt>write</tt> メソッドを経由して書かれたバイトとバイト配列は、ライターをとおして渡されません。
+
+<p><tt>PrintStream</tt> クラスを変更する主な動機は、そうすることで、 Java プログラムを ASCII 以外のローカルエンコーディングのプラットフォーム上で書く人々にとって、<a href="../../api/java.lang.System.html#out"><tt>System.out</tt></a> および <a href="../../api/java.lang.System.html#err"><tt>System.err</tt></a> がより有用になるからです。換言すれば、<tt>PrintStream</tt> はデバッグでの使用および既存のコードとの互換性のために主に提供されます。そのため、次の 2 つの構築子は<a href="../misc/deprecated.html">推奨されません</a>:
+
+<p>
+<table width=100% border=0 cellpadding=0 cellspacing=0>
+<tr><td width=25% align=right valign=top>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.io.PrintStream.html#PrintStream(java.io.OutputStream)"><tt>PrintStream(OutputStream)</tt></a>
+<tr><td width=25% align=right valign=top>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.io.PrintStream.html#PrintStream(java.io.OutputStream, boolean)"><tt>PrintStream(OutputStream, boolean)</tt></a>
+</table>
+
+<p>クラス全体より構築子を推奨しないことによって、<tt>System.out</tt> および <tt>System.err</tt> をそのまま使用していてコンパイルしても、推奨しない由の警告が出なくなります。こうして、Java を丁度学んでいるプログラマ、またはデバッグの目的で <tt>System.err.println</tt> 呼び出しを挿入しようとしているプログラマは、このような警告に悩まされなくなります。他方、明示的に <tt>PrintStream</tt> を構築するコードを書いているプログラマは、そのコードをコンパイルする際、推奨しない由の警告を見ることになります。テキスト出力を生成するコードは新しい <a href="../../api/java.io.PrintWriter.html"><tt>PrintWriter</tt></a> クラスを使用する必要があり、このクラスは文字エンコーディングの指定またはデフォルトエンコーディングの受け入れを許します。便宜のために、<tt>PrintWriter</tt> クラスは <tt>OutputStream</tt> オブジェクトを取り上げ、デフォルトエンコーディングを使用する即座の <tt>OutputStreamWriter</tt> オブジェクトを作成する構築子を提供します。
+
+
+<h4>他のクラス</h4>
+
+<p>いくつかの既存のクラスに対して小さな変更が行われました。次の構築子とメソッドは、バイトと文字の変換を正しく行わないので、推奨されません:
+
+<p>
+<table width=100% border=0 cellpadding=0 cellspacing=0>
+<tr><td width=25% align=right valign=top><tt>String</tt>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.io.DataInputStream.html#readLine()"><tt>DataInputStream.readLine()</tt></a>
+<tr><td width=25% align=right valign=top><tt>InputStream</tt>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.lang.Runtime.html#getLocalizedInputStream()"><tt>Runtime.getLocalizedInputStream(InputStream)</tt></a>
+<tr><td width=25% align=right valign=top><tt>OutputStream</tt>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.lang.Runtime.html#getLocalizedOutputStream()"><tt>Runtime.getLocalizedOutputStream(OutputStream)</tt></a>
+<tr><td width=25% align=right valign=top>&nbsp;</td>
+    <td width=75% align=left valign=top><a href="../../api/java.io.StreamTokenizer.html#StreamTokenizer(java.io.InputStream)"><tt>StreamTokenizer(InputStream)</tt></a>
+<tr><td width=25% align=right valign=top>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.lang.String.html#String(byte[], int, int, int)"><tt>String(byte ascii[], int hibyte, int offset, int count)</tt></a>
+<tr><td width=25% align=right valign=top>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.lang.String.html#String(byte[], int)"><tt>String(byte ascii[], int hibyte)</tt></a>
+<tr><td width=25% align=right valign=top><tt>void</tt>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.lang.String.html#getBytes(int, int, byte[], int)"><tt>String.getBytes(int srcBegin, int srcEnd, byte dst[], int dstBegin)</tt></a>
+</table>
+
+<p>最後に、次の構築子とメソッドが追加されました:
+
+<p>
+<table width=100% border=0 cellpadding=0 cellspacing=0>
+<tr><td width=25% align=right valign=top>&nbsp;</td>
+    <td width=75% align=left valign=top><a href="../../api/java.io.StreamTokenizer.html#StreamTokenizer(java.io.Reader)"><tt>StreamTokenizer(Reader)</tt></a></td></tr>
+<tr><td width=25% align=right valign=top><tt>byte[]</tt>&nbsp;&nbsp;</td>
+    <td width=75% align=left valign=top><a href="../../api/java.lang.String.html#getBytes()"><tt>String.getBytes()</tt></a></td></tr>
+<tr><td width=25% align=right><tt>void</tt>&nbsp;&nbsp;</td>
+    <td width=75% align=left><a href="../../api/java.lang.Throwable.html#printStackTrace(java.io.PrintWriter)"><tt>Throwable.printStackTrace(PrintWriter)</tt></a></td></tr>
+
+</table>
+
+<p>
+
+<hr noshade>
+<table border=0 width=100% cellpadding=0 cellspacing=0>
+<tr><td valign=top align=left>
+    コメントは <a href="mailto:java-io@java.sun.com"><i>java-io@java.sun.com</i></a> 宛てに送ってください。
+    </td>
+    <td valign=top align=right>Mark Reinhold / 4 February 1997</td></tr>
+</table>
+
+</body>
+</html>

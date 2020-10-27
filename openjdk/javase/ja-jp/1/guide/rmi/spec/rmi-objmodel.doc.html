@@ -1,0 +1,279 @@
+<html><head><title>Java 分散オブジェクトモデル
+</title></head>
+<body bgcolor=#ffffff>
+ 
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-intro.doc.html">前項目</a> <a href="rmi-arch.doc.html">次項目</a>
+<hr><br>
+
+<a name="167">
+<h1>Java 分散オブジェクトモデル
+</h1>
+</a>
+<hr><p><a name="64">
+
+<p>
+</a><h3><a name="2241">
+トピックス:
+</a></h3><ul><li><a href="rmi-objmodel.doc.html#3441">用語の定義</a>
+<li><a href="rmi-objmodel.doc.html#182">分散モデルと非分散モデルの比較</a>
+<li><a href="rmi-objmodel.doc.html#213">RMI インタフェースとクラス</a>
+<li><a href="rmi-objmodel.doc.html#1830">リモートインタフェースの実装</a>
+<li><a href="rmi-objmodel.doc.html#307">リモートオブジェクトとローカルスタブにおける型の等価性</a>
+<li><a href="rmi-objmodel.doc.html#2521">リモートメソッド呼び出しでのパラメーター引き渡し</a>
+<li><a href="rmi-objmodel.doc.html#315">リモートメソッド呼び出しにおける例外処理</a>
+<li><a href="rmi-objmodel.doc.html#3734">RemoteObject クラスによる Object メソッドオーバーライド</a>
+<li><a href="rmi-objmodel.doc.html#2490">ファイナル宣言された Object メソッドのセマンティクス</a>
+<li><a href="rmi-objmodel.doc.html#357">リモートオブジェクトの位置検出</a>
+</ul><h1><a name="3441">
+用語の定義 
+</a></h1>
+Java 分散オブジェクトモデルにおいて、<em>リモートオブジェクト</em>
+とは別な（別なホスト上にあることもある）Java 仮想マシンからそのメソッドを呼び出すことのできるオブジェクトです。
+このタイプのオブジェクトは、リモートオブジェクトのメソッドを宣言する Java インタフェースである一つ以上の<em>リモートインタフェース</em>により記述されます。
+<p><em>リモートメソッド呼び出し</em> (RMI) とはリモートオブジェクト上にあるリモートインタフェースのメソッドを呼び出す操作のことです。このとき最も重要なのはリモートオブジェクトを呼び出すためのシンタックスがローカルオブジェクト呼び出しと同じであることです。
+<p><h1><a name="182">
+分散モデルと非分散モデルの比較 
+</a></h1>
+
+Java 分散オブジェクトモデルは Java オブジェクトモデルと次の点でよく似ています。
+<p><ul>
+<li>リモートオブジェクトへの参照を引数として渡すことができ、メソッド（ローカルであれ、リモートであれ）呼び出しの結果は返り値として返される。
+<li>リモートオブジェクトはリモートインタフェースの実装がサポートする任意の型にキャストすることができる。このとき Java の組み込み型変換シンタックスに従う。
+<li>Java の組み込み <code>instanceof</code> 演算子によりリモートオブジェクトがサポートするリモートインタフェースをテストすることができる。
+</ul>
+<p>Java 分散オブジェクトは Java オブジェクトモデルと次の点で異なります。
+<ul>
+<li>リモートオブジェクトのクライアントはリモートインタフェースに働きかけるのであって、これらのインタフェースの実装クラスに働きかけることはない。
+<li>リモートメソッド呼び出しに対するリモートでない引数と、その結果の返り値は参照渡しではなくコピー渡しになる。この理由は、オブジェクトへの参照は単一の仮想マシン上でのみ有効である。
+<li>リモートオブジェクトは参照で渡され、実際のリモート実装がコピーされて渡されるのではない。
+<li><code>Object</code> クラスで定義されるメソッドのいくつかのセマンティクスはリモートオブジェクト用に特化されている。
+<li>リモートオブジェクト呼び出しの失敗モードはその性質として、ローカルオブジェクト呼び出しの失敗モードよりも複雑になる。クライアントはリモートメソッド実行時はより多くの例外処理を取り扱わなければならない。
+</ul><h1><a name="213">
+RMI インタフェースとクラス 
+</a></h1>
+RMI システムのリモート動作を決定するインタフェースとクラスは <code>java.rmi</code> と <code>java.rmi.server</code> パッケージで定義されます。次の図はこれらのインタフェースとクラスの関係を示します。
+<p><a name="1646">
+ <img src="rmi-objmodel.doc.anc.gif">
+<p>
+</a><h2><a name="3459">
+リモートインタフェース 
+</a></h2>
+全てのリモートインタフェースは、直接または間接的に <code>java.rmi.remote</code> インタフェースを拡張します。<code>Remote</code> インタフェースフェースはここに示すように、メソッドを定義しません。
+<p><dl><a name="3460">
+<pre>public interface Remote {}
+</pre></a></dl>
+例えば次に示す部分コードは銀行口座へのリモートインタフェースを示したもので、口座預け入れ、収支勘定、引き出しのためのメソッドを含んでいます。
+<p><dl><a name="3561"><pre>public interface BankAccount
+       extends Remote
+{
+	public void deposit (float amount)
+		throws java.rmi.RemoteException;
+	public void withdraw (float amount)
+		throws OverdrawnException, java.rmi.RemoteException;
+	public float balance()
+		throws java.rmi.RemoteException;
+}
+</pre></a></dl>
+リモートインタフェースのメソッドは次のように定義されなければなりません。
+<p><ul>
+<li>メソッドはスロー節の中で、アプリケーションに固有の例外処理に加えて、<code>java.rmi.RemoteException</code> を宣言しなければならない。
+<li>引数または返り値として渡される（直接またはローカルオブジェクトに埋め込まれた）リモートオブジェクトは、実装クラスとしてではなく、リモートインタフェースとして宣言されなければならない。
+</ul><h2><a name="3569">
+RemoteException クラス
+</a></h2>
+
+<code>java.rmi.RemoteException</code> クラスは RMI ランタイムがスローすることができる全ての例外のスーパークラスです。RMI システムを使うアプリケーションの安定性を保つために、リモートインタフェースで宣言される各メソッドは throws 節の中で
+<code>java.rmi.RemoteException</code> を指定しなければなりません。
+<p><code>java.rmi.RemoteException</code> はリモートメソッド呼び出しが失敗（ネットワーキングに失敗した場合や目的とするサーバーへコールが到達しなかったとき）したときにスローされます。これによりリモート呼び出しを実行するアプリケーションはリモート例外にどう対処すればよいかを決定することができます。
+<p><h2><a name="1800">
+RemoteObject クラスとそのサブクラス 
+</a></h2>
+RMI サーバー関数は <code>java.rmi.server.RemoteObject</code> とそのサブクラス、<code>java.rmi.server.RemoteServer</code> と <code>java.rmi.server.UnicastRemoteObject</code> が提供します。
+<p><ul>
+<li><code>java.rmi.server.RemoteObject</code> クラスは、<code>hashCode</code>,
+<code>equals</code> と <code>toString</code> メソッドの実装により <code>Object</code> のリモートセマンティクスを提供する。
+<li>オブジェクトの生成とエクスポート（リモートから利用できるようにする）ための関数は <code>java.rmi.server.RemoteServer</code> により抽象化されたものが提供され、具体化されたものがそのサブクラスにより提供される。
+サブクラスはリモート参照のセマンティクスの判定（例えばサーバーは単一オブジェクトなのか、または複数の場所の通信を必要とする複製オブジェクトなのか）を行う。
+<li><code>java.rmi.server.UnicastRemoteObject</code> クラスは、サーバープロセスが活動中にのみ参照が有効になる singleton (ユニキャスト) リモートオブジェクトを定義する。
+</ul><h1><a name="1830">
+リモートインタフェースの実装 
+</a></h1>
+リモートインタフェースを実装するクラスの一般則は次のとおりです。
+<p><ul>
+<li>クラスは通常 <code>java.rmi.server.UnicastRemoteObject</code> を拡張することにより <code>java.rmi.server.RemoteObject</code> や <code>java.rmi.server.RemoteServer</code> クラスが提供するリモート動作を継承する。
+<li>クラスは任意の数のリモートインタフェースを実装できる。
+<li>クラスは別なリモート実装クラスを拡張できる。
+<li>クラスはリモートインタフェースには現れないメソッドを定義することもできるが、これらのメソッドはローカルにのみ使用でき、リモートからは使用できない。
+</ul>
+
+例えば、次に示す部分コードは <code>BankAcctImpl</code> クラスを定義し、その中で <code>BankAccount</code> リモートインタフェースを実装して <code>java.rmi.server.UnicastRemoteObject</code> クラスを拡張しています。:
+<p><dl><a name="3595"><pre>package my_package;
+
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class BankAccountImpl
+        extends UnicastRemoteObject
+        implements BankAccount
+{
+        public void deposit (float amount) throws RemoteException {
+                ...
+        }
+        public void withdraw (float amount) throws OverdrawnException,
+                RemoteException {
+                ...
+        }
+        public float balance() throws RemoteException {
+                ...
+        }
+}
+</pre></a></dl>
+必要な場合には、リモートインタフェースを実装するクラスは <code>java.rmi.server.RemoteServer</code> 以外のいくつかのクラスを拡張することもできることに注意してください。
+しかし、この場合実装クラスはその <code>Object</code> クラスから継承した <code>hashCode</code>、<code>equals</code>、および <code>toString</code> が正しいリモートセマンティクスに従っていることに対して責任を負わなければなりません。
+<p><h1><a name="307">
+リモートオブジェクトとローカルスタブにおける型の等価性
+</a></h1>
+分散オブジェクトモデルでは、クライアントはリモートオブジェクトのクラスが定義するのと<em>厳密に</em>同じセットのリモートインタフェースを持ったスタブ（代理）オブジェクトに対して働きかけます。ここで、スタブクラスはオブジェクトの型グラフを構成するクラス階層の非リモート部分を含みません。
+この理由はスタブクラスは一つ以上のリモートインタフェースを実装する最も詳細な (具体化された) 実装クラスから生成されるからです。
+例えば、もし C が B を拡張し、B が A を拡張したとして、B だけがリモートインタフェースを実装するならば、スタブが生成されるのは B からであり、C からではありません。
+
+<p>
+スタブはリモートオブジェクトクラスと同じセットのリモートインタフェースを実装しますから、Java システム側から見ると、スタブはサーバーオブジェクトの型グラフのリモート部分と同じ型を持つことになります。従って、クライアントは Java の組み込み演算によってリモートオブジェクトの型チェックをおこない、一つのリモートインタフェースから別なインタフェースへのキャストを行うことができます。
+<p>
+スタブは rmic コンパイラにより作成されます。
+<p><h1><a name="2521">
+リモートメソッド呼出しでのパラメーター引き渡し
+</a></h1>
+リモートオブジェクトへ渡す引数および返り値は Java の持つ型ならばどれでも可能です、つまり<em>直列化</em>できます。
+これには Java のプリミティブ型、リモート Java オブジェクト、 <code>java.io.Serializable</code> インタフェースを実装した非リモート Java オブジェクトが含まれます。
+クラスを直列化可能にする方法の詳細については Java の「オブジェクト直列化仕様 (Object Serialization Specification)」を参照してください。アプレットの場合には、引数や返り値のクラスがローカルには得られないときは
+AppletClassLoader によって動的にロードされます。 アプリケーションの場合には、これらのクラスはアプリケーションをロードしたクラスローダーにより行われます。このクラスローダーはデフォルトクラスローダー（ローカルなクラスパスを用いる）か RMIClassLoader（サーバーの codebase を用いる）のいずれかです。
+<p>
+いくつかのクラスは、例えばセキュリティ上の理由により、（直列化ができないため）渡されるのが禁止されます。
+この場合にはリモートメソッド呼び出しは例外発生により失敗します。
+<p><h2><a name="2523">
+非リモートオブジェクトの引き渡し 
+</a></h2>
+<p>
+リモートメソッド呼び出しの引数、および呼び出しの結果戻される返り値としての非リモートオブジェクトは<em>コピー</em>により渡されます。
+<p>
+つまり、非リモートオブジェクトがリモートメソッド呼び出しに現れると、非リモートオブジェクトの内容はリモートオブジェクトの呼び出しがコールされる前にコピーされます。デフォルトでは static ではなく、transient でないフィールドだけがコピーの対象になります。
+<p>
+同様にして、リモートメソッド呼び出しから非リモートオブジェクトが戻されるときは、呼び出し側の仮想マシンに新規オブジェクトが作成されます。
+<p><h2><a name="3404">
+リモートオブジェクトの引き渡し 
+</a></h2>
+リモートオブジェクトをパラメーターとして渡す場合には、そのリモートオブジェクトのスタブが渡されます。パラメーターとして渡されたリモートオブジェクトはリモートインタフェースのみを実装することができます。
+<p><h1><a name="315">
+リモートメソッド呼び出しにおける例外処理
+</a></h1>
+リモートメソッドはそのシグネチャの中に <code>java.rmi.RemoteException</code> を含むため、呼び出し側はアプリケーションに固有の例外に加えてこれに備えておく必要があります。
+リモートメソッド呼び出し中に <code>java.rmi.RemoteException</code>
+がスローされたとき、クライアント側には呼び出しの結果、エラーが発生するのは呼び出しの前なのか、実行中なのか、呼び出し完了後なのか等々についての情報がないかもしれません。
+このため、リモートインタフェースとその中で宣言される呼び出し側メソッドはこれらのエラーに関するセマンティクスに留意して設計するべきです。
+<p><h1><a name="3734">
+RemoteObject クラスによる Object メソッドオーバーライド
+</a></h1>
+<code>Object</code> クラスのデフォルト実装による
+<code>equals</code>、 <code>hashCode</code>、および
+<code>toString</code> メソッドはリモートオブジェクトに対して適切ではありません。
+このため、<code>java.rmi.server.RemoteObject</code>
+クラスがこれらのメソッドに対するリモートオブジェクトに適したセマンティクスの実装を提供しています。
+この方法により、リモートから利用できなければならない全てのオブジェクトは <code>java.rmi.server.RemoteObject</code> を拡張することができます（典型的には <code>java.rmi.server.UnicastRemoteObject</code> を介して間接的に拡張します）。
+<p><h2><a name="2475">
+equals と hashCode 
+</a></h2>
+リモートオブジェクトをハッシュテーブルのキーとして使えるようにするため、メソッド <code>equals</code> と <code>hashCode</code> は
+<code>java.rmi.server.RemoteObject</code>
+クラスでオーバーライドされます。
+<p><ul>
+<li><code>java.rmi.server.RemoteObject</code>
+クラスの実装による <code>equals</code> メソッドは2つのオブジェクト参照が等しいかどうか（オブジェクトの内容が等しいかではなく）を決定する。
+この理由は、内容が等しいかを判定するためにはリモートメソッド呼び出しが必要であり、<code>equals</code> のシグネチャはリモート例外がスローされるのを許さないからである。
+<li><code>java.rmi.server.RemoteObject</code>
+クラスの実装による <code>hashCode</code> メソッドは同じ下層からなるリモートオブジェクトへの全てのリモート参照にたいして同じ値を返す（同じオブジェクトへの参照は同じとみなされる）。
+</ul><h2><a name="2478">
+toString
+</a></h2>
+<code>toString</code> メソッドはオブジェクトへの参照を表現した文字列を返すために定義されています。
+文字列の内容は参照のタイプに固有のものです。 singleton (ユニキャスト)
+オブジェクトの現在の実装はトランスポートレイヤに固有なオブジェクトの情報（ホスト名やポート番号）とオブジェクト識別子を含みます。複製オブジェクトへの参照はさらに多くの情報を含みます。
+<p><h2><a name="2480">
+クローン 
+</a></h2>
+Java 言語のデフォルト機構を使ってのオブジェクトのクローン生成は、オブジェクトが <code>java.lang.Cloneable</code> インタフェースをサポートしているときのみ可能です。リモートオブジェクトはこのインタフェースを実装しませんが、
+<code>clone</code> メソッドは実装していますからサブクラスが <code>Cloneable</code> を実装する必要があるならばリモートクラスは正しく動作します。
+<p>
+クライアントスタブは final として宣言され、 <code>clone</code> を実装しません。
+このためスタブのクローン生成はローカルな操作であり、クライアントが新規にリモートオブジェクトを生成するために使うことはできません。
+<p><h2><a name="2485">
+finalize
+</a></h2>
+リモートオブジェクトの実装（<code>RemoteObject</code> のサブクラス）は必要に応じて自分自身のクリーンアップのために <code>finalize</code> を使うことができます。例えば、
+<code>finalize</code> を使ってオブジェクトサーバーを不活性化することができます。
+<p><h1><a name="2490">
+ファイナル宣言された Object メソッドのセマンティクス
+</a></h1>
+以下のメソッドは<code> Object </code>クラスにおいて final 宣言され、オーバーライドはできません:
+<p><ul>
+<li><code>getClass </code>
+<li><code>notify </code>
+<li><code>notifyAll </code>
+<li><code>wait </code>
+</ul>
+
+<p>
+<code>getClass</code> のデフォルト実装は全て（ローカルとリモート両方）の Java オブジェクトに適用可能です。
+リモートオブジェクトに使われた場合には、<code>getClass</code>
+メソッドが生成されたスタブオブジェクトの正確な型をレポートしてくれます。
+ただし、この型はオブジェクトにより実装されたリモートインタフェースのみを反映したもので、そのローカルインタフェースではないことに注意してください。
+<p>
+Object の <code>wait</code> と
+<code>notify</code> メソッドは
+Java 言語のスレッドモデルに即して待ちと通知を取り扱います。これらのメソッドをリモートオブジェクトに対して使うのは Java のスレッドモデルに違反する訳ではありませんが、これらのメソッドはローカルな Java オブジェクトを扱う場合とはセマンティクスが異なります。
+特に、これらのメソッドはクライアントのリモートオブジェクト（スタブ）に対するローカルな参照に作用し、リモートにある実際のオブジェクトに作用する訳ではありません。
+<p><h1><a name="357">
+リモートオブジェクトの位置決め 
+</a></h1>
+単純ブートストラップ名前サーバーがリモートオブジェクトに対する名前付き参照を保存するために準備されています。
+リモートオブジェクト参照は <code>java.rmi.Naming</code> クラスの URL をベースとするメソッドを使って保存することができます。
+
+<p>
+クライアントがリモートオブジェクトのメソッドを呼び出すときには、クライアントはまずそのオブジェクトに対する参照を得る必要があります。
+リモートオブジェクトに対する参照は通常メソッドコールの返り値として得られます。
+RMI システムは単純ブートストラップネームサーバーを提供して指定されたホストのリモートオブジェクトを得られるようにしています。
+<code>java.rmi.Naming</code>
+クラスは URL(Uniform Resource Lacator) ベースのメソッドを提供して特定のホストとポートにおける名前-オブジェクト対のルックアップ、バインド、リバインド、アンバインドそしてリストを可能にしています。
+<p>
+次に示すのは、リモートオブジェクトのルックアップとバインドを実行する例です（例外処理は省略）。
+<p><dl><a name="360"><pre>BankAccount acct = new BankAcctImpl();
+String url = "rmi://java.Sun.COM/account";
+// bind url to remote object
+java.rmi.Naming.bind(url, acct);
+	...
+// lookup account
+acct = (BankAccount)java.rmi.Naming.lookup(url);
+</pre></a></dl>
+<hr><br>
+
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-intro.doc.html">前項目</a> <a href="rmi-arch.doc.html">次項目</a>
+<hr><br>
+ 
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.4 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email  -->
+<!-- -->
+<!-- Last updated: 03/18/97 12:59:13 -->
+
+</body>
+</html>

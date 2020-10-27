@@ -1,0 +1,59 @@
+<html>
+<head>
+<title>RMI を使った株価プログラム例</title>
+</head>
+
+<BODY BGCOLOR="#FFFFFF" TEXT=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+<CENTER><P ALIGN=LEFT>
+<IMG SRC="../../../../images/smi.logo.gif" ALT=" Sun Microsystems, Inc " BORDER=0>
+</P></CENTER>
+
+
+<font size=-1><a href="../../../../index.html">JDK 目次</a></font>
+<HR SIZE=3 NOSHADE>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<center>
+<h1>RMI を使った株価プログラムの例</h1>
+</center>
+<p>
+JDK 1.1 Beta のインストールディレクトリ <code>docs/guide/rmi/examples/stock</code> にアプレットの作り方を示す例題があります。このアプレットはリモートオブジェクトをエクスポートしてストックサーバーからの変動する株価を受け取ります。アプレットはサーバーからの通知を受け取るたびに株価を動的に表示します。この例題で使うインタフェース/クラスは次の通りです。
+<p>
+<ul>
+<li><code>StockWatch</code> はストックサーバーのためのリモートインタフェースです。
+<p>  
+<li><code>StockNotify</code> はストックオブザーバーのためのリモートインタフェースです。
+<p> 
+<li><code>Stock</code> は株価データを保持する直列化可能なオブジェクトです。
+<p>
+<li><code>StockServer</code> (<code>StockWatch</code>を実装) は値を受け取るように設定されたリモートオブジェクトに株価変動を通知します。
+<p>
+<li><code>StockApplet</code> (<code>StockNotify</code>を実装) はリモートオブジェクト（自分自身）をエクスポートし、StockServer へ株価変動の通知を登録し、株価変動通知を受け取るとそれを表示します。
+<p>
+</ul>
+<p>
+Solaris の場合：JDK 1.1 Beta リリースをダウンロードし、<code>docs/guide/rmi/examples/stock</code> ディレクトリにある <code>run</code> スクリプトを実行します。
+このスクリプトは例題実行中にその実行内容をプリントします。ストックサーバーは自分のレジストリを作成しますから "rmiregistry" をスタートさせる必要はありません。 <code>run</code> スクリプトは基本的に次のステップを実行します。
+<p>
+<ol>
+<li><code>setenv CLASSPATH ../..:$CLASSPATH</code>
+<li><code>javac -d ../.. *.java</code>
+<li><code>rmic -d ../.. examples.stock.StockServer examples.stock.StockApplet</code>
+<li><code>java examples.stock.StockServer &</code>
+<li><code>appletviewer index.html</code>
+</ol>
+<p>
+注意:  Appletviewer を実行する前に CLASSPATH を元の内容に（../..を含めずに）戻してかまいません。こうしておくとクラスは CLASSPATH からではなくネットワークからダウンロードされます。
+<p>
+Windows システムの場合：JDK 1.1 Beta リリースをダウンロードし,<code>docs/guide/rmi/examples/stock</code> ディレクトリに移動して <code>run.bat</code> を実行すると、例題の構築と実行の、各ステップの説明が表示されます。終了しましたらサーバープロセスのために作られたウィンドウを消してください。
+<p>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE>
+
+<IMG SRC="../../../../images/JAVA.85.GIF" ALIGN=RIGHT>
+
+<FONT SIZE=-2>
+<A HREF="../../../../relnotes/SMICopyright.html">Copyright (C)</A> 1996 Sun Microsystems, Inc., 2550 Garcia Ave., Mtn. View, CA 94043-1100 USA. All rights reserved.
+<br><br>
+</font>
+</BODY>
+</HTML>

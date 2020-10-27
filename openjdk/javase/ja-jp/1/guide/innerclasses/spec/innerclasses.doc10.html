@@ -1,0 +1,79 @@
+<html>
+<head>
+<title> </title>
+</head>
+<body BGCOLOR=#eeeeff text=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+ 
+<table width=600><tr>
+<td><a href="innerclasses.doc.html">目次</a> | <a href="innerclasses.doc9.html">前項目</a> | <a href="innerclasses.doc11.html">次項目</a> 
+</td><td align=right><i>内部クラス仕様</i></td>
+</tr></table>
+
+<hr><br>
+ 
+<a name="20107"></a>
+<h1>Java 1.1 クラスに対する新しいバイナリ互換要件とはなにか?</h1>
+<a name="20264"></a>
+Java 1.1 コンパイラに出力された異なるベンダからのバイトコード間でバイナリ互換を保証し、デバッガおよび同様のツールのこれらバイトコードに対する適切な適用可能性を保証するために、Java は生成されるバイトコードの形式にある要件を課します。この節では、各種の内部クラスとネストしているトップレベルクラスの実装に適した、Java 1.1 の新しい要件について説明します。<p><a name="18807"></a>
+<h2>		 クラスおよびインタフェースのバイトコード名</h2>
+<a name="18804"></a>
+Java Virtual Machines のインスタンスおよび Java バイトコードは、Java ソースコー
+ドで使用される名前と詳細には異なる<em>バイトコード名</em>によって参照型を参照します。パッケージメンバ <var>T</var> のバイトコード名は、すべての `<code>.</code>' を `<code>/</code>' で置き換え、(パッケージ名が null でなければ）別の `<code>/</code>' と簡単な名前 <var>T</var> を後に付けて、パッケージ名として定義します。<var>T</var> のバイトコード名はまた、<var>T</var> の本体内で定義されるすべてのクラスのバイトコード名の前置として働きます。<p><a name="18692"></a>
+別のクラスの非 <code>private</code> メンバであり、どのブロックまたは <code>private</code> クラスにも（直接または間接に）含まれないクラス <var>C</var> のバイトコード名は、即座に親クラスのバイトコード名として定義されます。このバイトコード名は `<code>$</code>' と簡単な名前 <var>C</var> が後に付きます。<p><a name="18722"></a>
+他のすべてのクラスは、<em>アクセス不可能</em>と呼ばれます。アクセス不可能クラス <var>N</var> は、決して他のコンパイル単位のコードによって参照できません。こうして、コンパイラが同じコンパイル単位の他のクラスと衝突しないように <var>N</var> の名前を選択する限り、その名前はグローバルに一意です。それは、その前置（以前に必要になったように）が、それが発生するパッケージメンバに対して一意だからです。<p><a name="20637"></a>
+ツールのために、アクセス不可能クラス <var>N</var> の名前付けについて、いくつかの補足用件があります。このバイトコード名は親クラス（メンバの場合は即座に親クラス）のバイトコード名に、`<code>$</code>' とコンパイラが選択した正の 10 進数字、または `<code>$</code>' と簡単な名前 <var>N</var> 、または両方が（この順番で）後に付きます。さらに、ブロック local <var>N</var> のバイトコード名は、結果の名前を一意にする場合には、親パッケージメンバ <var>T</var>、文字 `<code>$1$</code>' および <var>N</var> から構成します。<p><a name="18704"></a>
+<code>Class</code> の <code>getName</code> メソッドが生成する文字列は、これらの
+ケースのすべてにおいて、`<code>/</code>' を `<code>.</code>' で置き換えてバイトコード名から引き出されます。これを Java ソースコードに似せるために、名前を「掃除」しようとはしません。<p><a name="18814"></a>
+<h2>		 クラス属性 <code>InnerClasses</code></h2>
+<a name="18861"></a>
+Java 1.1 コンパイラのバイトコード出力は、（<code>CONSTANT_Class</code> 入力を経由して）パッケージメンバでないクラスまたはインタフェースのバイトコード名を参照する可能性があります。その場合、バイトコードにはまた、これらの名前のエンコーディングを宣言する <code>InnerClasses</code> と呼ばれるクラス属性が入っている必要もあります。この属性は各エンコード名に対して 1 つ、次のレコードの配列を含みます: 
+<Table Border="0">
+<caption></caption>
+<tr><td><br><pre>    <a name="18886"></a>InnerClasses_attribute {
+    <a name="18891"></a>  u2 attribute_name_index;
+    <a name="18892"></a>  u4 attribute_length;
+    <a name="18893"></a>  u2 number_of_classes;
+    <a name="18912"></a>  {
+    <a name="18913"></a>    u2 inner_class_info_index;   // CONSTANT_Class_info index
+    <a name="18914"></a>    u2 outer_class_info_index;   // CONSTANT_Class_info index
+    <a name="18897"></a>    u2 inner_name_index;         // CONSTANT_Utf8_info index
+    <a name="18898"></a>    u2 inner_class_access_flags; // access_flags bitmask    <a name="18899"></a>  } classes[number_of_classes]
+    <a name="18900"></a>}
+</pre>
+
+</Table>
+
+<!--
+<Table>
+<tr><td>
+</Table>
+--><p><a name="18877"></a>
+各配列要素はエンコード名、定義スコープ、簡単な名前、および当初宣言され、変形されていないアクセスフラグのビットマスクを付けてクラスを記録します。内部クラスがメンバでない場合、その <code>outer_class_info_index</code> はゼロです。クラスが匿名の場合、その <code>inner_name_index</code> はゼロです。<p><a name="18953"></a>
+クラス <var>C</var> が <code>protected</code> と宣言された場合、<code>public</code> アクセスフラグビットは<var>C</var> の<code>access_flags</code> フィールドにセットされたとしても、<code>InnerClasses</code> レコード内で清掃されます。<p><a name="18998"></a>
+レコードの <code>outer_class_info_index</code> は自分自身パッケージメンバでないクラス <var>E</var> を参照し、同じ <code>InnerClasses</code> 属性の前のレコードは <var>E</var> を記述する必要があります。<p><a name="19009"></a>
+クラスが型であるメンバを持つ場合、この型の各々にレコードを付けた <code>InnerClasses</code> 属性を持つ必要があります。既に与えられた規則は、パッケージメンバでないクラスが、それに対してレコードを持つ <code>InnerClasses</code> 属性、および最も外側のものを除く親クラスのすべてを持つことを暗示します。<p><a name="19264"></a>これらの規則は、コンパイラとデバッガが分解せずに、また内部クラス定義を調べるために追加のファイルを開くことなしに、正しくバイトコードを解釈できることを保証します。コンパイラはアクセス不可能クラスに対して <code>InnerClasses</code> レコードを省略できますが、すべてのクラスにレコードを含めるように推奨されます。特にコードをデバッガで使用するためにコンパイルするときがそうです。<p><a name="19265"></a>
+<h2>		 メンバ属性 <code>Synthetic</code></h2>
+<a name="19266"></a>
+以前に検討したように、コンパイラは名前のスコーピングを実装するために、特定の覆い隠されたフィールドとメソッドを合成します。これらのフィールドは、特に記されていない場合、<code>private</code> であり、さもなければパッケージスコープ程度です。<p><a name="19128"></a>
+バイトコードを生成するとき、Java 1.1 コンパイラはソースコードで直接定義されてい
+ないフィールドまたはメンバすべてを、 <code>Synthetic</code> という名前の属性でマークするように要求されます。(現在、長さはゼロでなければなりません。) これによって、他のコンパイラが private でない覆い隠されたメンバに不注意なソースレベルの参照をしないようにし、ツールが不必要にこれらを表示しないようにできます。<p><a name="19139"></a>
+(局所変数を <code>Synthetic</code> であると宣言するための対応する機構を、また導入する可能性があります。)<p><a name="19114"></a>
+Java 1.1 コンパイラは、内部クラスを実装するとき次の名前付け規則を使用するように、要求はされないとしても強く薦められます。コンパイラは、他の目的で個々で定義した合成名を使用してはいけません。<p><a name="19109"></a>
+最も外側の親インスタンスにポイントする合成フィールドは <code>this$0</code> と名付けられます。次に外側の親インスタンスは <code>this$1</code> などとなります。(このようなフィールドがせいぜい 1 つ、すべての与えられた内部クラスに必要です。) 定数 <var>v</var> のコピーを含む合成フィールドは <code>val$</code><var>v</var> と名付けられます。これらのフィールドは <code>final</code> です。<p><a name="17863"></a>
+これら合成フィールドのすべては、初期化するフィールドと同じ名前を持つ構築子パラメータによって初期化されます。パラメータの 1 つが最奥の親インスタンスの場合、これが最初になります。このような構築子パラメータのすべては合成になります。コンパイラが合成フィールド値を構築子のコードの中だけで使用すると決めた場合、フィールド自身を省略し、パラメータだけを使用して変数参照を実装します。<p><a name="19167"></a>
+private メンバまたは構築子へのアクセスを供与する <code>private</code> でない <code>final</code> 合成メソッドは、<code>access$</code><var>N</var> という形式の名前を持ちます。ここで、<var>N</var> は 10 進数字です。このようなアクセスプロトコルの組織は指定されていません。<p><a name="19229"></a>
+1.1 互換のデバッガおよび同様のツールは、これらの名前付け規則を認識し、変数表示とシンボルテーブルをこれにしたがって編成する必要があります。ツールがこれらの名前を分解する必要があることに注意してください。コンパイラは少なくともデフォルトで、これらの規則を使用するよう強く薦められます。<p><a name="19281"></a>
+Java Virtual Machine の実装は変化し、ここで指定される合成メンバが正しく定義され、使用されるように要求する可能性があります。最適化技術を合成メンバに適用して、その性質を開拓することは理にかないます。<p>
+
+<hr>
+<!-- This inserts footnotes--><p>
+<a href="innerclasses.doc.html">目次</a> | <a href="innerclasses.doc9.html">前項目</a> | <a href="innerclasses.doc11.html">次項目</a> 
+
+<p>
+<font size=-1>内部クラス仕様 (HTML generated by dkramer on March 15, 1997)<br>
+<i><a href="copyright.doc.html">Copyright (c) 1996, 1997 Sun Microsystems, Inc.</a>
+All rights reserved</i>
+<br>
+コメントや訂正は <a href="mailto:john.rose@eng.sun.com">john.rose@eng.sun.com</a> 宛てに送ってください。
+</font>
+</body></html>

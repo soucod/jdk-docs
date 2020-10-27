@@ -1,0 +1,237 @@
+<html><head><title>Exceptions In RMI		
+</title></head>
+<body bgcolor=#ffffff>
+ 
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-protocol.doc.html">前項目</a> <a href="rmi-properties.doc.html">次項目</a>
+<hr><br>
+ 
+<a name="3601">
+<h1>RMI の例外		
+</h1>
+</a>
+<hr><p><a name="4120">
+
+<p>
+</a><h3><a name="4748">
+トピックス:
+</a></h3><ul><li><a href="rmi-exceptions.doc.html#4746">リモートオブジェクトのエクスポートにおける例外</a>
+<li><a href="rmi-exceptions.doc.html#4332">RMI コールにおける例外</a>
+<li><a href="rmi-exceptions.doc.html#4940">リターンにおける例外とエラー</a>
+<li><a href="rmi-exceptions.doc.html#4823">名前付けの例外</a>
+<li><a href="rmi-exceptions.doc.html#4824">それ以外の例外</a>
+</ul><h1><a name="4746">
+リモートオブジェクトのエクスポートにおける例外
+</a></h1><code>UnicastRemoteObject</code> を拡張するリモートオブジェクトクラスが作成されたときはそのオブジェクトはエクスポートされます。この意味は、このオブジェクトが外部の Java 仮想マシンからのコールを受け取ることができ、RMI コールにおいてパラメーターまたは返り値として渡すことができるということです。 
+オブジェクトは無名ポートまたは指定されたポートのどちらにでもエクスポートできます。<code>UnicastRemoteObject</code> を拡張した以外のオブジェクトでは、<code>java.rmi.server.UnicastRemoteObject.exportObject</code> を使ってオブジェクトを陽にエクスポートします。
+<Table Border="3">
+<caption></caption>
+<tr><th>例外
+<th>内容
+
+<tr><td>java.rmi.StubNotFoundException
+
+<td><ol>
+<li>					スタブのクラスが見つからない
+<li>スタブが次のいずれかのエラーを起こし、同じ名前のクラスと名前の衝突を起こした<ul>
+<li>スタブがインスタンス化できない
+<li>スタブのクラスが正しくない
+</ul>
+<li>間違った codebase のため URL が正しくない
+<li>スタブのクラスが正しくない
+</ol>
+
+<tr><td>java.rmi.server.SkeletonNotFoundException
+<td><ol>
+<li>				スケルトンのクラスが見つからない
+<li>スケルトンが次のいずれかのエラーを起こし、同じ名前のクラスと名前の衝突を起こした<ul>
+<li>スケルトンがインスタンス化できない
+<li>スケルトンのクラスが正しくない
+</ul>
+<li>間違った codebase のため URL が正しくない
+<li>スケルトンのクラスが正しくない
+</ol>
+
+<tr><td>java.rmi.server.ExportException
+<td>ポートが他の VM に使われている
+
+
+</Table>
+
+<table>
+<tr><td>
+</table>
+
+<p><h1><a name="4332">
+RMI コールにおける例外 
+<Table Border="3">
+<caption></caption>
+<tr><th>例外
+<th>内容
+
+<tr><td>java.rmi.UnknownHostException
+<td>		未知のホスト
+
+<tr><td>java.rmi.ConnectException
+<td>		ホストへの接続が拒絶された
+
+<tr><td>java.rmi.ConnectIOException
+<td>		接続作成時に I/O エラー
+
+<tr><td>java.rmi.MarshalException
+<td>		トランスポートヘッダー、コールヘッダー、引数整列時に I/O エラー 
+
+<tr><td>java.rmi.NoSuchObjectException
+<td>		利用できないオブジェクト上のメソッドを呼び出そうとした
+
+<tr><td>java.rmi.StubNotFoundException
+<td>		リモートオブジェクトがエクスポートされていない
+
+
+</Table>
+
+<table>
+<tr><td>
+</table>
+
+</a></h1><h1><a name="4940">
+リターンにおける例外とエラー
+<Table Border="3">
+<caption></caption>
+<tr><th>例外
+<th>内容
+
+<tr><td>java.rmi.UnmarshalException		
+<td><ol>
+<li>次の操作時にストリームが破壊され、I/O またはプロトコルエラー発生			<ul>
+<li>リターンヘッダーの整列
+<li>リターンタイプのチェック
+<li>リターンコードのチェック
+<li>リターンの逆整列
+</ul>
+<li>返り値クラスが見つからない
+</ol>
+
+<tr><td>java.rmi.UnexpectedException		
+<td>クライアント上でのランタイムを含め、メソッドシグネチャに記載されていない例外が発生。 例外オブジェクトは実際の例外である。
+
+<tr><td>java.rmi.ServerError
+<td>サーバがリモートメソッド実行中に発生するエラーのいずれか
+<tr><td>java.rmi.ServerException
+<td>サーバがリモートメソッド実行中に発生するエラーのいずれか。<a href="rmi-exceptions.doc.html#4941">java.rmi.ServerException が発生する原因</a>を参照。
+
+<tr><td>java.rmi.ServerRuntimeException		
+<td>サーバがメソッド実行中に発生するランタイムエラーのいずれか。メソッドシグネチャに例外の記載があるかも知れない。例外オブジェクトは下層の例外を含む。
+
+
+</Table>
+
+<table>
+<tr><td>
+</table>
+
+</a></h1><h2><a name="4941">
+java.rmi.ServerException が発生する原因
+</a></h2>サーバがリモートメソッド呼び出しを実行中に下層における例外がサーバ上に発生することがあります。
+これらの例外は <code>java.rmi.ServerException</code> にラップされます。つまり <code>java.rmi.ServerException</code> がオリジナルの例外を含みクライアントはそれを抽出できます。
+これらの例外は <code>ServerException</code> によってラップされ、クライアントはサーバ上のリモートメソッドに対する自分自身の呼び出しが失敗の原因ではなく、サーバの二次呼び出しが失敗したことを知ることができます。
+<Table Border="3">
+<caption></caption>
+<tr><th>例外
+<th>内容
+
+<tr><td>java.rmi.server.SkeletonMismatchException
+<td>スタブとスケルトンのハッシュ不一致
+
+<tr><td>java.rmi.UnmarshalException
+<td>コールヘッダーまたは引数の逆分解抽出中のI/O エラー
+
+<tr><td>java.rmi.MarshalException
+<td>返り値を一体化中のプロトコルエラー
+
+<tr><td>java.rmi.RemoteException
+<td>		ストリーム破壊のため、メソッド番号が範囲外
+
+</Table>
+
+<table>
+<tr><td>
+</table>
+
+<p><h1><a name="4823">
+名前付け例外
+</a></h1>次の表は<code>java.rmi.Naming </code>クラスと <code>java.rmi.registry.Registry</code> インタフェースのメソッドで発生する例外をリストしたものです。 
+<Table Border="3">
+<caption></caption>
+<tr><th>例外
+<th>内容
+
+<tr><td>java.rmi.AccessException
+<td>操作を拒絶された。レジストリはバインド、リバインドおよびアンバインドを同一ホスト上に限定する。lookup は任意のホストからでも実行可能。
+
+<tr><td>java.rmi.AlreadyBoundException
+<td>すでにバインドされている名前をバインドしようとした
+
+<tr><td>java.rmi.NotBoundException
+<td>バインドされていない名前をルックアップしようとした
+
+<tr><td>java.rmi.UnknownHostException
+<td>未知のホスト上のレジストリにコンタクトしようとした
+
+
+</Table>
+
+<table>
+<tr><td>
+</table>
+
+<p><h1><a name="4824">
+それ以外の例外 
+<Table Border="3">
+<caption></caption>
+<tr><th>例外
+<th>内容
+
+<tr><td>java.rmi.RMISecurityException
+<td>セキュリティ例外が RMISecurityManager によってスローされた
+
+<tr><td>java.rmi.server.ServerCloneException
+<td>クローン失敗
+
+<tr><td>java.rmi.server.ServerNotActiveException
+<td>リモートサーバがリモートメソッドを実行していない時に RemoteServer.getClientHost メソッドによってクライアントホストを得ようとした
+
+<tr><td>java.rmi.server.SocketSecurityException
+<td>不法なポートからオブジェクトをエクスポートしようとした
+
+
+</Table>
+
+<table>
+<tr><td>
+</table>
+ 
+</a></h1>
+
+<hr><br>
+ 
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-protocol.doc.html">前項目</a> <a href="rmi-properties.doc.html">次項目</a>
+<hr><br>
+ 
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.4 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email  -->
+<!-- -->
+<!-- Last updated: 03/18/97 13:00:11 -->
+
+</body>
+</html>

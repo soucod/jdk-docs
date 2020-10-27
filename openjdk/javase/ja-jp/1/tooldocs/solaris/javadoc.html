@@ -1,0 +1,341 @@
+<html>
+<head>
+<title>javadoc - Java API ドキュメンテーションジェネレータ</TITLE>
+</head>
+<BODY BGCOLOR="#FFFFFF">
+
+<H1>javadoc - Java API ドキュメンテーションジェネレータ</H1>
+<blockquote>
+Java ソースファイルから API ドキュメンテーションの HTML ページを生成します。
+</blockquote>
+
+<h2>機能説明</h2>
+<blockquote>
+<pre>
+<strong>javadoc</strong> [ <a href="javadoc.html#Options">options</a> ] [ package | source.java ]*
+</pre>
+</blockquote>
+
+<h2>説明</h2>
+<blockquote>
+<b>javadoc</b> は、Java ソースファイルセットにおける宣言とドキュメンテーションコメントを解析し、デフォルトでは、public もしくは protected なクラス、インタフェース、構築子、メソッドおよびフィールドを記述した HTML ページを作成します。<b>javadoc</b> の引数として、一連の Java パッケージ名または Java ソースファイルを渡すことができます。
+<p>
+<b>javadoc</b> は、それが遭遇する各 .java ファイルおよび各パッケージに対して、1 つの .html ファイルを生成します。さらに、クラス階層 (tree.html) と階層のメンバのインデックス (AllNames.html) を生成します。
+<p>
+<b>javadoc</b> がクラスとメンバの宣言を解析するとき、それらのシグナチャも取得します。それ以外にも、ソースコードに doc コメントを入れてドキュメンテーションを追加することができます。
+</blockquote>
+
+<h3>ソースコードコメント</h3>
+<blockquote>
+ソースコードにはドキュメンテーションコメントを入れることができます。doc コメントは、コメントの始まりに <code>/**</code> 、コメントの終わりに <code>*/</code> を付けて、それではさむ文字よりなっています。テキストは 1 行または複数の行に分かれます。javadoc が doc コメントを解析するとき、各行の先頭の文字 * は破棄されます。 最初の行以外の行では、* の前の空白およびタブもまた、破棄されます。これらのコメントには HTML タグが含まれる可能性があります。次に doc コメントを示します:
+<p>
+<pre>
+/**
+ * This is a &lt;b&gt;doc&lt;/b&gt; comment.
+ */
+</pre>
+
+<p>
+各 doc コメントの最初の文は要約文にし、その文でエンティティ宣言を簡潔に、しかし完全に説明します。この文は、あとに空白、タブまたは行終了文字が続く最初のピリオド、または最初のタグ行で (次に定義するように)、終了します。<b>javadoc</b> は最初の文を .html ファイルの上部のメンバ要約にコピーします。
+ <p>
+ドキュメンテーションコメントは、クラス、インタフェース、構築子、メソッドおよびフィールド宣言の直前に置かれたときだけ認識されます。
+<p>
+docコメント内に HTML タグを埋め込むとき、&lt;h1&gt; や &lt;h2&gt; のようなヘッディングタグは使用しません。なぜなら、<b>javadoc</b> は構造化されたドキュメント全体を作成し、これらの構造的なタグが作成するドキュメントのフォーマットを妨害してしまうからです。
+<p>
+ドキュメンテーションコメントの仕様については、<em>Java 言語仕様</em>の第 18 章「ドキュメンテーションコメント」(James Gosling、Bill Joy、Guy Steele 共著)を参照してください。
+</blockquote>
+
+<a name=tags></a>
+<h3>タグ付きパラグラフ</h3>
+
+<blockquote>
+
+<b>javadoc</b> は、特別なタグがJava doc コメント内に組み込まれたとき、識別し、解析します。これらの doc タグにより、完全で、よくフォーマットされた API をソースコードから自動的に生成することができます。タグは記号 @ で始めます。
+<p>
+行の先頭はタグで始めます。同じ名前のタグは 1 つの docコメント内ではまとめてください。たとえば、<b>javadoc</b> がリストの最後を示すことができるように、すべての @author タグを １ つにしてください。
+<p>
+タグは次の 3 つのカテゴリに分かれます:  クラス/インタフェースタグ、フィールドタグ、および構築子/メソッドタグです; 各々は次の節で箇条書きにして説明しています。
+</blockquote>
+
+<h3>クラスおよびインタフェースドキュメンテーションタグ</h3>
+<blockquote>
+
+<dl>
+
+<dt><code>@author </code><var>name-text</var>
+<dd>"Author" エントリを作成します。このテキストには特別な内部構造はありません。doc コメントには <code>@author</code> タグが複数あることもあります。
+<p>
+
+<dt><code>@version </code><var>version-text</var>
+<dd>"Version"エントリを追加します。このテキストには特別な内部構造はありません。<code>@version</code> タグは、1 つの doc コメントに対し 1 つ以下です。バージョンとは通常、特定の機能を含むソフトウェア (JDKなど) のバージョンを指します。
+<p>
+
+<dt><code>@since </code><var>since-text</var>
+<dd>"Since" エントリを追加します。このテキストには特別な内部構造はありません。このタグは、特定の変更または機能が、<var>since-text</var> によって指定されるソフトウェア (JDKなど) のリリース番号以来、継続して存在することを意味します。
+<p>
+
+<dt><code>@see</code> <var>classname</var>
+<dd>クラスにハイパーリンクする "See Also" エントリを追加します。たとえば、次のとおりです。
+<pre>
+    @see java.lang.String
+    @see String
+    @see String#equals
+    @see java.lang.Object#wait(int)
+    @see Character#MAX_RADIX
+    @see &lt;a href="spec.html"&gt;Java Spec&lt;/a&gt;
+</pre>
+文字 # は、クラス名をフィールド名、メソッド名および構築子名の1つから分離します。
+メソッド名および構築子名の後に括弧で囲んだ引数タイプのリストを挿入することにより、オーバーロードする複数のメソッドおよび構築子から １ つを選択することができます。<code>@see</code> の <var>classname</var> の中のホワイトスペースは重要です。引数が 1 つ以上ある場合、引数の間にあるブランクは 1 つにします。
+たとえば、次のとおりです。
+<pre>
+    @see java.io.File#File(java.io.File, java.lang.String)
+</pre>
+<p>
+doc コメントには複数の <code>@see</code> タグが含まれることがあります。
+</dl>
+
+<h4>クラスコメントの例</h4>
+<pre>
+/**
+ * A class representing a window on the screen.
+ * For example:
+ * &lt;pre&gt;
+ *    Window win = new Window(parent);
+ *    win.show();
+ * &lt;/pre&gt;
+ *
+ * @author  Sami Shaio
+ * @version %&#37;I%, %&#37;G%
+ * @see     java.awt.BaseWindow
+ * @see     java.awt.Button
+ */
+class Window extends BaseWindow {
+   ...
+}
+</pre>
+</blockquote>
+
+<h3>フィールドドキュメンテーションタグ</h3>
+<blockquote>
+フィールドコメントにあるドキュメンテーションタグは、 
+<code>@see</code> タグ (前に説明) だけです。
+
+<h4>フィールドコメントの例:</h4>
+<pre>
+    /**
+     * The X-coordinate of the window.
+     *
+     * @see window#1
+     */
+    int x = 1263732;
+</pre>
+</blockquote>
+
+<h3>構築子およびメソッドドキュメンテーションタグ</h3>
+<blockquote>
+<code>@see</code> タグを入れることができます。上記参照。
+
+<dl>
+<dt><code>@param </code><var>parameter-name</var><code> </code><var>description</var>
+<dd>"Parameters" セクションにパラメータを加えます。説明は次の行に続くこともあります。
+<p>
+
+<dt><code>@return </code><var>description</var>
+<dd>返り値の説明を含む "Returns" セクションを追加します。
+<p>
+
+<dt><code>@exception </code><var>fully-qualified-class-name</var><code> </code><var>description</var>
+<dd>"Throws" エントリを追加します。これにはメソッドがスローする例外の名前が含まれます。例外はクラスドキュメンテーションにリンクされます。
+
+<dt><code>@see</code> <var>classname</var>
+<dd>メソッドにハイパーリンクしている "See Also" エントリを追加します。このタグについては上述しています。
+</dl>
+
+<h4>メソッド doc コメントの例</h4>
+<pre>
+    /**
+     * Returns the character at the specified index. An index 
+     * ranges from &lt;code&gt;0&lt;/code&gt; to &lt;code&gt;length() - 1&lt;/code&gt;.
+     *
+     * @param     index  the index of the desired character.
+     * @return    the desired character.
+     * @exception StringIndexOutOfRangeException 
+     *              if the index is not in the range &lt;code&gt;0&lt;/code&gt; 
+     *              to &lt;code&gt;length()-1&lt;/code&gt;.
+     * @see       java.lang.Character#charValue()
+     */
+    public char charAt(int index) {
+       ...
+    }
+</pre>
+</blockquote>
+
+<a name=Options>
+<h2>オプション</h2>
+</a>
+<blockquote>
+
+<dl>
+
+<dt><b>-classpath </b><var>path</var>
+<dd>
+javadoc が <code>.java</code> ファイルを調べるためのパスを指定します。また、<b>javadoc</b> が自分の <code>.class</code> ファイルをロードするディレクトリを指定します。(ソースパスを別に指定する場合は、<b><code>-sourcepath</b></code> を使用してください。) 各<i>path</i>の要素は最上位のパッケージを含むディレクトリにすることが必要です。デフォルト、または CLASSPATH 環境変数の設定をオーバーライドします。<i>path</i>には、コロンで分けられたパスを複数入れることができます。次に 2 つパスを指定した例を示します。初めのパスは現在のディレクトリ(.)です:<P>
+
+<pre>
+<dd>javadoc -classpath .:/home/opus/javasrc
+</pre>
+<p>
+<b><code>-classpath</b></code> オプションは、<b>javadoc</b> ラッパースクリプトを直接呼び出す場合は不要です。通常、<b><code>classpath</b></code> を指定する場合、これを <b><code>sourcepath</b></code> の前に置く必要があります。しかし、ラッパースクリプトを使用する場合、これら 2 つのオプションの順番は問題になりません。
+<p>
+<b><code>classpath</b></code> のデフォルト値は、現在のディレクトリにクラスの位置を加えたものです。
+<p>
+
+<dt><b>-public</b>
+<dd>
+public クラスおよびメンバだけを表示します。
+<p>
+
+<dt><b>-protected</b>
+<dd>
+protected と public のクラスとメンバだけを表示します。これがデフォルトです。
+<p>
+
+<dt><b>-package</b>
+<dd>
+package、protected、public のクラスおよびメンバだけを表示します。
+<p>
+
+<dt><b>-private</b>
+<dd>
+すべてのクラスとメンバを表示します。
+<p>
+
+<dt><b>-J <i>flag</i></b>
+<dd>
+<i>flag</i> を直接ランタイムシステムに渡します。たとえば、作成されたドキュメンテーションを保持するために 32 メガバイトのメモリを確実に確保しておく必要がある場合、このフラグを次のように使用します:
+<pre>
+<dd>javadoc -J-mx32m -J-ms32m ltclassesgt ...</pre><p>
+<dt><b>-encoding <i>name</i></b>
+<dd>
+<code>EUCJIS/SJIS</code> などのソースファイルのエンコーディング名を指定します。このオプションを指定しない場合、プラットフォームのデフォルトのコンバータが使用されます。
+<p>
+
+<dt><b>-docencoding <i>name</i></b>
+<dd>
+出力 HTML ファイルのエンコーディング名を指定します。
+<p>
+
+<dt><b>-version </b>
+<dd>
+@version タグを入れます。デフォルトでは省略されます。
+<p>
+
+<dt><b>-author </b>
+<dd>
+@author タグを入れます。デフォルトでは省略されます。
+<p>
+
+<dt><b>-noindex </b>
+<dd>
+パッケージ索引を省略します。デフォルトでは生成します。
+<p>
+
+<dt><b>-notree </b>
+<dd>
+クラス / インタフェース階層を省略します。デフォルトでは生成します。
+<p>
+
+<dt><b>-d </b><var>directory</var>
+<dd>
+<b>javadoc</b> が HTML ファイルを格納する宛先ディレクトリを指定します。("d" は "destination" を表す) ディレクトリは現在作動しているディレクトリに対して、絶対または相対指定です。たとえば、java.lang パッケージにドキュメンテーションを作成し (探すためには CLASSPATH を使用して)、<code>-d</code> オプションで指定したディレクトリに結果を格納するには、次のようにします。
+
+<pre>
+<dd>javadoc -d /home/opus/public_html/doc java.lang
+</pre>
+
+<dt><b>-verbose</b>
+<dd>
+<code>verbose</code> オプションを指定しない場合、ソースファイルのローディング時、ドキュメンテーションの生成時 (1 つのソースファイルに 1 つのメッセージ)、およびソート時にメッセージが現われます。<code>verbose</code> オプションにより、各 Java ソースファイルを解析するためにかかったミリ秒の数などの追加メッセージを表示します。  
+<p>
+
+<dt><b>-sourcepath </b><var>path</var>
+<dd>
+ソースファイルを探すための検索パスを指定します。このオプションは、クラスファイルのローディングに影響ありません。ユーザが指定する <code>sourcepath</code> は、<b>javadoc</b> コマンドへの引数としてパッケージまたはクラスを指定するかどうかに依存します。
+<p>
+パッケージのドキュメントを生成する場合には、ドキュメントを作成する対象のパッケージの最上位の親パッケージを含むのソースツリーのディレクトリを <code>sourcepath</code> に指定します。<code>sourcepath</code> のデフォルトは、現在の <code>classpath</code> ディレクトリとなります。たとえば、そのソースファイルが以下のディレクトリに位置している <code>java.lang</code> という名前のパッケージをドキュメント化したいものとします。
+<pre>
+<dd>/myapp/src/share/java/lang/*.java
+</pre>
+<code>java</code> が最上位の親パッケージであるため、 <code>sourcepath</code> には、<code>java</code> を含んでいるディレクトリを指定するのが適切です。
+<pre>
+<dd>-sourcepath /myapp/src/share
+</pre>
+個々のクラスのドキュメントを生成する場合には、ドキュメントを作成する対象のクラスを含むソースツリーのディレクトリを <code>sourcepath</code> に指定します。パッケージのドキュメント化時に使用した <code>sourcepath</code> の場合とは異なることに注意してください。たとえば、そのソース ファイルが以下のディレクトリに位置している  <code>java.lang.String</code>  という名前のクラスをドキュメント化したいものとします。
+<pre>
+<dd>/myapp/src/share/java/lang/String.java
+</pre>
+<code>sourcepath</code> に<code>String.java</code> クラスを含んでいるディレクトリを指定します。
+<pre>
+<dd>-sourcepath /myapp/src/share/java/lang
+</pre>
+最初に、指定するはずのディレクトリに移っている場合には、<code>sourcepath</code> オプションを省略することができます。
+<p>
+
+<dt><b>-nodeprecated </b>
+<dd>
+<b>@deprecated</b> タグ付きのパラグラフを除外します。
+
+<p>
+
+<dt>注意:  <code>-doctype</code> オプションは利用できなくなりました。HTML ドキュメンテーションだけが作成できます。
+</dl>
+</blockquote>
+
+<h2>例</h2>
+<blockquote>
+各パッケージは、それに対応するディレクトリ名を持ちます。次の例では、ソースファイルは <code>/home/ws/src/java/awt/*java</code> に位置しています。格納先のディレクトリは  <code>/home/ws/html</code> です。
+
+<h3>1 つ以上のパッケージのドキュメント作成</h3>
+
+最初に、最上位のパッケージの親ディレクトリに移動します (またはそのディレクトリに sourcepath オプションを与えます)。次に、1 つ以上のパッケージ名を与えて javadoc を実行します。
+<pre>
+  % cd /home/ws/src/
+  % javadoc -d /home/ws/html java.awt java.awt.event
+</pre>
+パッケージ <code>java.awt</code> および <code>java.awt.event</code> の public クラスに対して HTML フォーマットのドキュメンテーションを作成し、それを指定した出力ディレクトリ(<code>/home/ws/html</code>)に置きます。
+
+<h3>1 つ以上のクラスのドキュメント作成</h3>
+
+クラスを保持するディレクトリに移動します (またはそのディレクトリに sourcepath オプションを与えます)。次に、1 つ以上のクラス名を与えて javadoc を実行します。
+<pre>
+  % cd /home/ws/src/java/awt
+  % javadoc -d /home/ws/html Button.java Canvas.java
+</pre>
+2 つのクラスに対して HTML フォーマットのドキュメンテーションを作成します。
+</blockquote>
+
+<h2>環境変数</h2>
+<blockquote>
+
+<dl>
+
+<dt><code><b>CLASSPATH</b></code>
+<dd>ユーザ定義クラスへのパスをシステムに指定します。<!--javadoc が処理を行えるよう--> ディレクトリはコロンで分割します。たとえば、次のとおりです。
+<pre>
+<dd>.:/home/avh/classes:/usr/local/java/classes
+</pre>
+</dl>
+</blockquote>
+
+<h2>参照</h2>
+<blockquote>
+<a href="javac.html">javac</a>,  
+<a href="java.html">java</a>,
+<a href="jdb.html">jdb</a>,
+<a href="javah.html">javah</a>,  
+<a href="javap.html">javap</a>,  
+</blockquote>
+
+</body>
+</html>
+

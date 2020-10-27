@@ -1,0 +1,340 @@
+<html>
+<HEAD>
+<title>
+Manifest フォーマット
+</title>
+</HEAD>
+<BODY BGCOLOR=#FFFFFF>
+
+<h1> Manifest フォーマット</h1>
+<p>
+<h2> 0. アーカイブ署名</h2>
+
+<p>この仕様では、アーカイブファイルのフォーマットを指定しません。階層パスをサポートするすべてのフォーマットが受入可能です。この仕様でアーカイブに追加されたファイルは、アーカイブ内の普通のファイルとしてディレクトリに置かれます。
+
+<p>manifest ファイルのすべての URL 識別子は RFC 1738、"Uniform Resource Locators" に記述されている URL 構文に従います。加えて、manifest の階層パスは RFC 1738 の URL 構文との一貫性のために '/' (フォーワードスラッシュ) を区切り文字として使用します。
+
+<p><h2>1. この方式をとった理由</h2>
+
+<p>
+<ul>
+<li>HTTP または HTTP サーバの修正を不要とする。
+<li>既に広く展開されている archive フォーマットを使用可能にする。
+<li>ユーザが、これらのアーカイブに含まれるファイルを使用するために暗号化ツールを持つことを不要にする。
+<li>複数署名者。
+<li>複数署名アルゴリズム。
+<li>オーバラップおよび署名のないファイルと同様に、アーカイブの異なる部分を異なるパーティが署名できるようにする。
+<li>サポートには Java アーカイブとインストール可能なソフトウェア流通が必要。
+<li>既存の標準にできる限り従う(ファイルフォーマットと PKCS7 署名の両方について)
+。
+<li>署名者毎アーカイブ毎に 1 つの署名検証。
+<li>進歩的な検証。
+</ul>
+<h2>2. アーカイブのファイル名</h2>
+
+<p>アーカイブはパスツリーの上位レベルに "META-INF/" ディレクトリを作成することによって、署名されます。他のパス名が先行の "/" を含む場合、先行する "/" は受入可能です(すなわち、"/META-INF/")。
+
+<p>アーカイブ内に次のパス名を持った manifest ファイルは確実に 1 つあります。
+
+<pre>
+  META-INF/MANIFEST.MF
+</pre>
+
+<p>署名ファイルは次の形式のパス名を持ちます。
+
+<pre>
+  META-INF/x.SF
+</pre>
+
+文字列 x は文字 A-Z 0-9 およびダッシュまたはアンダースコアだけを含みます。x は 8 文字を超えてはいけません。
+
+<p>ファイル名内の非 ASCII 文字のエンコーディング (サポートされていれば) は、この仕様ではなくアーカイブフォーマットまたは他の規則によって定義されます。しかし、META-INF ディレクトリのファイル名は上記に制限されます。
+
+<p>名前 "META-INF"、"MANIFEST.MF" およびファイルタイプ ".SF" は、大文字で生成されますが
+、大文字小文字どちらでも認識はされます。
+
+<p> <h2>3. 名前-値ペアおよびセクション</h2>
+
+<p>ほとんどのケースで、manifest ファイルまたは署名ファイルに含まれる情報は、RFC822 で規定されるいわゆる「名前: 値」ペアとして表されます。
+
+<p>名前-値ペアのグループを「セクション」と呼びます。セクションは他のセクションと空白行で区分されます。
+
+<p>すべての形式のバイナリデータはベース 64 として表されます。行の長さが 72 バイ
+トを超えるようなバイナリデータについては継続が必要です。バイナリデータの例はダイジェストおよび署名です。
+
+<p>実装によって、65535 バイトまでのヘッダ値がサポートされます。
+
+<h4>仕様:</h4> <pre>
+  section: *header +newline
+  nonempty-section: +header +newline
+  newline: CR LF
+         | LF
+         | CR (not followed by LF)
+
+; That 'not followed by LF' probably requires some minor
+; ugliness in the parser. Sorry.
+
+  header: alphanum *headerchar ":" SPACE *otherchar newline
+          *continuation
+
+  continuation: SPACE *otherchar newline
+
+; RFC822 has +(SPACE | TAB), but this way continuation lines 
+; never get mangled.
+
+  alphanum: {"A"-"Z"} | {"a"-"z"} | {"0"-"9"}
+
+  headerchar: alphanum | "-" | "_"
+
+  otherchar: any Unicode character except NUL, CR and LF
+
+; Also: To prevent mangling of files sent via straight e-mail, no 
+; header will start with the four letters "From".
+
+; When version numbering is used:
+
+  number: {"0"-"9"}+
+
+; The number needn't be, e.g. 1.11 is considered to be later
+; than 1.9. Both major and minor versions must be 3 digits or less.
+</pre>
+<h2>4. Manifest ファイル</h2>
+
+manifest ファイルはアーカイブ自身内に存在するファイルのリストからなります。アー
+カイブ内のすべてのファイルを  manifest にリストする必要はありませんが、署名するすべてのファイルはリストする必要があります。manifest ファイル自身はリストしてはいけません。
+
+<p>最低でも次のような標準のバージョン番号を含む予備のセクションが、ファイルの上部に表示されます。<pre>
+  Manifest-Version: 1.0
+</pre>
+オプションで、使用に必要とされるバージョンを指定できます:
+<pre>
+  Required-Version: 1.0
+</pre>
+もし、Version: が Required-Version より大きい場合、拡張を使用します。
+
+<p>manifest ファイルはアーカイブ内の様々なファイルのエントリであるセクションからなります。
+
+<p>ヘッダ自身の多くはこの使用で規定されていません。必要なものは次のとおりです: <pre>
+  Name: dirpath/whatever.class
+  Digest-Algorithms: (list of algorithms)
+  (algorithm)-Digest: (base-64 representation of digest)
+
+</pre>
+
+"Name:" ヘッダはアーカイブ内で署名されているファイルへの相対パス、もしくは、アーカイブ外の絶対 URL 参照データを含みます。
+
+<ul>
+<li>複数のダイジェストアルゴリズムはリストできる (および対応する (*)-Digest: 行はリストされた各々に存在する必要がある); 最低 1 つは存在する必要がある。
+<li>同じファイルへの 2 つのエントリは  manifest ファイルにあってはいけない。重複したエントリが発生したとき、最初のものだけが認識される。
+<li>理解できないヘッダは無視される。このようなヘッダには、アプリケーションが使用する "policy": 情報かもしれない。
+</ul>
+
+<h4>manifest ファイルの例:</h4>
+<pre>
+  Manifest-Version: 1.0
+
+  Name: common/class1.class
+  Digest-Algorithms: MD5
+  MD5-Digest: (base64 representation of MD5 digest)
+
+  Name: common/class2.class
+  Digest-Algorithms: MD5, SHA
+  MD5-Digest: (base64 representation of MD5 digest)
+  SHA-Digest: (base64 representation of SHA digest)
+
+</pre>
+<h4>仕様:</h4>
+<pre>
+  manifest-file: "Manifest-Version: 1.0" newline
+                 manifest-start
+                 *manifest-entry
+
+  manifest-start: section
+
+  ; Optional header is
+  ;   Required-Version: number "." number
+  ;
+  ; Required-Version indicates that only tools of the given version
+  ; or later can be used to manipulate the file.
+
+; The value of Digest-Algorithms is a comma-separated-list:
+
+  comma-separated-list: +headerchar "," *whitespace comma-separated-list
+                      | +headerchar
+</pre>
+<h2>5. 署名指示</h2>
+
+<p>各署名者は署名ファイルによって表示されます。
+
+<p>最低でも次のような標準のバージョン番号を含む予備のセクションが、ファイルの上部に表示されます。<pre>
+  Signature-Version: 1.0
+</pre>
+署名者が供給する情報で特定のパス名に固有のものでない情報は、この予備ヘッダに入っている必要があります。
+
+<p>このファイルの主要な部分は manifest ファイルと同様な形式です。この目的は、"policy" をヘッダに埋め込むことができるようにすることです。このヘッダは manifest 所有者 (通常アーカイブを生成する人) より署名者が供給します。
+
+<p>署名ファイルは、基本的には名前のリストであるセクションからなります。この名前はすべて manifest ファイルに存在する必要があります。余分なヘッダをここに入れることができます。ダイジェストもまた存在しますが、これは manifest ファイル内のエントリのダイジェストです。
+
+<p>manifest ファイルに表示されるが署名ファイルには表示されないパスまたは URL は計算に使用されません。これによってアーカイブのサブセットに署名できます。
+
+<p>Name: だけが必須です。
+
+<p> <h4>ファイルの有効化:</h4>
+
+<p>manifest が最初に分解されるとき、署名が最初に検証されます。この検証を効率のために覚えておくことができます。これは実際のアーカイブファイルでなく署名方向自身を有効化するだけです。
+
+<p> ファイルを有効化するためには、署名ファイルのダイジェストの値を manifest ファイルの対応するエントリに対して計算したダイジェストと比較します。次に、manifest ファイルのダイジェストの値 を "Name:" ヘッダ内で参照される実際のデータに対して計算されるダイジェストと比較します--相対パスまたは URL。
+<pre>署名ファイルの例:
+
+  Signature-Version: 1.0
+
+  Name: common/class1.class
+  Digest-Algorithms: MD5
+  MD5-Digest: (base64 representation of MD5 digest)
+
+  Name: common/class2.class
+  Digest-Algorithms: MD5
+  MD5-Digest: (base64 representation of MD5 digest)
+</pre>
+<h4>仕様:</h4>
+<pre>
+  signature-file: "Signature-Version: 1.0" newline
+                  signature-start
+                  *signature-entry
+                  signature-end
+
+  signature-start: section
+
+; Optional header is
+;   Required-Version: number "." number
+; This has the same meaning as in manifest-start.
+; The only required header is Name. Its format is the same
+; as in a manifest-entry.
+</pre>
+
+<h4>Magic キーワード</h4>
+
+<p>与えられた manifest エントリ上で署名を有効化するための別の<b>要件</b>は、そのエントリの manifest エントリ内の <code>Magic</code> キーペア値の値を検証者が理解することです。<p><code>Magic</code> キーは<b>オプション</b>ですが、分解者はそのエントリの署名を検証する場合、エントリの <code>Magic</code> キーの値を理解する<b>必要</b>があります。
+
+<p>キー <code>Magic</code> の値はコンマで区切られたコンテキスト固有の文字列セットです。コンマの前後の空白は無視されます。大文字小文字も無視されます。magic キーワードの正確な意味はアプリケーション固有なものです。これらのキーワードには、manifest エントリに含まれるハッシュ値の計算法方が入っており、そのため署名の正しい検証には欠くことのできないものです。このキーワードは動的または埋め込みコンテンツ、多国語ドキュメント用の複数ハッシュなどに使用します。
+
+<p>次に、<code>Magic</code> の可能性のある使用例を 2 つ示します:
+<pre>
+	Name: http://www.scripts.com/index#script1
+	Digest-Algorithms: SHA
+	SHA-Digest: (base64 representation of SHA hash)
+	Magic: JavaScript, Dynamic
+</pre>
+<pre>
+	Name: http://www.tourist.com/guide.html
+	Digest-Algorithms: SHA
+	SHA-Digest: (base64 representation of SHA hash)
+	SHA-Digest-French: (base64 representation of SHA hash)
+	SHA-Digest-German: (base64 representation of SHA hash)
+	Magic: Multilingual
+</pre>
+
+<p>最初の例では、これら <code>Magic</code> の値は http 問い合わせの結果がドキュ
+メント自身に対立するようにドキュメントに埋め込まれたスクリプトであり、またそのスクリプトが動的に生成されるということを指摘します。この 2 つの情報は、Manifest のハッシュ値と比較しそして有効な署名と比較するハッシュ値の計算方法を指摘します。
+
+<p>第 2 の例では、<code>Magic</code> 値は取得したドキュメントが固有の言語用にネゴシエートされたコンテントであり、検証するハッシュは取得したドキュメントがどの言語で書かれているかに依存するということを指摘します。
+
+
+<h2>6. デジタル署名</h2>
+この仕様のデジタル署名は ".SF" (署名指示) ファイルの署名済みバージョンです。これらはバイナリファイルであり、人間が解釈するように意図していません。
+
+<p>デジタル署名ファイルは .SF ファイルと同じファイル名を持ちますが、異なる拡張子を持っています。拡張子はデジタル署名の型によって変化します。<pre>
+  .RSA      (PKCS7 signature, MD5 + RSA)
+  .DSA      (PKCS7 signature, DSA)
+  .PGP      (Pretty Good Privacy Signature)
+</pre>
+
+外部署名データをサポートしないこれらのフォーマットについては、ファイルは .SF ファイルの署名済みコピーからなります。こうして、あるデータは重複する可能性があり、検証者は 2 つのファイルを比較する必要があります。
+
+<p>外部データをサポートするフォーマットは、".SF" ファイルを参照するか、暗示的な参照によって計算を実行します。
+
+<p>各 .SF ファイルは複数のデジタル署名を持つ可能性がありますが、これらの署名は同じ正当なエンティティによって生成される必要があります。
+
+<p>ファイルタイプは 1つから 3つの「英数字」文字です。認識できないファイルタイプは明確に無視する必要があります。
+
+<p> <h2>7. 注</h2>
+
+<p>
+
+<h4>分解する前に:</h4>
+
+<ul>
+<li>ファイルの最後の文字が EOF 文字 (コード 26) の場合、EOF は空白として扱われる。<li>2つの新しい行が追加される (1 つは最後の行の後ろに新しい行を置かないエディタ
+用で、1 つはその後に空白行を持たない、文法で最後のエントリを特別に取り込む必要のないものである。)。
+</ul>
+<h4>ヘッダ:</h4>
+<ul>
+<li>すべてのセクションのすべてのケースで、理解できないヘッダは無視される。
+<li>ヘッダ名は大文字小文字を区別する。しかし、manifest および署名ファイルを生成するプログラムはこの仕様で示される大文字小文字を使用する。
+<li>ヘッダ名はセクション内で繰り返してはいけない。
+</ul>
+<h4>バージョン:</h4>
+<ul>
+<li> Manifest-Version および Signature-Version は最初でなければならず、確実に守らなければならない (こうしてこれらを magic 文字列として簡単に認識できるようにする)。 それ以外は、セクション内のヘッダの順番は重要ではない。
+</ul>
+<h4>順番付:</h4>
+<ul>
+<li>manifest エントリの順番は重要ではない。
+<li>署名エントリの順番は、署名されるダイジェストがその順番になることを除けば重要ではない。
+</ul>
+<h4>行の長さ:</h4>
+<ul>
+<li>すべての行は UTF8 エンコード形式では、72 バイト (文字でない) を超えられない。
+値によって初期の行がこれ以上長くなる場合、追加行に継続する必要がある(各々の行は単一の「空白」で始まる)。
+</ul>
+<h4>エラー:</h4>
+<ul>
+<li>ファイルをこの仕様に従って分解できない場合、警告を出力し、すべての署名を信用してはいけない。
+</ul>
+<h4>制限:</h4>
+<ul>
+<li>ヘッダ名は継続できないため、ヘッダ名の最大長は 70 バイトである (名前の後にコロンと「空白」がなければならない)。
+<li> NUL、CR、LF はヘッダ値には埋め込めず、NUL、CR、LF、":" はヘッダ名に埋め込めない。これらに引用符を追加してもよいが、多分余計複雑になるだけで価値がない。他の可能性としては、2 バイトを使用してこれらを埋め込むよう要求する。
+<li>ファイルの複雑さに制限をかけずに、仕様の準拠をテストすることは困難である。そこで、実装では 65535 バイト (文字でない) のヘッダ値およびファイル毎に 65535 個のヘッダをサポートする必要がある。これによってメモリが足らなくなるかもしれないが、これらの値にハードコーディングの制限があってはならない。
+</ul>
+<h4>署名者: </h4>
+<ul>
+<li>単一の署名ファイルを共有するために、異なるエンティティが異なる署名アルゴリズムを使用することは技術的に可能である。これは標準を侵犯し、余分な署名が無視される。 
+</ul>
+<h4>アルゴリズム:</h4>
+<ul>
+<li>この標準はダイジェストアルゴリズムまたはシグネチャアルゴリズムに委任はしない。しかし、次のことが一般的に期待されている:
+<li>  Digest: 最低 MD5 および SHA の 1 つ
+<li>  シグネチャ: PKCS7
+</ul>
+
+<p> <h2>7. 謝辞</h2>
+
+この仕様の著者は次の方々です:
+
+<P>
+<pre>
+Thomas Dell (<I>tdell@netscape.com</I>)
+Netscape Corporation
+
+David Hopwood (<I>david.hopwood@lady-margaret-hall.oxford.ac.uk</I>)
+Oxford University
+
+Dave Brown (<I>brown@eng.sun.com</I>)
+Benjamin Renaud (<I>br@eng.sun.com</I>)
+David Connelly (<I>dac@eng.sun.com</I>)
+Sun Microsystems, Inc.
+</pre>
+
+<hr>
+<BR>Copyright &copy; 1996 Netscape Corporation All rights reserved.
+<BR>Copyright &copy; 1996 Sun Microsystems, Inc.
+<BR>Distribution: Unlimited.
+
+<address>
+<!--#flastmod file="manifest.html" -->
+<br>
+java-security@java.sun.com
+</address>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>
+1.1 AWT API の非互換変更
+</title>
+</head>
+
+<BODY BGCOLOR="#FFFFFF">
+
+<h1>
+1.1 AWT API の非互換変更
+</h1>
+
+概して、 1.0、1.0.1、1.0.2 バージョン用に書かれたコードは、変更なしに 1.1 バージョンでコンパイルできます (ただし、「推奨されない」API に関する警告が表示される可能性はあります)。また、これら以前のバージョンでコンパイルされたコードは、(再コンパイルなしで) 通常、前と同様に 1.1 実行システムでも最低動作はします。このドキュメントでは、これら規則に対する AWT の例外、すなわち互換性のないコンパイルまたは実行動作を生じる変更を説明します。非 AWT JDK 1.1 の互換性については、
+<a href="http://java.sun.com/products/jdk/1.1/compatibility.html">JDK 1.1と以前の JDKリリースとの互換性</a>を参照してください。
+
+<p>
+
+次に、互換性のない AWT 変更を示します:
+
+<ol>
+<li>Windows 95/NT システムのメニューでは、もはや<em>ニーモニック</em>として知られるキーボード代替を許しません。実装の欠陥から、Windows 95/NT ではメニューラベルにアンパサンド("&")を付けてニーモニックを指定することができました。例えば、"Save As..." というラベルのメニュー項目が "a" をニーモニックとして定義したとすると、表示されたメニュー項目には "A" に下線を付けられました。しかしこれは Windows 95/NT 上でだけでした。現在では、ラベルに "&" の付いたメニューは、 Windows 95/NT 上でも他のプラットフォームと同様に "&" を表示するだけです。"&" ハックがもはや機能しないのは、これがネイティブメニューシステムを使用して AWT に依存していたためです。このメニューシステムは、修正可能なフォントと非 Latin1 テキストをサポートする必要から、それを止めたのです。将来のバージョンアップでは、メニューニーモニックのサポートを追加する予定です。<p><li> Windows 95/NT システムでは、キャンバスとパネルはキーボードイベントを取得できないように見えるかもしれません。それは、キーボードイベントを受け取るために必要なフォーカスを自動的に取得できないことによります。キャンバスやパネルにフォーカスを与えるためには、<code>requestFocus</code> メソッドを使用します。例えば、<code>MouseListener</code> の中の <code>mouseClicked</code> メソッドをカスタムコンポーネント用に実装する場合、そのコンポーネントの <code>requestFocus</code> メソッドを起動する必要があります。<p><li> <code>java.awt.peer</code> パッケージの次の 4 つの 1.02 メソッドは、1.1では除外されています:     <ul> 
+	<li><code>java.awt.peer.ComponentPeer:<br>
+	public abstract boolean handleEvent(java.awt.Event);
+	<br>
+	public abstract void nextFocus();</code>
+
+	<li><code>java.awt.peer.ScrollbarPeer:<br>
+	public abstract void setValue(int);</code>
+
+	<li><code>java.awt.peer.FramePeer:<br>
+	public abstract void setCursor(int);</code>
+     </ul>
+     <strong>注:</strong>
+     peer クラスを、開発者が直接呼び出すことは意図していないため、<code>java.awt.peer</code> パッケージの API は常に変更される可能性があります。
+<p>
+<li> ウィンドウをコンテナに追加しようとすると、現在では <code>IllegalArgumentException</code> となります。
+<p>
+<li> 終点が開始点と同じでない場合、<code>Graphics</code> の <code>drawPolygon</code> メソッドは、閉じない多角形を描画していました。 1.1 では、<code>drawPolygon</code> は自動的に多角形を閉じます。閉じない多角形を描画したい場合は、代わりに新しい <code>drawPolyline</code> メソッドを使用することができます。
+<p>
+<li> <code>Color</code> クラスの構築子は、渡されるパラメータの範囲をチェックし、範囲外の値を見つけた場合、<code>IllegalArgumentException</code> をスローします。
+<p>
+<li> <code>Dialog</code> 構築子に null フレームを渡すと、現在では <code>IllegalArgumentException</code> となります。
+<p>
+<li> public abstract メソッド <code>nextFocus</code> は、 <code>java.awt.peer.ComponentPeer</code> インタフェースから除外されました。ピアインタフェースは AWT とその実装との間の private インタフェースであるため、これはアプリケーションやアプレットには影響しません。
+<p>
+<li> Win32 イベント処理のバグ修正をすると、使用しているコンポーネントが従来以上のイベントを取得する可能性があります。詳細については、後節の<a href=#win32Events> Win32 イベント処理の改善</a>を参照してください。
+<p>
+<li> AWT の同期モデルは、デッドロックの可能性を削減するために改訂されました。これで、既存のプログラムが異なる動作をする可能性がでてきます。詳細については、後節の<a href=#sync>新しい同期モデルの詳細</a>を参照してください。
+</ol>
+<p>
+
+
+<h3>
+<a name=win32Events>
+Win32 イベント処理の改善
+</a>
+</h3>
+AWT の Win32 実装のイベント処理では、たくさんのバグが修正されました。特に、フォーカスイベントは以前は 1.0.2 の一部のコンポーネント (ボタンなど) に送られませんでしたが、今では  1.1 の Win32 上に正しく送られます。これらの新しいイベントを正しく処理するコード化がなされていない <code>handleEvent</code> メソッドを持っている場合、プログラムの動作状態を見て変更点が分かるでしょう。<code>Frame</code> の <code>handleEvent</code> メソッドに次のフラグメントを持っている場合を示します:
+
+<blockquote>
+<pre>
+if (event.id == Event.GOT_FOCUS) {
+    // do something...
+}
+</pre>
+</blockquote>
+
+<code>Frame</code> 内のコンポーネント (ボタンなど) がフォーカスを取得したとき、このブロックが呼び出されます。ブロックがこのようなケースを処理するように設計されていない場合、プログラムは 1.0.2 のときのように動作しない可能性があります。
+
+
+<h3>
+<a name=sync>
+新しい同期モデルの詳細
+</a>
+</h3>
+
+AWTの同期モデルは、1.0.2 JDK に存在したデッドロックの可能性を、(皆無にはしないにしても) 著しく削減 するために、改訂されました。厳密にいえば、これは前のバージョンとの非互換ではありませんが、既存のプログラムの動作が変わる可能性があります。クライアントコードで起動およびサブクラス化ができる以上、AWT に競合状態やデッドロックがないという保証は、かつても今もありえません。
+
+<p>
+
+新しい同期モデルでは、コンテナ内のコンポーネントの構造とレイアウトは、単一の AWT 全体ロックによって保護されています。これには、<code>Component</code> クラスで次のように宣言した <code>Component.LOCK</code> と呼ばれるオブジェクトが使用されます。
+  
+<p>
+<blockquote>
+<pre>
+public static final Object LOCK = new Object();
+</pre>
+</blockquote>
+<p>
+  
+例えば、<code>Container.validate</code>、
+<code>Container.add</code>、
+および <code>Container.remove</code>
+には、<code>Component.LOCK</code> を使用する同期化ブロックがすべて含まれています。
+
+<p>
+
+<code>Component.setEnabled</code> または <code>Button.setLabel</code> などの個別コンポーネント状態に対する Setter メソッドは、インスタンス自身の上で同期化されます。 Getter メソッドは通常同期化されませんが、共有データのスレッドローカルコピーを作り、このメソッドで使用するというコピー貼り付け方式によって、半ば保護されています。
+
+<p>
+
+AWT を使用するコードについて、それが同期化コンテキストで起動された AWT メソッドをオーバーライドする間に自分自身のロックを獲得する場合、一定のロック順序に関する綿密な調査を行う必要があります。例えば、レイアウトコード内で自分のロックを獲得する場合、このコードが既に保持されている <code>Component.LOCK</code> ロックで呼び出されることを認識しておく必要があります。他のスレッドのコードがロックを保持し、 <code>validate</code> を起動しようとする場合、プログラムがデッドロックする可能性があります。このようなケースを識別したとき、一定のロック順序を保証するために、可能なところでコードを書き直す必要があります。この順序は通常クライアントロックを最初にし、次に <code>Component.LOCK</code> がきます。
+
+<p>
+
+<hr>
+<font size=-1>
+<em>
+フィードバックは <a href=mailto:kwalrath@eng.sun.com>Kathy Walrath</a> 宛てに送ってください。
+</em>
+</font>
+</body>
+</html>
+
+

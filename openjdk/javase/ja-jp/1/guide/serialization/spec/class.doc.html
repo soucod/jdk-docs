@@ -1,0 +1,82 @@
+<html><head><title>クラス記述子	
+</title></head>
+<body bgcolor=#ffffff>
+ 
+<a href="serialTOC.doc.html">[目次]</a> <a href="input.doc.html">[前項目]</a> <a href="version.doc.html">[次項目]</a>
+<hr><br>
+ 
+<h1><a name="60">
+クラス記述子
+</a></h1>
+<hr><p>
+<p><code>ObjectStreamClass </code>は、直列化ストリームに保管されるクラスの情報を返します。その記述子には、そのクラスの完全修飾名とその直列化バージョン UID が示されます。streamVersionUID に示される固有のオリジナルクラスバージョンに対し、このクラスはストリームを書き込むことができ、またそこから読み込むことができます。
+<p><dl><pre>package java.io;
+
+public class ObjectStreamClass
+{
+	public static ObjectStreamClass lookup(Class cl);
+
+	public String getName();
+
+	public Class forClass();
+
+	public long getSerialVersionUID();
+
+	public String toString();
+}
+</pre></dl><code>lookup</code> メソッドは、Java VM の指定されたクラスに対する <code>ObjectStreamClass</code> 記述子を返します。このクラスに serialVersionUID が定義されていれば、それがこのクラスから取り出されます。定義されていなければ、Java Virtual Machine にあるこのクラスの定義から計算されます。指定されたクラスが Serializable でも Externalizable でもない場合、 <strong>null</strong> が返されます。ストリームに書き込めるのは、java.io.Serializable か java.io.Externalizable のインタフェースが実装されているクラスのクラス記述だけです。
+<p><code>getName </code>メソッドは、そのクラスの完全修飾名を返します。このクラス名はストリームに保管され、そのクラスがロードされるときに使われます。
+<p><code>forClass </code>メソッドは、そのクラスがローカル Virtual Machine で認識されていれば、それを返します。そうでなければ、null を返します。
+<p><code>getSerialVersionUID</code> メソッドは、このクラスの serialVersionUID を返します。これについては、<a href="class.doc.html#4100">ストリーム固有識別子</a> を参照してください。このクラスによって定義されていない場合は、米国連邦情報局によって定義された Secure Hash Algorithm (SHA) を使って、クラスの名前、インタフェース、メソッド、フィールドから計算された値が返されます。
+<p><code>toString</code> メソッドは、クラス記述子を表示可能な表現で返します。これには、クラスの名前と serialVersionUID などが含まれます。
+<p><h1><a name="3127">
+直列化可能クラスの検査
+</a></h1>プログラム <code>serialver </code>を使えば、クラスが直列化可能かどうかを判断し、その <code>serialVersionUID</code> を得ることができます。-show を指定して呼び出すと、このプログラムは簡単なユーザインタフェースを表示します。クラスが直列化可能かどうかを知り、その <code>serialVersionUID</code> を得るには、そのクラス名全体を指定し、Enter か Show ボタンを押します。表示された文字列は、コピーして、展開されたクラスに張り付けることができます。
+<p><a name="5003">
+ <center><img src="class.doc.anc.gif"></center><p>
+</a>serialver は、コマンド行から呼び出されたときに 1 つまたは複数のクラス名が指定されていると、展開中のクラスにそれぞれのクラスの serialVersionUID をコピーできるような形式で表示します。引数が指定されていないと、このプログラムはユーセッジ行を表示します。
+<p><h1><a name="4100">
+ストリーム固有識別子
+</a></h1>バージョン化された各クラスでは、オリジナルクラスバージョンを指定する必要があり、それによってストリームの書き込み、読み込みが可能になります。たとえば、バージョン化されたクラスは、次のように宣言する必要があります。
+<p><dl><pre>	static final long SerialVersionUID = 3487495895819393L;
+</pre></dl>ストリーム固有識別子は、クラス名、インタフェースクラス名、メソッド、フィールドからなる 64 ビットのハッシュです。最初のバージョンを除くクラスのすべてのバージョンで、この値を宣言する必要があります。この値は、オリジナルクラスに宣言することもできますが、必須ではありません。互換性のあるすべてのクラスで、この値は一定です。クラスに対してこの SUID を宣言しないと、この値はそのクラスのハッシュになります。クラスでバージョン化を予期する必要はありません。
+<p>serialVersionUID は、そのクラス定義を反映したバイトストリームのシグネチャを使って計算されます。ストリームのシグニチャの計算には、米国連邦情報技術局 (NIST)の Secure Hash Algorithm (SHA-1) が使用されます。64 ビットハッシュには、最初の 2 つの 32 ビットが使われます。プリミティブデータ型からバイト列への変換には、java.lang.DataOutputStream が使用されます。このストリームへ入力される値は、クラスに対する JAVA 仮想マシン (VM) の指定によって定義されます。ストリームにおける項目の順序は次のとおりです。
+<p><ol>
+<li>UTF コード化を使って書かれたクラス名
+<li>32 ビット整数として書かれたクラス修飾子
+<li>UTF コードで書かれた名前によってソートされた各インタフェース名
+<li>フィールド名でソートされたクラスの各フィールドに対し（private staticと private transientのフィールドを除く):
+<ul>
+<li>UTF コード化によるフィールド名
+<li>32 ビット整数として書かれたフィールドの修飾子
+<li>UTF コード化によるフィールドの記述子
+</ul>
+<li>メソッド名とシグニチャでソートされた、構築子を含む各メソッドに対し（private のメソッドと構築子を除く)：
+<ul>
+<li>UTF コード化によるメソッド名
+<li>32 ビット整数として書かれたメソッドの修飾子
+<li>UTF コード化によるメソッドの記述子
+</ul>
+<li>SHA-1アルゴリズムは、DataOutputStream によって作成されたバイトストリームに対して実行され、5 つの 32 ビット値からなる sha[0..4] を作成します。
+<li>ハッシュ値は、最初とその次の 32 ビット値から作られます。
+     long hash = sha[1] &lt;&lt; 32 + sha[0].
+<dl><pre>
+</pre></dl></ol>
+
+<hr><br>
+ 
+<a href="serialTOC.doc.html">[目次]</a> <a href="input.doc.html">[前項目]</a> <a href="version.doc.html">[次項目]</a>
+<hr><br>
+ 
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- このファイルは Quadralay WebWorks Publisher 3.0.4によって作成されてい -->
+<!-- ます。-->
+<!-- このドキュメントおよびこのサーバの残りの部分がどのようにして作られてい-->
+<!-- るかについては、email rmi-support@javasoft.com にお問い合わせください。-->
+<!-- -->
+<!-- Last updated: 02/04/97 16:45:58 -->
+
+</body>
+</html>

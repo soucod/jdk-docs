@@ -1,0 +1,737 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="statement.doc.html">前項目</a>  | <a href="preparedstatement.doc.html">次項目</a>
+</font></td><td align=right><i>JDBC<sup><font size=-2>TM</font></sup> ガイド: 「はじめましょう」</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+<a name="1002724"></a>
+<h1>5  - ResultSet</h1>
+<a name="1003579"></a>
+この概要は、JavaSoftで現在進行中の <em>JDBC<font size=-1><sup>TM</sup></font> Database Access from Java<font size=-1><sup>TM</sup></font>:  A Tutorial and Annotated Reference</em>からの抜粋です。本書は、JDBC用のチュトリアルおよび最終レファレンス・マニュアルで、Javaシリーズの一部として1997年春にAddison-Wesley Publishing Companyから出版されています。
+
+<p>
+<a name="1003581"></a>
+<h2>5.1	 &nbsp;&nbsp; 概要</h2>
+<a name="1002744"></a>
+<code>ResultSet</code> は、SQL 文の条件を満たすべての行を含んでおり、
+現在行のさまざまな列にアクセスできる一連の <code>get</code> メソッドによって、これらの行のデータにアクセスする手段を提供します。<code>ResultSet.next</code> メソッドは、<code>ResultSet</code> の次行に移動するために使用され、次行が現在行になるようにします。   
+<p><a name="1002745"></a>
+結果のセットの一般的な形式は、列の見出しとクエリーの結果に対応する値から成るテーブルです。たとえば、クエリーが <code>SELECT a, b, c  FROM Table1</code>であれば、結果セットは次のような形式になります。
+<p>
+<a name="1002746"></a>
+
+<p>
+<pre><a name="1002747"></a>        a          b            c
+<a name="1002748"></a>        --------   ---------    -------- 
+<a name="1002749"></a>        12345      Cupertino    CA
+<a name="1002750"></a>        83472      Redmond      WA
+<a name="1002751"></a>        83492      Boston       MA
+</pre><a name="1002752"></a>
+
+<p>
+<a name="1002754"></a>
+
+<p>
+<a name="1003584"></a>
+次のコード断片は、列 1 を <code>int</code>、列 2 を
+<code>String</code>、そして列 3 をバイトの配列とする行のコレクションを戻す SQL 文の実行例です。 
+<p>
+<pre><a name="1002755"></a>    
+<a name="1002756"></a>    java.sql.Statement stmt = conn.createStatement();
+<a name="1002757"></a>    ResultSet r = stmt.executeQuery("SELECT a, b, c FROM Table1");
+<a name="1002758"></a>    while (r.next()) 
+<a name="1002759"></a>    {
+<a name="1002760"></a>      // print the values for the current row.
+<a name="1002761"></a>      int i = r.getInt("a");
+<a name="1002762"></a>      String s = r.getString("b");
+<a name="1002763"></a>      float f = r.getFloat("c");
+<a name="1002764"></a>      System.out.println("ROW = " + i + " " + s + " " + f);
+<a name="1002765"></a>    }
+</pre>
+<a name="1002767"></a>
+<h3>5.1.1	 &nbsp;&nbsp; 行とカーソル</h3>
+<a name="1003680"></a>
+<code>ResultSet</code> は現在行のデータを指し示すカーソルを維持します。カーソルは <code>next</code> メソッドが呼び出されるたびに 1 行下に移動します。カーソルは初期には 1 行目の前に位置するので、最初の <code>next</code> の呼び出しでは、カーソルが 1 行目に位置し、この行が現在行になります。<code>ResultSet</code> 行は、最上行から順次下に検索され、次の <code>next</code> の呼び出しのたびにカーソルが 1 行づつ下に移動します。 
+<p><a name="1002769"></a>
+カーソルは、<code>ResultSet</code> オブジェクトまたはその上位の <code>文</code> オブジェクトが閉じられるまで有効になっています。
+<p>
+<a name="1002770"></a>
+SQLでは、結果テーブルのカーソルに名前がつけられます。データベースがカーソル位置での更新または削除が可能な場合には、そのカーソルの名前を更新または削除コマンドとして与える必要があります。この名前はメソッド <code>getCursorName</code> を呼び出して取得します。 
+<p>
+<a name="1002771"></a>
+すべての DBMS がカーソル位置での更新または削除をサポートするとは限らないことに注意してください。<code>DatabaseMetaData.supportsPositionedDelete</code> および <code>supportsPositionedUpdate</code> メソッドを使用すると、特定の接続がこれらのオペレーションをサポートするかどうかを検出できます。これらがサポートされている場合、カーソル位置での更新または削除の際に複数の処理から同じ行を更新することがないよう、DBMS/ドライバは、選択行が正しくロックされているかを確認する必要があります。
+<p>
+
+<a name="1002772"></a>
+<h3>5.1.2	 &nbsp;&nbsp; 列</h3>
+<a name="1003683"></a>
+<code>getXXX</code> メソッドは、現在行から列を検索する手段を提供します。各行で列値を任意の順序に検索できますが、移植性を最大にするため、値は左から右に検索し、列値の読み取りを 1 度だけにします。  
+<p><a name="1002774"></a>
+データを取り出す元の列の指定には、列名または列番号のどちらでも使用できます。たとえば、
+<code>ResultSet</code> オブジェクト <code>rs</code> の 2 列目は "title" という名前がつけられ、値を文字列として格納する場合は、次のどちらでもその列に格納された値を取り出します。
+<p>
+<pre><a name="1002775"></a>    String s = rs.getString("title");
+<a name="1002776"></a>    String s = rs.getString(2);
+</pre><a name="1002777"></a>
+列には、左から右へと列 1 から始まる番号がつけられていることに注意してください。また、<code>getXXX</code> メソッドへの入力に使用される列名は大文字小文字を識別しません。  
+<p>
+<a name="1003692"></a>
+クエリーで列名を指定したユーザが
+<code>getXXX</code> メソッドの引数として同じ名前を使用できるように、列名を使用するオプションが提供されました。他方、<code> SELECT </code>文に列名が指定されていない場合 ("<code>select * from table1</code>" であるか、または列が導き出された列である場合など) には、列番号を使用すべきです。そのような場合では、ユーザが列名を確実に知る方法はありません。
+<p>
+<a name="1003695"></a>
+場合によっては、SQL 文の結果が同名の列を複数もつ結果のセットを返すこともあり得ます。 列名が <code>getXXX</code> メソッドを指すパラメータとして使用されている場合には、 <code>getXXX</code> は最初に一致する列名の値を返します。したがって、同名の列が複数ある場合は、正しい列値を取り出したかを確認するために列の添字を使用する必要があります。また、列番号を使用した方が多少効率的かもしれません。
+<p>
+<a name="1002780"></a>
+メソッド <code>ResultSet.getMetaData</code> を呼び出すと、<code>ResultSet</code> の中の列に関する情報を入手できます。返される <code>ResultSetMetaData</code> オブジェクトには、その <code>ResultSet</code> オブジェクトの列の番号、型、およびプロパティがついています。 
+<p>
+<a name="1002784"></a>
+列の名前が既知であるがその添字がわからない場合は、メソッド<code>findColumn</code> を使用して列番号を検索することができます。
+
+<p>
+
+<a name="1002785"></a>
+<h3>5.1.3	&nbsp;&nbsp; データの型と変換</h3>
+<a name="1002786"></a>
+<code>getXXX</code> メソッドでは、JDBC ドライバは基礎データを指定の Java の型に変換しようと試みてから、適切な Java 値を返します。たとえば、<code>getXXX</code> メソッドが <code>getString</code> であり、基礎のデータベースのデータのデータ型が <code>VARCHAR</code> である場合、JDBCドライバは <code>VARCHAR</code> を Java <code>String</code> に変換します。<code>getString</code> の返却値は Java <code>String</code> オブジェクトになります。 
+<p>
+<a name="1002787"></a>
+次の表は、 <code>getXXX</code> メソッドでどの JDBC 型を取り出すことが<em>できる</em>か、そしてこのメソッドでの取り出しには、どの JDBC 型 (汎用的な SQL 型) が<em>推奨</em>されているかを示しています。小文字の <code>x</code> は、特定のデータ型の正当な <code>getXXX</code> メソッドを示し、大文字の <code>X</code> は、データ型の推奨 <code>getXXX</code> メソッドを示します。たとえば、<code>LONGVARCHAR</code> の値を取り出すには、 <code>getBytes</code> または <code>getBinaryStream</code> を除く任意の <code>getXXX</code> メソッドを使用できますが、どのデータ型が返されるかによって、<code>getAsciiStream</code> または <code>getUnicodeStream</code> が推奨されています。メソッド <code>getObject</code> は、どんなデータ型でも Java <code>Object</code> として返すので、基礎データ型がデータベース固有の抽象型であるときや、汎用アプリケーションがどんなデータ型も受け入れできることが必要になるときには有用です。
+<p>
+<a name="1003646"></a>
+ResultSet.getXXX メソッドを使用した共通 JDBC データ型の取り出し。
+<p>
+<a name="1003647"></a>
+"x" は、<code>getXXX</code> メソッドが指定の JDBC 型の検索に使用できる可能性があることを示します。 
+<p>
+<a name="1003648"></a>
+"<strong>X</strong>" は、<code>getXXX</code> メソッドが指定の JDBC 型の取り出しに<i>推奨</i>されていることを示します。
+<p>
+<Table Border="3">
+<strong></strong>
+<tr><th valign=top>&nbsp;
+<th valign=top><font size=-1>T<br>
+I<br>
+N<br>
+Y<br>
+I<br>
+N<br>
+T
+</font>
+<th valign=top><font size=-1>S<br>
+M<br>
+A<br>
+L<br>
+L<br>
+I<br>
+N<br>
+T
+</font>
+<th valign=top><font size=-1>I<br>
+N<br>
+T<br>
+E<br>
+G<br>
+E<br>
+R
+</font>
+<th valign=top><font size=-1>B<br>
+I<br>
+G<br>
+<br>
+N<br>
+T
+</font>
+<th valign=top><font size=-1>R<br>
+E<br>
+A<br>
+L
+</font>
+<th valign=top><font size=-1>F<br>
+L<br>
+O<br>
+A<br>
+T
+</font>
+<th valign=top><font size=-1>D<br>
+O<br>
+U<br>
+B<br>
+L<br>
+E
+</font>
+<th valign=top><font size=-1>D<br>
+E<br>
+C<br>
+I<br>
+M<br>
+A<br>
+L
+</font>
+<th valign=top><font size=-1>N<br>
+U<br>
+M<br>
+E<br>
+R<br>
+I<br>
+C
+</font>
+<th valign=top><font size=-1>B<br>
+I<br>
+T
+</font>
+<th valign=top><font size=-1>C<br>
+H<br>
+A<br>
+R
+</font>
+<th valign=top><font size=-1>V<br>
+A<br>
+R<br>
+C<br>
+H<br>
+A<br>
+R<br>
+
+</font>
+<th valign=top><font size=-1>L<br>
+O<br>
+N<br>
+G<br>
+V<br>
+A<br>
+R<br>
+C<br>
+H<br>
+A<br>
+R
+</font>
+<th valign=top><font size=-1>B<br>
+I<br>
+N<br>
+A<br>
+R<br>
+Y
+</font>
+<th valign=top><font size=-1>V<br>
+A<br>
+R<br>
+B<br>
+I<br>
+N<br>
+A<br>
+R<br>
+Y
+</font>
+<th valign=top><font size=-1>L<br>
+O<br>
+N<br>
+G<br>
+V<br>
+A<br>
+R<br>
+B<br>
+I<br>
+N<br>
+A<br>
+R<br>
+Y
+</font>
+<th valign=top><font size=-1>D<br>
+A<br>
+T<br>
+E
+</font>
+<th valign=top><font size=-1>T<br>
+I<br>
+M<br>
+E
+</font>
+<th valign=top><font size=-1>T<br>
+I<br>
+M<br>
+E<br>
+S<br>
+T<br>
+A<br>
+M<br>
+P
+</font>
+
+<tr><td>getByte
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getShort
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getInt
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getLong
+<td>x
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getFloat
+<td>x
+<td>x
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getDouble
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td><strong>X</strong>
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getBigDecimal
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td><strong>X</strong>
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getBoolean
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getString
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td><strong>X</strong>
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+
+<tr><td>getBytes
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td><strong>X</strong>
+<td><strong>X</strong>
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getDate
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td><strong>X</strong>
+<td>&nbsp;
+<td>x
+
+<tr><td>getTime
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td><strong>X</strong>
+<td>x
+
+<tr><td>getTimestamp
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>&nbsp;
+<td><strong>X</strong>
+
+<tr><td>getAsciiStream
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getUnicodeStream
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getBinaryStream
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getObject
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+
+
+</Table>
+
+<Table>
+<tr><td>
+</Table>
+
+<p>
+
+<a name="1003717"></a>
+<h3>5.1.4	 &nbsp; &nbsp; 行の極めて大きな値にストリームを使用する</h3>
+<a name="1003727"></a>
+<code>ResultSet</code> では、大きな <code>LONGVARBINARY</code> または <code>LONGVARCHAR</code> データを任意に検索することが可能になります。メソッド <code>getBytes</code> と <code>getString</code> は、1つの大きなかたまりのようなデータを返します。
+(<code>Statement.getMaxFieldSize</code> の返却値によって課された限界まで)。しかし、大きなデータを小さい固定サイズに分割して取得することもできます。
+これを行うには、データをかたまりで読み取ることができる <code>ResultSet</code> クラス返却値 <code>java.io.Input</code> ストリームが必要です。
+このストリームは次の 
+<code>ResultSet</code> の <code>getXXX</code> 呼び出しで自動的に閉じられるため、これらにすぐにアクセスしなければならないことに注意してください。(この動作は、大きなかたまりのアクセスでの基本的な実装の制約によって強制されます。)
+<p><a name="1003520"></a>
+JDBC API にはストリームを取得する個別メソッドが3つあり、それぞれが異なった返却値を返します。
+<p>
+
+<ul><a name="1003521"></a>
+<li> <code>getBinaryStream</code> は、データベースから単に行バイト数をまったく変換しないまま返す。
+
+<br><br>
+<a name="1003522"></a>
+<li><code>getAsciiStream</code> は、1 バイトの ASCII 文字を提供するストリームを返す。
+<br><br>
+<a name="1003523"></a>
+<li><code>getUnicodeStream</code> は、2 バイトの Unicode 文字を提供するストリームを返す。
+<br><br>
+</ul><a name="1003524"></a>
+これは、タイプされないバイト数を返し、 ASCII 文字と Unicode 文字の両方に使用できる (たとえば) Java ストリームとは異なることに注意してください。 
+<p>
+<a name="1003525"></a>
+次のコードは、<code>getAsciiStream</code> の使用例を示しています。
+<p>
+<pre><a name="1003526"></a>    java.sql.Statement stmt = con.createStatement();
+<a name="1003527"></a>    ResultSet r = stmt.executeQuery("SELECT x FROM Table2");
+<a name="1003528"></a>    // Now retrieve the column 1 results in 4 K chunks:
+<a name="1003529"></a>    byte buff = new byte[4096];
+<a name="1003530"></a>    while (r.next()) { 
+<a name="1003532"></a>      Java.io.InputStream fin = r.getAsciiStream(1);
+<a name="1003533"></a>      for (;;) {
+<a name="1003535"></a>        int size = fin.read(buff);
+<a name="1003536"></a>        if (size == -1) { // at end of stream
+<a name="1003537"></a>              break;
+<a name="1003538"></a>    }
+<a name="1003539"></a>        // Send the newly-filled buffer to some ASCII output stream:
+<a name="1003540"></a>        output.write(buff, 0, size);
+<a name="1003541"></a>    }
+<a name="1003542"></a>    }
+</pre>
+<a name="1003543"></a>
+<h3>5.1.5	 &nbsp; &nbsp; NULL の結果値</h3>
+<a name="1003544"></a>
+与えられた結果の値が <code>JDBC</code> <code>NULL</code> であるかどうかを判別するため、まず列を読み取り、次に <code>ResultSet.wasNull</code> メソッドを使用して、読み取った値が JDBC <code>NULL</code>を 返したかどうかを判断しなければなりません。 
+<p>
+<a name="1003545"></a>
+<code>ResultSet.getXXX</code> メソッドの 1つを使用して JDBC <code> NULL</code> を読み取ったときは、メソッド <code>wasNull</code> は次の値の 1つを返します。
+<p>
+
+<ul><a name="1003546"></a>
+<li>次の Java オブジェクトを返すこれらの <code>getXXX</code> メソッドの Java <code>null</code> 値 (<code>getString</code>、<code>getBigDecimal</code>、<code>getBytes</code>、<code>getDate</code>、<code>getTime</code>、<code>getTimestamp</code>、<code>getAsciiStream</code>, <code>getUnicodeStream</code>, <code>getBinaryStream</code>、<code>getObject</code> などのメソッド)
+<br><br>
+<a name="1003547"></a>
+<li><code>getByte</code>、<code>getShort</code>、<code>getInt</code>、<code>getLong</code>、<code>getFloat</code>、および <code>getDouble</code> のゼロ値
+<br><br>
+<a name="1003548"></a>
+<li> <code>getBoolean</code> の <code>false</code> の値
+<br><br>
+</ul>
+<a name="1003549"></a>
+<h3>5.1.6	 &nbsp; &nbsp; オプションの結果、または複数の結果のセット</h3>
+<a name="1003550"></a>
+通常、SQL 文は、<code>executeQuery</code> (単一の <code>ResultSet</code> を返す) または <code>executeUpdate</code> (どんな種類のデータベース UPDATE 文にも使用でき、更新された行のカウントを返す) のどちらかを使用して実行されます。しかし、状況によっては、アプリケーションが与えられた文が実行されるまで結果のセットを返すかどうか、不明である場合があります。さらに、ストアードプロシージャによっては、いくつかの異なる結果のセットまたは更新カウント、あるいはこの両方を返すものがあります。
+<p>
+<a name="1003551"></a>
+これらの状況に対処するため、JDBC は、アプリケーションが文を実行し、さらに結果のセットおよび更新カウントの任意の収集結果を処理することができるようなメカニズムを提供します。このメカニズムは、最初は完全に汎用的な <code>execute</code> メソッドの呼び出し、続いて他の 3 つのメソッド、すなわち <code>getResultSet</code>、<code>getUpdateCount</code>、および <code>getMoreResults</code> の呼び出しに基づいています。これらのメソッドでは、アプリケーションが文の結果を一度に 1 つづつ探し出し、与えられた結果が <code>ResultSet</code> または更新カウントのどちらであるかを判別することができます。
+<p>
+<a name="1003552"></a>
+<code>ResultSet</code> を閉じるには、何もする必要がありません。これは、<code>Statement</code> が閉じられるとき、再実行されるとき、または一連の複数結果から次の結果を検索するために使用されるときに、<code>ResultSet</code> を生成した <code>Statement</code> が自動的に閉じるからです。
+<p>
+<a name="997732"></a>
+
+<p>
+
+
+<br>
+<hr>
+<font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="statement.doc.html">前項目</a>  | <a href="preparedstatement.doc.html">次項目</a>
+</font>
+<hr>
+
+
+<address>
+<a href="mailto:jdbc@wombat.eng.sun.com">jdbc@wombat.eng.sun.com</a>
+または
+<a href="mailto:jdbc-odbc@wombat.eng.sun.com">jdbc-odbc@wombat.eng.sun.com</a>
+</address>
+
+<a href="copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>
+

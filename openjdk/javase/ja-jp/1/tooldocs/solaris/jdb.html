@@ -1,0 +1,159 @@
+<html>
+<head>
+<title>jdb - Java デバッガ </title>
+<BODY BGCOLOR="#FFFFFF">
+
+<h1>jdb - The Java デバッガ </h1>
+<blockquote>
+<b>jdb</b> は、Java 言語プログラムのバグを見つけ、修正するツールです。
+</blockquote>
+
+<h2>機能説明</h2>
+
+<pre>
+jdb [ <a href="jdb.html#Options">options</a> ]
+</pre>
+
+<h2>説明</h2>
+<blockquote>
+Java デバッガの<b>jdb</b> は、Java クラスのための dbx のようなコマンド行デバッガです。それは、<a href="../../api/Package-sun.tools.debug.html">Java Debugger API</a> を使用して、ローカルまたはリモート Java インタプリタの検査とデバックを行います。
+<p>
+
+<h3> jdb セッションの開始</h3>
+<blockquote>
+dbxのように、<b>jdb</b> がデバックの使用を開始するには、２つの方法があります。最も多く使われる方法は、デバッグされるクラスを指定して、<b>jdb</b> に Java インタプリタを開始させることです。これはコマンド行の <b>java</b> の代わりに <b>jdb</b> コマンドを置換することによって行います。たとえば、<b>jdb</b> のもとに AppletViewer を開始するには、次のようにします。
+
+<pre width=80>
+% jdb sun.applet.AppletViewer
+</pre>
+
+または
+
+<pre width=80>
+% jdb -classpath $INSTALL_DIR/classes sun.applet.AppletViewer
+</pre>
+
+このようにして開始すると、<b>jdb</b> は指定のパラメータを用い、2 つ目の Java インタプリタを呼び出します。次に指定のクラスをロードして、クラスの最初の命令を実行する前にインタプリタを停止させます。
+
+<p>
+<b>jdb</b> の使用を開始するもう 1 つの方法は、すでに起動している Java インタプリタに接続することです。セキュリティ上の理由で、Java インタプリタは、<i>-debug</i> オプションで開始したときだけデバッグされます。<i>-debug</i> オプションで開始した場合、Java インタプリタは <b>jdb</b> が使用するパスワードを表示します。
+
+<p>
+起動している Java インタプリタに (セッションパスワードが分かっている場合) jdb を接続するには、次のようにして呼び出します。
+
+<pre width=80>
+% jdb -host &lt;hostname&gt; -password &lt;password&gt;
+</pre>
+
+</blockquote>
+
+<h3>基本 jdb コマンド</h3>
+基本的な <b>jdb</b> コマンドをリストします。Java デバッガは他のコマンドもサポートしています。これは、<b>jdb</b> の <tt>help</tt> コマンドを使用して表示することができるコマンドに限られています。
+
+<p>
+<em>注意:  局所（スタック）変数をブラウズするには、クラスが <i>-g</i> オプションでコンパイルされていなければなりません。</em>
+<blockquote>
+<dl>
+<dt><b>help</b>, または <b>?</b>
+<dd>
+最も重要な <b>jdb</b> コマンド、<tt>help</tt> は、認識されたコマンドのリストに簡潔な説明をつけて表示します。
+
+<dt><b>print</b>
+<dd>
+Java オブジェクトをブラウズします。<tt>print</tt> コマンドはオブジェクトの <tt>toString()</tt> メソッドを呼び出し、そのフォーマットはクラスにより異なります。
+<p>
+クラスは、オブジェクト ID または名前によって指定します。クラスがすでにロードされている場合、<tt>java.lang.Thread</tt> の <tt>Thread</tt> のように、部分文字列が使用できます。
+<p>
+<tt>print</tt> は <tt>print MyClass.clsVar</tt>のように、Java の式をサポートします。メソッドの呼び出しは、現在サポートしていません。
+<p>
+
+<dt><b>dump</b>
+<dd>
+オブジェクトのインスタンス変数をダンプします。オブジェクトはオブジェクト ID （16進数整数）によって指定されます。
+<p>
+クラスは、オブジェクト ID または名前によって指定します。クラスがすでにロードされている場合、<tt>java.lang.Thread</tt> の <tt>Thread</tt> のように、部分文字列が使用できます。クラスがロードされていない場合、フルネームで指定しなければなりません。そしてクラスは副次作用としてロードされます。これは、アプレットを実行する前に、参照されるクラスにブレークポイントを設定するために必要なものです。
+<p>
+<tt>dump</tt> コマンドは、<tt>dump 0x12345678.myCache[3].foo</tt> のような Java の式をサポートします。メソッド呼び出しは、現在サポートしていません。
+<p>
+
+<dt><b>threads</b>
+<dd>
+現在のスレッドをリストします。これはスレッドグループに分けてスレッドをすべて表示します。スレッドはオブジェクト ID により参照されるか、デフォルトのスレッドグループにある場合、<tt>t@3</tt> のように <tt>t@&lt;index&gt;</tt>の形式で参照されます。
+
+<p>
+
+<dt><b>where</b> 
+<dd>
+引数をもたない <code>where</code> コマンドは、(<tt>thread</tt> コマンドで設定された) 現在スレッドのスタックをダンプします。<code>where all</code> コマンドは、現在のスレッドグループにあるスレッドのスタックを、すべてダンプします。<code>where </code><i>threadid</i> は、指定スレッドのスタックをダンプします。<i>threadid</i> は <tt>t@3</tt> のように、<tt>t@&lt;index&gt;</tt> の形式をとります。
+要求されたスレッドが (ブレークポイントか <tt>suspend</tt> コマンドによって)、中断している場合、局所 (スタック) 変数とインスタンス変数は <tt>print</tt> コマンドと <tt>dump</tt> コマンドでブラウズできます。<tt>up</tt> コマンドと <tt>down</tt> コマンドでどのスタックフレームをカレントにするか選ぶことができます。
+
+</dl>
+</blockquote>
+
+<h3>ブレークポイント</h3>
+<blockquote>
+ブレークポイントは、"<tt>stop at MyClass:45</tt>" のようにして、<b>jdb</b> でクラスにセットされます。ソースファイルの行番号、またはメソッドの名前で指定しなければなりません (ブレークポイントはそのメソッドの最初の命令に設定されます)。<tt>clear</tt> コマンドは類似の構文を使用してブレークポイントを削除します。また <tt>cont</tt> コマンドは実行を続けます。シングルステップは <tt>step</tt>コマンドで利用します。.
+</blockquote>
+
+<h3>例外</h3>
+<blockquote>
+Java プログラムのスタック上どこにも catch 文がない例外が発生した場合、Java ランタイムは通常例外トレースをダンプして終了します。しかし、<b>jdb</b> のもとで実行されるとき、例外は回復不能なブレークポイントとして取り扱われ、<b>jdb</b> は誤りを犯した命令で停止します。そのクラスが <i>-g</i> オプションでコンパイルされた場合、インスタンス変数と局所変数が例外の原因を判定するために表示されます。
+
+<p>
+特定の例外を、<tt>catch</tt> コマンドで捕まえることができます。たとえば、"<tt>catch FileNotFoundException</tt>"、または "<tt>catch mypackage.BigTroubleException</tt> のようにします。 Java デバック機能はこれらの例外のリストを保持し、その １ つがスローされたとき、あたかもブレークポイントが例外を起こした命令にセットされていたかのように扱われます。<tt>ignore</tt> コマンドはこのリストから例外クラスを取り除きます。
+
+<p>
+<em>注意:  <tt>ignore</tt> コマンドでは、 Java インタプリタは例外を無視せず、デバッガのみ無視します。</em>
+</blockquote>
+</blockquote>
+
+<a name=Options>
+<h2>オプション</h2>
+</a>
+<blockquote>
+コマンド行で Java インタプリタの代わりに <b>jdb</b> を使用する場合、<b>jdb</b> は、<a href=java.html>java</a> コマンドと同じオプションを受け入れます。
+
+<p>
+<b>jdb</b> を使用して、実行中の Java インタプリタセッションに接続する場合、<b>jdb</b> はこれらのオプションを受け入れます。
+
+<dl>
+<dt><b>-host <i>&lt;hostname&gt;</i></b>
+<dd>
+接続するインタプリタセッションを実行する、ホストマシンの名前を指定します。
+
+<dt><b>-password <i>&lt;password&gt;</i></b>
+<dd>
+アクティブなインタプリタセッションに「ログイン」します。これは、<i>-debug</i> オプションで呼び出したとき、Java インタプリタによって表示されるパスワードです。
+
+</dl>
+</blockquote>
+
+<h2>環境変数</h2>
+<blockquote>
+ 
+<dl>
+
+<dt><b>CLASSPATH</b>
+<dd>
+ユーザ定義クラスへのパスをシステムに指定します。ディレクトリはコロンで分割されています。たとえば、次のとおりです。
+
+<blockquote>
+<pre>
+.:/home/avh/classes:/usr/local/java/classes
+</pre>
+
+
+</dl>
+</blockquote>
+
+<h2>参照</h2>
+<blockquote>
+<a href="javac.html">javac</a>,
+<a href="java.html">java</a>,
+<a href="javah.html">javah</a>,
+<a href="javap.html">javap</a>,
+<a href="javadoc.html">javadoc</a>
+</blockquote>
+
+</body>
+</html>

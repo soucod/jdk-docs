@@ -1,0 +1,50 @@
+<!-- \docs\tooldocs\solaris\rmiregistry.html -->
+
+
+<html>
+<head>
+<title>rmiregistry - Java リモートオブジェクトレジストリ</title>
+</head>
+<BODY BGCOLOR="#FFFFFF">
+
+<h1>rmiregistry - Java リモートオブジェクトレジストリ</h1>
+<blockquote>
+<b>rmiregistry</b> コマンドは、現行ホストの指定したポート上にリモートオブジェクトレジストリを開始します。
+
+</blockquote>
+
+<h2>機能説明</h2>
+<blockquote>
+<pre>
+rmiregistry [<i>port</i>]
+</pre>
+</blockquote>
+
+<h2>説明</h2>
+<blockquote>
+<b>rmiregistry</b> コマンドは、現行ホストの指定 <i>port</i> 上にリモートオブジェクトレジストリを作成し、開始します。<i>port</i> の指定を省略した場合、レジストリはポート 1099 で開始します。<b>rmiregistry</b> コマンドに、出力機能はありません。標準では、これはバックグラウンドで実行されます。たとえば、このコマンドを実行するには次のとおりにします。
+
+<p>
+<code>rmiregistry &</code>
+<p>
+リモートオブジェクトレジストリはブートストラップ名付けサービスです。ホストの RMI サーバが、リモートオブジェクトに名前をつけるために使用されます。次にクライアントはリモートオブジェクトを探し、リモートメソッドの呼び出しを行います。
+<p>
+レジストリは、一般的に、最初のリモートオブジェクトの位置を指定します。そこで、アプリケーションはメソッドを呼び出す必要があります。代わって、そのオブジェクトはアプリケーション指定のサポートを提供し、他のオブジェクトを探します。
+
+<p>
+<code>java.rmi.registry.LocateRegistry</code> クラスのメソッドは、特定のホスト、ホストおよびポート上で動作するレジストリを得ます。
+<p>
+<code>java.rmi.Naming</code>  クラスの URL 基本メソッドは、レジストリで動作し、リモートオブジェクトを探すのに使用されます。リモートオブジェクトに 1 つの (文字列) 名前をバインドしたり、新しい名前をリバインド (古いバインドにオーバーライド)します。またリモートオブジェクトを外したり、レジストリにバインドされた URL をリストしたりします。
+
+<p>
+</blockquote>
+
+
+<h2>参照</h2>
+<blockquote>
+<a href="../../api/java.rmi.registry.LocateRegistry.html#_top_">
+<code>java.rmi.registry.LocateRegistry</code></a> および
+<a href="../../api/java.rmi.Naming.html#_top_"><code> java.rmi.Naming</code></a>
+</blockquote>
+</body>
+</html>

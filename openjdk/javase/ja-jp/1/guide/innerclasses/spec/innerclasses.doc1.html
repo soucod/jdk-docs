@@ -1,0 +1,190 @@
+<html>
+<head>
+<title> </title>
+</head>
+<body BGCOLOR=#eeeeff text=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+ 
+<table width=600><tr>
+<td><a href="innerclasses.doc.html">目次</a> | <a href="innerclasses.doc.html">前項目</a> | <a href="innerclasses.doc2.html">次項目</a> 
+</td><td align=right><i>内部クラス仕様</i></td>
+</tr></table>
+
+<hr><br>
+ 
+<a name="10137"></a>
+<h1> トップレベルクラスと内部クラスとはなにか?</h1>
+<a name="10138"></a>
+以前のバージョンでは、Java はパッケージのメンバを対象にした<em>トップレベルクラス</em>だけをサポートしました。1.1 バージョンでは、Java 1.1 プログラマは現在文のブロック内でローカルに、または式内で（匿名で）他のクラスのメンバとして、<em>内部クラス</em>を定義することができます。<p><a name="15410"></a>
+内部クラスを有用にするいくつかのプロパティを次に示します:<p><ul><a name="9570"></a>
+<li>内部クラスの名前は修飾名を除いて、スコープ外では使用できない。これはパッケージ内でクラスを構築する支援となる。
+<a name="9571"></a>
+<li>内部クラスのコードは、親クラスのクラスとインスタンスメンバおよび親ブロックのローカル変数の両方を含めて、親スコープからの修飾名のない名前を使用できる。
+</ul><a name="15491"></a>
+内部クラスは、プログラミング言語 Beta が開拓したクラスベースのプログラミングが付いた、ブロック構造の組み合わせから生まれたものです。内部クラスにブロック構造を使用することで、Java プログラマが簡単にオブジェクトを一緒に接続できるようになります。それは、クラスをプログラマが操作する必要のあるオブジェクトの近くに定義でき、必要な名前を直接使用できるからです。クラスの配置に関する制限を取り除くことで、Java のスコーピング規則は、 Pascal および Scheme などの古典的なブロック構造言語のように、より規則的なものになります。<p><a name="19459"></a>
+さらに、プログラマはクラスをトップレベルクラスの <code>static</code> メンバとして定義できます。<code>static</code> クラスメンバであるクラスとパッケージメンバであるクラスは、両方ともトップレベルクラスと呼ばれます。これらと内部クラスの違いは、トップレベルクラスが自分のインスタンス変数だけを直接使用できるという点です。このようにクラスをネストする機能によって、すべてのトップレベルクラスが、パッケージ様の組織を第 2 トップレベルクラスの論理的に関連したグループに提供できるようになります。このクラスすべては完全なアクセスを private メンバに分け与えます。<p><a name="20694"></a>
+内部クラスとネストされたトップレベルクラスはコンパイラによって実装され、Java Virtual Machine に対する変更をなにも必要としません。これらは既存の Java プログラムとのソースまたはバイナリ互換を損ないません。<p><a name="20695"></a>
+新しいネストされたクラスの構築物はすべて、内部クラスを使用しない Java 1.0 コードへの変換をとおして指定します。Java 1.1 コンパイラが Java virtual machine バイトコードを生成しているとき、異なる Java 1.1 コンパイラが生成するバイナリが互換になるように、これらのバイトコードはこの（仮説の）ソース対ソース変換の結果を示す必要があります。バイトコードはまた、特定の属性と共にタグを付けられ、ネストされたクラスの存在を他の Java 1.1 コンパイラに指摘する必要があります。次でさらにこのことを検討します。<p><a name="9589"></a>
+<h2>		 例: 簡単なアダプタクラス</h2>
+<a name="12688"></a>
+同じ型でない別のオブジェクトの代わりに、指定インタフェース型を使用して、メソッド呼び出しを受ける<em>アダプタクラス</em>の設計について考えます。アダプタクラスは一般的に、 AWT および Java Bean コンポーネントからイベントを受け取るために必要です。Java 1.1 では、アダプタクラスは、アダプタを必要とするクラス内に配置される内部クラスとして、最も簡単に定義できます。<p><a name="14020"></a>
+スタックを実装し、上部から下へスタックの要素を列挙する不完全なクラス <code>FixedStack</code> を、次に示します: 
+<Table Border="0">
+<caption></caption>
+<tr><td><br><pre>    <a name="14024"></a>public class FixedStack {
+    <a name="14025"></a>    Object array[];
+    <a name="14026"></a>    int top = 0;
+    <a name="14027"></a>    FixedStack(int fixedSizeLimit) {
+    <a name="14028"></a>        array = new Object[fixedSizeLimit];
+    <a name="14029"></a>    }
+    <a name="14030"></a>	
+
+
+    <a name="14031"></a>    public void push(Object item) {
+    <a name="14032"></a>        array[top++] = item;
+    <a name="14033"></a>    }
+    <a name="14034"></a>    public boolean isEmpty() {
+    <a name="14035"></a>        return top == 0;
+    <a name="14036"></a>    }
+    <a name="14037"></a>    // other stack methods go here...
+    <a name="14038"></a>
+    <a name="14039"></a>    /** This adapter class is defined as part of its target class,
+    <a name="14040"></a>     *  It is placed alongside the variables it needs to access.
+    <a name="14064"></a>     */
+    <a name="14041"></a>    class Enumerator implements java.util.Enumeration {
+    <a name="14042"></a>        int count = top;
+    <a name="14043"></a>        public boolean hasMoreElements() {
+    <a name="14044"></a>            return count &gt; 0;
+    <a name="14045"></a>        }
+    <a name="14046"></a>        public Object nextElement() {
+    <a name="14047"></a>            if (count == 0)
+    <a name="14048"></a>                throw new NoSuchElementException("FixedStack");
+    <a name="14049"></a>            return array[--count];
+    <a name="14050"></a>        }
+    <a name="14051"></a>    }
+    <a name="14052"></a>    public java.util.Enumeration elements() {
+    <a name="14053"></a>        return new Enumerator();
+    <a name="14054"></a>    }
+    <a name="14055"></a>}
+</pre>
+
+</Table>
+
+<!--
+<Table>
+<tr><td>
+</Table>
+--><p><a name="14056"></a>
+インタフェース <code>java.util.Enumeration</code> は一連の値を、クライアントに通信するために使用します。<code>FixedStack</code> は直接 <code>Enumeration</code> インタフェースを実装しない（すべきでない! ）ために、別個のアダプタクラスが一連の要素を <code>Enumeration</code> の形式で提出するために必要です。もちろん、アダプタクラスには要素のスタック配列へのある種のアクセスが必要です。プログラマがアダプタクラスの定義を <code>FixedStack</code> の内部に置く場合、アダプタのコードはスタックオブジェクトのインスタンス変数を直接参照することができます。<p><a name="14612"></a>
+Java では、クラスの非 <code>static</code> メンバはお互いに参照することができ、これらはすべてカレントインスタンス <code>this</code> に関連する意味を持ちます。こうして、インスタンス変数 <code>FixedStack</code> の <code>array</code> は、インスタンスメソッド <code>push</code> および内部クラス <code>FixedStack.Enumerator</code> の本体全体で使用可能になります。インスタンスメソッド本体がカレントインスタンス <code>this</code> を"知っている"ように、<code>Enumerator</code> のようなすべての内部クラス内のコードは、その<em>親インスタンス</em>、つまり <code>array</code> のような変数がフェッチされる親クラスのインスタンスを"知っています"。<p><a name="14661"></a>
+<code>FixedStack</code> の例が不完全である点の 1 つは、FixedStack およびその <code>Enumerator</code> の操作の間に競合条件があることです。プッシュとポップの順番が <code>nextElement</code> への呼び出しの間に発生する場合、返される値は以前に列挙した値に正しく関連しない可能性があります; これはスタックの現在の終点を超えた"ごみの値"でさえありえます。このような競合条件にならないように定義すること、またはクラスの使用制限をドキュメント化することはプログラマの責任です。この点は後述します。競合に対する防御には次のようなものがあります: 
+<Table Border="0">
+<caption></caption>
+<tr><td><br><pre>    <a name="14780"></a>public class FixedStack {
+    <a name="14781"></a>    ...
+    <a name="14782"></a>    synchronized public void push(Object item) {
+    <a name="14783"></a>        array[top++] = item;
+    <a name="14784"></a>    }
+    <a name="14785"></a>    class Enumerator implements java.util.Enumeration {
+    <a name="14786"></a>        ...
+    <a name="14787"></a>        public Object nextElement() {
+    <a name="14812"></a>            synchronized (FixedStack.this) {
+    <a name="14789"></a>                if (count &gt; top)  count = top;
+    <a name="14817"></a>                if (count == 0)
+    <a name="14790"></a>                    throw new NoSuchElementException("FixedStack");
+    <a name="14791"></a>                return array[--count];
+    <a name="14792"></a>            }
+    <a name="14793"></a>        }
+</pre>
+
+</Table>
+
+<!--
+<Table>
+<tr><td>
+</Table>
+--><p><a name="14622"></a>
+式 <code>FixedStack.this</code> は親インスタンスを参照します。<p><a name="17956"></a>
+<h2>		 例: ローカルクラス</h2>
+<a name="19492"></a>
+クラス定義がブロックに対してローカルのとき、これは同じブロック内の普通の式に使用可能なすべての名前にアクセスする可能性があります。次に例を示します: 
+<Table Border="0">
+<caption></caption>
+<tr><td><br><pre>    <a name="19495"></a>    Enumeration myEnumerate(final Object array[]) {
+    <a name="19497"></a>        class E implements Enumeration {
+    <a name="19498"></a>            int count = 0;
+    <a name="19508"></a>            public boolean hasMoreElements()
+    <a name="19499"></a>                { return count &lt; array.length; }
+    <a name="19500"></a>            public Object nextElement()
+    <a name="19501"></a>                { return array[count++]; }
+    <a name="19502"></a>        }
+    <a name="19503"></a>        return new E();
+    <a name="19504"></a>    }
+</pre>
+
+</Table>
+
+<!--
+<Table>
+<tr><td>
+</Table>
+--><p><a name="19605"></a>
+しばらくの間、このコードが<em>どのように</em>機能するかについてなにも述べていませんが、Java のスコーピングと変数セマンティックスの規則は正確にこのコードが <em>なにを</em>行うのかを必要とします。メソッド <code>myEnumerate</code> が戻った後でも、<code>array</code> は依然内部オブジェクトが使用できます; これは C でのように"去って"いきません。代わりに、その値は <code>E</code> の 2 つのメソッドを含めて必要なときいつでも使用可能です。<p><a name="19714"></a>
+最後の宣言に注意してください。<code>array</code> などの局所 <code>final</code> 変数は 1.1 での新しい機能です。事実、1 つのクラスのローカル変数またはパラメータを別の（内部）クラスが参照する場合、これを <code>final</code> と宣言する<em>必要があります</em>。潜在的な同期の問題があるため、2 つのオブジェクトが変更可能なローカル変数へのアクセスを共有する方法は、設計上ありません。状態変数 <code>count</code> は、1 要素配列に変更されなかったならば、局所変数としてコードできなかったでしょう: 
+<Table Border="0">
+<caption></caption>
+<tr><td><br><pre>    <a name="19709"></a>    Enumeration myEnumerate(final Object array[]) {
+    <a name="19710"></a>        final int count[] = {0}; // final reference to mutable array
+    <a name="19711"></a>        class E implements Enumeration {
+    <a name="19712"></a>            public boolean hasMoreElements()
+    <a name="19713"></a>                { return count[0] &lt; array.length; }   ...
+</pre>
+
+</Table>
+
+<!--
+<Table>
+<tr><td>
+</Table>
+--><p><a name="19547"></a>
+（継承と辞書スコーピングの組み合わせは、混乱を招くことがあります。例えば、クラス <code>E</code> が <code>array</code> という名前のフィールドを <code>Enumeration</code> から継承すれば、そのフィールドは親スコープの同じ名前のパラメータを覆い隠すでしょう。このようなケースで曖昧さを防ぐために、Java 1.1 では、継承された名前が親ブロックまたはクラススコープで定義されたものを覆い隠せるようにします。しかし、明示的な修飾なしでこの名前を使用することは禁じられます。）<p><a name="19641"></a>
+<h2>		 匿名クラス</h2>
+<a name="20515"></a>
+以前の例では、ローカルクラス名 <code>E</code> はコードに対して明瞭さをほとんど加えてはいません。問題はこれが短すぎることではありません: 長い名前でも維持者にわずかしか、クラス本体内で一目で見られるもの以上に追加情報を伝達しないでしょう。非常に小さいアダプタクラスをできる限り簡潔にするために、Java 1.1 ではローカルオブジェクトの省略表記を許しています。単一式の構文は、 <em>匿名</em> クラスの定義をインスタンスの割り当てと組み合わせます: 
+<Table Border="0">
+<caption></caption>
+<tr><td><br><pre>    <a name="20518"></a>    Enumeration myEnumerate(final Object array[]) {
+    <a name="20519"></a>        return new Enumeration() {
+    <a name="20520"></a>            int count = 0;
+    <a name="20521"></a>            public boolean hasMoreElements()
+    <a name="20522"></a>                { return count &lt; array.length; }
+    <a name="20523"></a>            public Object nextElement()
+    <a name="20524"></a>                { return array[count++]; }
+    <a name="20525"></a>        };
+    <a name="20526"></a>    }
+</pre>
+
+</Table>
+
+<!--
+<Table>
+<tr><td>
+</Table>
+--><p><a name="19773"></a>
+一般的に、式 <code>new</code> (インスタンス生成式）はクラス本体で終了できます。 この効果は、クラス（またはインタフェース）を <code>new</code> トークンの名をとって命名し、与えられた本体と共にこれをサブクラス化（または実装）することです。結果の匿名内部クラスは、プログラマがこれをローカルに名前を付け、文のカレントブロックで定義した場合と同じ意味を持っています。<p><a name="18109"></a>
+このような匿名構築物は、深くネストされたコードを避けるために単純にしておく必要があります。正しく使用するとき、これらはローカルクラスまたはトップレベルアダプタクラスと名付けられた代替より理解し易くかつ維持し易いものです。<p><a name="18194"></a>
+匿名クラスが 1 行か 2 行の実行可能コードを含む場合、その意味はおそらく自明のものではなく、説明用のローカル名をクラスまたは（ローカル変数経由で）インスタンスのどちらかに与える必要があります。<p><a name="19795"></a>
+匿名クラスは初期化子を持つことはできますが、構築子を持つことはできません。関連する式 <code>new</code> （しばしば空）の引数リストは、暗示的にスーパークラスの構築子に渡されます。<p><a name="19796"></a>
+既にヒントを与えたように、匿名クラスがインタフェース <var>I</var> から引き出された場合、実際のスーパークラスは <code>Object</code> であり、このクラスはそれを拡張するより <var>I</var> を実装します。(明示的 <code>implements</code> 節は不当です。) これは、インタフェース名が正当にキーワード <code>new</code> に従うことができる唯一の方法です。このようなケースでは、引数リストは実際のスーパークラス、<code>Object</code> の構築子に適合するように、常に null でなければなりません。<p>
+
+<hr>
+<!-- This inserts footnotes--><p>
+<a href="innerclasses.doc.html">目次</a> | <a href="innerclasses.doc.html">前項目</a> | <a href="innerclasses.doc2.html">次項目</a> 
+
+<p>
+<font size=-1>内部クラス仕様 (HTML generated by dkramer on March 15, 1997)<br>
+<i><a href="copyright.doc.html">Copyright (c) 1996, 1997 Sun Microsystems, Inc.</a>
+All rights reserved</i>
+<br>
+コメントや訂正は <a href="mailto:john.rose@eng.sun.com">john.rose@eng.sun.com</a> 宛てに送ってください。
+</font>
+</body></html>

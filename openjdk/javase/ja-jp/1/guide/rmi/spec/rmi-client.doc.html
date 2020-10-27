@@ -1,0 +1,119 @@
+<html><head><title>クライアントインターフェース
+</title></head>
+<body bgcolor=#ffffff>
+
+
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-arch.doc.html">前項目</a>
+<a href="rmi-server.doc.html">次項目</a>
+<hr><br>
+
+<a name="60">
+<h1>クライアントインタフェース
+</h1>
+</a>
+<hr><p><a name="64">
+
+<p>
+</a>リモートオブジェクトを使うアプレットやアプリケーションを書くときには、プログラマーは常に RMI システムのクライアントから見えるインタフェースを意識している必要があります。
+
+<p><h3><a name="1591">
+トピックス: 
+</a></h3><ul>
+<li><a href="rmi-client.doc.html#1174">リモートインタフェース</a>
+<li><a href="rmi-client.doc.html#163">RemoteException クラス</a>
+<li><a href="rmi-client.doc.html#1620">名前付けクラス</a>
+</ul><h1><a name="1174">
+リモートインタフェース
+</a></h1><dl><a name="1175"><pre>package java.rmi;
+public interface Remote {}
+</pre></a></dl>
+<code>java.rmi.Remote</code> インタフェースはすべてのリモートオブジェクトを識別する働きをし、すべてのリモートオブジェクトは直接または間接的にこのインタフェースを実装しなければなりません。
+すべてのリモートインタフェースは <code>public</code> 宣言されなければならないことに注意。
+<p><h1><a name="163">
+RemoteException クラス </a></h1>
+リモートで発生するすべての例外は <code>java.rmi.RemoteException</code> のサブクラスです。
+これによりインタフェースはすべてのタイプのリモート例外を取り扱うことができ、かつローカルな例外やメソッドに特有な例外を分散オブジェクトメカニズムによりスローされた例外と区別することができます。
+
+<p><dl><a name="1792"><pre>package java.rmi;
+public class RemoteException extends java.io.IOException
+{
+        // The actual exception or error that occurred.    
+        public Throwable detail;
+
+        // Create a remote exception.
+        public RemoteException();
+
+        // Create a remote exception with the specified string.
+        public RemoteException(String s);
+
+        // Create remote exception with specified string and exception.
+        public RemoteException(String s, Throwable ex);
+
+        // Produce message, including message from any nested exception.
+        public String getMessage();
+}
+</pre></a></dl><code>RemoteException</code> はネスティングされた例外 (<code>Throwable</code>) を使って構成することができます。
+ネスティングされた例外の代表例（例えばコンストラクタの第3引数として指定される例外）としては RMI コールの途中で発生する I/O 例外があります。
+<p><h1><a name="1620">Naming クラス </a></h1>
+
+<code>java.rmi.Naming</code> クラスにより、リモートオブジェクトをおなじみの URL(Uniform ResourceLocator) のシンタックスを使って取り出したり、定義付けすることができます。
+URL はプロトコル、ホスト名、ポートおよび名前フィールドから構成されます。特定のホストやポートにたいする<code>レジストリ</code>サービスを特定の操作を実行するために使用します。プロトコルは <code>rmi://java.sun.com:2001/root</code> で示されるように <code>rmi</code> でなければなりません。
+<p><dl><a name="1667"><pre>package java.rmi;
+public final class Naming {
+        public static Remote lookup(String url)
+                throws NotBoundException, java.net.MalformedURLException,
+                UnknownHostException, RemoteException;
+
+        public static void bind(String url, Remote obj)
+                throws AlreadyBoundException,
+                java.net.MalformedURLException, UnknownHostException,
+                RemoteException;
+        
+        public static void rebind(String url, Remote obj)
+                throws RemoteException, java.net.MalformedURLException,
+                UnknownHostException;
+
+        public static void unbind(String url)
+                throws RemoteException, NotBoundException,
+                java.net.MalformedURLException, UnknownHostException;
+
+        public static String[] list(String url)
+                throws RemoteException, java.net.MalformedURLException,
+                UnknownHostException;
+}
+</pre></a></dl>
+
+<code>lookup</code> メソッドは名前のファイル名部分に関連したリモートオブジェクトを返します。従って、前の例では <code>root</code> という名前のオブジェクトを返します。もし、この名前がオブジェクトとバインドされていなければ <code>NotBoundException</code> がスローされます。
+<p>
+<code>bind</code> メソッドはリモートオブジェクトに特定の名前をバインドします。そして、もしその名前がすでにオブジェクトにバインドされているならば <code>AlreadyBoundException</code>をスローします。
+<p>
+<code>rebind</code> メソッドはたとえその名前がすでにバインドされていても、常に名前をオブジェクトにバインドします。このとき古いバインディングは失われます。
+<p>
+<code>unbind</code> メソッドはリモートオブジェクトと名前のバインディングを解除します。もしバインドが存在していないならば
+<code>NotBoundException</code> をスローします。
+<p>
+<code>list</code> メソッドはレジストリにバインドされた URL のスナップショットに含まれる <code>String</code> の並びを返します。
+レジストリにコンタクトして接続リストを得るために必要なのは、URL のホストとポート部分のみの情報です。このため URL のファイル名部分は無視されます。
+<p><em><code>java.rmi.AccessException</code> は、またこれらメソッドのどれかの結果としてスローされる可能性があります。<code>AccessException</code> は、呼び出し側が固有の操作を実行する権限を持たないことを示します。例えば、レジストリを実行するホストに対してローカルなクライアントだけが、<code>bind</code>、<code>rebind</code>、および <code>unbind</code> の操作を実行することを許されます。しかし、<code>lookup</code> 操作はどの非ローカルなクライアントからも起動できます。</em><p>
+<hr><br>
+
+<A href="rmiTOC.doc.html">目次</a> <A href="rmi-arch.doc.html">前項目</a>
+<A href="rmi-server.doc.html">次項目</a>
+<hr><br>
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.4 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email  -->
+<!-- -->
+<!-- Last updated: 03/18/97 12:59:57 -->
+
+</body>
+</html>

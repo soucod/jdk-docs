@@ -1,0 +1,147 @@
+<html>
+<head>
+<title>AWT メモリイメージ動的更新 API</title>
+</head>
+<BODY BGCOLOR="#FFFFFF">
+ 
+<h1>AWT メモリイメージ動的更新 API</h1>
+<hr>
+<address>最終更新: 1996 年 11 月 14 日</address>
+<h2>問題</h2>
+現在 AWT は、標準ユーティリティクラスを提供しピクセル値の配列からイメージを作ります。開発者は、Java アルゴリズムを使用してイメージを単に計算し、結果のイメージを画面に表示したい場合、このクラスによって複雑な ImageProducer/ImageConsumer 機構から免れます。
+<p>
+<a href="../../../../api/java.awt.image.MemoryImageSource.html">MemoryImageSource</a> クラスはこの機能を提供しますが、静的なイメージ機能を実装するだけです。初めてイメージが、イメージを描画したり、prepareImage メソッドを使用したり、またはイメージを構築するために MediaTracker を使用したりして画面用に準備されたとき、配列内のピクセルのスナップショットが画面表示用に変換されます。すると、イメージが同じスケールで再び描画されるたびに、同じバッファの画面表示が使用され、開発者がその間に元のピクセルの配列に対して行った変更を無視します。
+<p>
+この実装は各レンダリング操作に対して、ピクセル情報の元の配列を固有に再読み込みすることはありません。それは、イメージ変換が、変換されたピクセルを画面に単に移動することに比べて遅いプロセスだからです。drawImage を速くするためには、表示ハードウェアがピクセルを表示するために使用するフォーマット内に既にあるイメージのコピーを使用すると、うまく機能します。こうして、イメージを変化していないときには速く表示することと、動的に元のイメージデータへの変更を取り込むこととの交互使用ができます。
+<p>
+この実装は、一度計算されその結果が最終であるイメージに対しては、見事に機能しました。これはめったに変更されないイメージに対してさえも機能しました。それは、まれに行われる各変更の後、新しい MemoryImageSource イメージを構築できたこと、または元のイメージを <a href="../../../../api/java.awt.Image.html#flush()">Image.flush()</a> メソッドを使用して流しだし、既存のすべての画面表示をキャッシュから除外できたことによります。これらの作業はアニメーションなどの、より頻繁な更新に対しては不充分であったか、非実際的でした。それは、イメージ全体を、データへの小さな修正に対してさえも再変換する必要があったからです。あるいはさらに悪いことに、この作業はイメージの古い廃棄されたバージョンが使用した空間を取り戻すために、厳密に必要なもの以上のガベージコレクションを要求します。
+
+<h2>新メモリイメージアニメーション API</h2>
+この機能を単純化するために、新しいメソッドが MemoryImageSource に追加され、開発者がそのイメージに対して、新しいデータが元の配列から使用可能であると通知できます。元の配列のデータが実際に変わったときだけ、イメージ変換プロセスが起こるため、 drawImage は依然非常に速く実行されます。新しいメソッドは次のとおりです:
+<pre>	<a href="../../../../api/java.awt.image.MemoryImageSource.html#setAnimated(boolean)">setAnimated</a>(boolean animated)
+	<a href="../../../../api/java.awt.image.MemoryImageSource.html#setFullBufferUpdates(boolean)">setFullBufferUpdates</a>(boolean animated)
+	<a href="../../../../api/java.awt.image.MemoryImageSource.html#newPixels()">newPixels</a>()
+	<a href="../../../../api/java.awt.image.MemoryImageSource.html#newPixels(int, int, int, int)">newPixels</a>(int x, int y, int w, int h)
+	<a href="../../../../api/java.awt.image.MemoryImageSource.html#newPixels(int, int, int, int, boolean)">newPixels</a>(int x, int y, int w, int h,
+		  boolean framenotify)
+	<a href="../../../../api/java.awt.image.MemoryImageSource.html#newPixels(byte[], java.awt.image.ColorModel, int, int)">newPixels</a>(byte[] newpix, ColorModel newmodel,
+		  int offset, int scansize)
+	<a href="../../../../api/java.awt.image.MemoryImageSource.html#newPixels(int[], java.awt.image.ColorModel, int, int)">newPixels</a>(int[] newpix, ColorModel newmodel,
+		  int offset, int scansize)
+</pre>
+これらの新しいメソッドによって、開発者はいつ画面の表示を更新するか、ピクセルのどのリージョンを更新するのか、いつ ImageObserver.FRAMEBITS 通知 (アニメーションの単一「フレーム」が完成したときを示す) をイメージ観察者に送るのか、ピクセルと ColorModel の新しいセットへ切り替える能力を制御できます。
+
+<h2>サンプルコード</h2>
+<p>メモリイメージバッファアニメーションを実行する古い API の使用方法を示すサンプルコードを、次に示します:
+<pre>
+
+    import java.awt.*;
+    import java.awt.image.*;
+    import java.applet.*;
+
+    public class AnimationExample extends Applet implements Runnable {
+    	Thread anim;
+	MemoryImageSource imgsrc;
+	Image memimg;
+	int[] pixels;
+
+	public void init() {
+	    pixels = new int[100 * 100];
+	    imgsrc = new MemoryImageSource(100, 100, pixels, 0, 100);
+	    memimg = createImage(imgsrc);
+	}
+
+    	public void start() {
+	    anim = new Thread(this);
+	    anim.start();
+	}
+
+	public synchronized void stop() {
+	    anim = null;
+	    notify();
+	}
+
+	public synchronized void run() {
+	    while (Thread.currentThread() == anim) {
+	    	int x = (int) (Math.random() * 100);
+	    	int y = (int) (Math.random() * 100);
+		int r = (int) (Math.random() * 255);
+		int g = (int) (Math.random() * 255);
+		int b = (int) (Math.random() * 255);
+		pixels[y * 100 + x] =
+		    ((int) (Math.random() * 0xffffff)) | (0xff<<24);
+		<b>memimg.flush();</b>
+		repaint();
+		try {wait(100);} catch (InterruptedException e) {return;}
+	    }
+	}
+
+	public void paint(Graphics g) {
+	    // Draw the animated image
+	    g.drawImage(memimg, 0, 0, this);
+	}
+    }
+</pre>
+<p>メモリイメージバッファアニメーションを実行する新しい API の使用方法を示すサンプルコードを、次に示します:
+<pre>
+
+    import java.awt.*;
+    import java.awt.image.*;
+    import java.applet.*;
+
+    public class AnimationExample extends Applet implements Runnable {
+    	Thread anim;
+	MemoryImageSource imgsrc;
+	Image memimg;
+	int[] pixels;
+
+	public void init() {
+	    pixels = new int[100 * 100];
+	    imgsrc = new MemoryImageSource(100, 100, pixels, 0, 100);
+	    <b>imgsrc.setAnimated(true);</b>
+	    memimg = createImage(imgsrc);
+	}
+
+    	public void start() {
+	    anim = new Thread(this);
+	    anim.start();
+	}
+
+	public synchronized void stop() {
+	    anim = null;
+	    notify();
+	}
+
+	public synchronized void run() {
+	    while (Thread.currentThread() == anim) {
+	    	int x = (int) (Math.random() * 100);
+	    	int y = (int) (Math.random() * 100);
+		int r = (int) (Math.random() * 255);
+		int g = (int) (Math.random() * 255);
+		int b = (int) (Math.random() * 255);
+		pixels[y * 100 + x] =
+		    ((int) (Math.random() * 0xffffff)) | (0xff<<24);
+		<b>imgsrc.newPixels(x, y, 1, 1);</b>
+		repaint();
+		try {wait(100);} catch (InterruptedException e) {return;}
+	    }
+	}
+
+	public void paint(Graphics g) {
+	    // Draw the animated image
+	    g.drawImage(memimg, 0, 0, this);
+	}
+    }
+</pre>
+
+<hr><br>
+
+<address>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</address>
+
+<i>Copyright (C) 1996, Sun Microsystems, Inc.   All rights
+reserved.</i>
+
+</body>
+</html>

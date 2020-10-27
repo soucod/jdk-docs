@@ -1,0 +1,150 @@
+<html>
+<head>
+<title>APPLET タグ</title>
+<!-- Created by: Susan Keohan 30-Oct-1996 -->
+</head>
+
+<BODY BGCOLOR="#FFFFFF" TEXT=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+<CENTER><P ALIGN=LEFT>
+<IMG SRC="../../images/smi.logo.gif" ALT=" Sun Microsystems, Inc " BORDER=0>
+</P></CENTER>
+
+<font size=-1><a href="index.html">JDK 目次</a></font>
+<HR SIZE=3 NOSHADE>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<center>
+                          <h1>APPLET タグ</h1>
+</center>
+
+<p>
+簡単な APPLET タグの例 :
+<pre>
+
+  &lt;applet code="MyApplet.class" width=100 height=140&gt;&lt;/applet&gt;
+
+
+</pre>
+このタグは、ビューワまたはブラウザにアプレットをロードするように指示し、アプレットのコンパイル済みコードが MyApplet.class (現在の HTML
+ドキュメントと同じディレクトリ) 内にあることを示しています。また、アプレットの初期サイズを幅 100 ピクセル、高さ 140 ピクセルに設定しています。
+<p>
+少し複雑な APPLET タグの例 :
+<pre>
+
+  &lt;applet codebase=&quot;http://java.sun.com/applets/applets/NervousText&quot;
+	code=&quot;NervousText.class&quot; width=400 height=75&gt;
+  &lt;param name=&quot;text&quot; value=&quot;Welcome to HotJava!&quot;&gt;
+  &lt;hr&gt;
+  Java 対応のブラウザ (HotJava) を使用すると、このパラグラフの代わりに踊るテキストが表示されます。
+  &lt;hr&gt;
+  &lt;/applet&gt;
+
+
+</pre>
+このタグは、ビューワまたはブラウザにアプレットをロードするよう指示し、アプレットのコンパイル済みコードが URL <em>
+http://java.sun.com/applets/applets/NervousText/NervousText.class</em> にあることを示しています。また、アプレットの初期サイズを 400x75 ピクセルに設定しています。  
+また、ビューワまたはブラウザは、アプレットの「text」属性 (このアプレットが表示するテキストをカスタマイズする属性) を「Welcome to HotJava!」に設定します。Java アプレットを表示することができないブラウザでこのページを表示した場合、ブラウザは APPLET タグと PARAM タグを無視し、<code>&lt;param&gt;</code> タグと <code>&lt;/applet&gt;</code> タグの間にある HTML コード (アプレットの代わりに表示する HTML) だけを表示します。
+<p>
+上記の例を HTML ファイルに埋め込んだ結果を次に示します。
+(このページをはじめてロードしたときは、アプレットがロードされるまで少し待たなければならないことがあります)。
+<br>
+<applet codebase="http://java.sun.com/applets/applets/NervousText" code="NervousText.class" width=400 height=75>
+<param name="text" value="Welcome to HotJava!">
+<hr>
+  Java 対応のブラウザ (HotJava) を使用すると、このパラグラフの代わりに踊るテキストが表示されます。
+<hr>
+</applet>
+<p>
+別の APPLET タグの例 :
+<pre>
+
+   &lt;applet code=A21 width=256 height=256 archive="toir.jar"&gt;
+   &lt;param name=img value=test.gif&gt;
+   &lt;hr&gt;
+   いくつかの標準アプレットをアーカイブを使用するように変換しなければなりません。
+   誰かやりたい人はいますか ?
+   &lt;hr&gt;
+   &lt;/applet&gt;
+
+
+</pre>
+この例では、アプレットクラスは A21 です。このバイトコードは「<code>toir.jar</code>」というアーカイブ内に入っています。このアーカイブは、<code>test.gif</code> という名前のイメージリソースも含んでいる可能性があります (リソースについてのドキュメンテーションを参照)。
+<p>
+APPLET タグの完全構文を次に示します。必須エレメントは<strong>ボールド体</strong> で示します。任意指定のエレメントは通常の書体で示します。作成者が指定する必要のあるエレメントは<em>イタリック体</em>で示します。
+<pre>
+    <strong>&lt;APPLET</strong>
+        CODEBASE = <em>codebaseURL</em>
+        ARCHIVE = <em>archiveList</em>
+        <strong>CODE = <em>appletFile</em></strong> ...or...  <strong>OBJECT = <em>serializedApplet</em></strong>
+        ALT = <em>alternateText</em>
+        NAME = <em>appletInstanceName</em>
+        <strong>WIDTH = <em>pixels</em></strong>  <strong>HEIGHT = <em>pixels</em></strong>
+        ALIGN = <em>alignment</em>
+        VSPACE = <em>pixels</em>  HSPACE = <em>pixels</em>
+    <strong>&gt;</strong>
+    &lt;PARAM NAME = <em>appletAttribute1</em> VALUE = <em>value</em>&gt;
+    &lt;PARAM NAME = <em>appletAttribute2</em> VALUE = <em>value</em>&gt;
+    . . .
+    <em>alternateHTML</em>
+    <strong>&lt;/APPLET&gt;</strong>
+</pre>
+<p>
+CODE、CODEBASE 等はアプレットタグの属性です。これらの属性は、アプレットについての情報をブラウザに伝えます。必須属性は、CODE、WIDTH、HEIGHT の 3 つだけです。以下では、各属性について詳しく説明します。
+<DL>
+<dt>
+CODEBASE = <em>codebaseURL</em>
+<dd>
+    アプレットの基本 URL、またはアプレットのコードを含むディレクトリを表す任意指定の属性です。この属性を省略すると、ドキュメントの URL が使われます。
+<dt>
+ARCHIVE = <em>archiveList</em>
+<dd>
+     事前にロードされるクラスおよびその他のリソースを含む、1 つまたは複数のアーカイブを表す任意指定の属性です。クラスは、指定の CODEBASE と AppletClassLoader のインスタンスを使用してロードされます。
+     <em>archiveList</em> 内には、アーカイブを「,」で区切って指定します。注意 : JDK1.1 では、複数の APPLET タグに同じ CODEBASE 属性を指定すると、ClassLoader の同じインスタンスを共有することになります。アプレット間通信を行うクライアントコードでは、この方法を使用します。将来の JDK では、別のアプレット間通信メカニズムが用意される * 可能性があります *。
+<dt>
+<strong>CODE = <em>appletFile</em></strong>
+<dd>
+    アプレットのコンパイル済み Applet サブクラスを含むファイルの名前を表す必須属性です。このファイルは、アプレットの基本 URL に対する相対名として解釈されます。絶対名は指定できません。CODE または OBJECT のどちらか一方を必ず指定します。
+<dt>
+<strong>OBJECT = <em>serializedApplet</em></strong>
+<dd>
+    Applet のシリアル化表現を含むファイル名を表す属性です。Applet は逆シリアル化されます。init() メソッドは * 呼び出されません * が、start() メソッドは呼び出されます。この属性は、元のオブジェクトがシリアル化されており、 * 復元されていない * 場合に有効となります。この APPLET インスタンスに渡されたすべての属性は、Applet で使用可能となります。この機能の使用方法には、とても厳しい制限があります。アプレットは、シリアル化する前に停止する必要があります。CODE または OBJECT のどちらか一方を必ず指定します。
+<dt>
+ALT = <em>alternateText</em>
+<dd>
+    APPLET タグを認識するが、Java アプレットを実行できないブラウザでページを表示した場合に、表示するテキストを表す任意指定の属性です。
+<dt>
+NAME = <em>appletInstanceName</em>
+<dd>
+    アプレットのインスタンス名を表す任意指定の属性です。同じページ上にあるアプレットは、この属性を使用してほかのアプレットをみつけ、互いに通信することができます。
+<dt>
+<strong>WIDTH = <em>pixels</em>&#32;&#32;HEIGHT = <em>pixels</em></strong>
+<dd>
+    アプレットの表示領域の初期サイズ (幅と高さ) を表す必須属性です。アプレットが表示するウィンドウやダイアログのサイズは含みません。 
+<dt>
+ALIGN = <em>alignment</em>
+<dd>
+    アプレットの配置を表す任意指定の属性です。この属性には、IMG タグと同じ値 (left、right、top、texttop、middle、absmiddle、baseline、bottom、absbottom) を指定することができます。
+<dt>
+VSPACE = <em>pixels</em>&#32;&#32;HSPACE = <em>pixels</em>
+<dd>
+    アプレットの上下に空けるピクセル数 (VSPACE)、アプレットの左右に空けるピクセル数 (HSPACE) を表す任意指定の属性です。この属性は、IMG タグの VSPACE 属性および HSPACE と同じように扱われます。
+<dt>
+&lt;PARAM NAME = <em>appletAttribute1</em> VALUE = value&gt;
+<br>
+&lt;PARAM NAME = <em>appletAttribute2</em> VALUE = value&gt; . . .
+<dd>
+    アプレット特有の属性を指定するためのタグです。アプレットは、getParameter() メソッドを使用して属性にアクセスします。
+
+</dl>
+
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE>
+
+<IMG SRC="../../images/JAVA.85.GIF" ALIGN=RIGHT>
+
+<FONT SIZE=-2>
+<A HREF="../../relnotes/SMICopyright.html">Copyright (C)</A> 1996 Sun Microsystems, Inc., 2550 Garcia Ave., Mtn. View, CA 94043-1100 USA. All rights reserved.</font>
+<br><br>
+
+</BODY>
+</HTML>
+

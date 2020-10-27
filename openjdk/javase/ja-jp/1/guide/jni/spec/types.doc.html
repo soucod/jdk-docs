@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title> </title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><a href="jniTOC.doc.html">目次</a> | <a href="design.doc.html">前項目</a> | <a href="functions.doc.html">次項目</a> 
+</td><td align=right><i>Java ネイティブインタフェース仕様
+</i></td>
+</tr></table>
+ 
+
+<hr><br>
+ 
+<h1><a name="15773"></a>
+<strong> 3 - JNI の型とデータ構造
+ </strong></h1>
+<hr><p><a name="15901"></a>
+本章では、JNI がどのように Java の型をネイティブ C の型にマッピングするかを解説します。<p><hr align=left><a name="428"></a>
+<h1> プリミティブ型</h1>
+<a name="16207"></a>
+<a href="types.doc.html#522">表&#32;3-1</a>は、Java のプリミティブ型およびそれらのマシン依存のネイティブ型との対応について説明しています。<p><a name="522"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="198"></a>
+<h4>表3-1	 プリミティブ型および対応するネイティブ型</h4>
+</caption>
+<tr><th><a name="16285"></a>
+Java の型
+<th><a name="16287"></a>
+対応するネイティブ型
+<th><a name="16289"></a>
+説明
+
+<tr><td><a name="16291"></a>
+boolean
+<td><a name="16293"></a>
+jboolean
+<td><a name="16295"></a>
+unsigned 8 bits
+
+<tr><td><a name="16297"></a>
+byte
+<td><a name="16299"></a>
+jbyte
+<td><a name="16301"></a>
+signed 8 bits
+
+<tr><td><a name="16303"></a>
+char
+<td><a name="16305"></a>
+jchar
+<td><a name="16307"></a>
+unsigned 16 bits
+
+<tr><td><a name="16309"></a>
+short
+<td><a name="16311"></a>
+jshort
+<td><a name="16313"></a>
+signed 16 bits
+
+<tr><td><a name="16315"></a>
+int
+<td><a name="16317"></a>
+jint
+<td><a name="16319"></a>
+signed 32 bits
+
+<tr><td><a name="16321"></a>
+long
+<td><a name="16323"></a>
+jlong
+<td><a name="16325"></a>
+signed 64 bits
+
+<tr><td><a name="16327"></a>
+float
+<td><a name="16329"></a>
+jfloat
+<td><a name="16331"></a>
+32 bits
+
+<tr><td><a name="16344"></a>
+double
+<td><a name="16346"></a>
+jdouble
+<td><a name="16348"></a>
+64 bits
+
+<tr><td><a name="16333"></a>
+void
+<td><a name="16335"></a>
+void
+<td><a name="16337"></a>
+N/A
+
+
+</Table>
+</dd></dl><p><a name="15927"></a>
+次の定義は、利便性のため提供されています。
+<p><pre>    #define JNI_FALSE  0
+    #define JNI_TRUE   1
+</pre><a name="16071"></a>
+<code>jsize</code>整数型は、基本的な添字およびサイズを記述するために使用されます。
+<p><pre>    typedef jint jsize;
+</pre><hr align=left><a name="15954"></a>
+<h1> 参照型</h1>
+<a name="970"></a>
+JNI には、各種の Java オブジェクトに対応する多くの参照型が含まれています。JNI 参照型は、<a href="types.doc.html#914">図&#32;3-1</a>に示すように、階層で編成されています。<p><pre><img src="types.doc.anc.gif">
+</pre><a name="914"></a>
+<center><h4>図3-1	   参照型の階層</h4></center>
+<a name="663"></a>
+C では、その他すべての JNI 参照型は、jobjectと同じように定義されています。たとえば、次のようになります。
+<p><pre>    typedef jobject jclass;
+</pre><a name="1033"></a>
+C++ では、JNI はダミークラスのセットを導入して、サブタイプ関係を強制します。たとえば、次のようになります。
+<p><pre>    class _jobject {};
+    class _jclass : public _jobject {};
+    ...
+    typedef _jobject *jobject;
+    typedef _jclass *jclass;
+</pre><hr align=left><a name="1064"></a>
+<h1> フィールドとメソッド ID</h1>
+<a name="1065"></a>
+フィールドとメソッド ID は、次のように正規の C ポインタ型です。
+<p><pre>    struct _jfieldID;              /* opaque structure */
+    typedef struct _jfieldID *jfieldID;   /* field IDs */
+    
+    struct _jmethodID;              /* opaque structure */
+    typedef struct _jmethodID *jmethodID; /* method IDs */
+</pre><hr align=left><a name="568"></a>
+<h1> 値の型 </h1>
+<a name="16107"></a>
+<code>jvalue</code> 共用体型は、引数配列で要素型として使用されます。これは次のように宣言されます。
+<p><pre>    typedef union jvalue {
+        jboolean z;
+        jbyte    b;
+        jchar    c;
+        jshort   s;
+        jint     i;
+        jlong    j;
+        jfloat   f;
+        jdouble  d;
+        jobject  l;
+    } jvalue;
+</pre><hr align=left><a name="16432"></a>
+<h1> 型のシグネチャ</h1>
+<a name="16437"></a>
+JNI は、Java VM の型のシグネチャ表現を使用します。<a href="types.doc.html#597">表&#32;3-2</a>は、これらの型のシグネチャを示しています。<p><a name="597"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="276"></a>
+<h4>表3-2	 Java VMの型のシグネチャ</h4>
+</caption>
+<tr><th><a name="16445"></a>
+型のシグネチャ
+<th><a name="16447"></a>
+Javaの型
+
+<tr><td><a name="16449"></a>
+Z
+<td><a name="16451"></a>
+boolean
+
+<tr><td><a name="16453"></a>
+B
+<td><a name="16455"></a>
+byte
+
+<tr><td><a name="16457"></a>
+C
+<td><a name="16459"></a>
+char
+
+<tr><td><a name="16461"></a>
+S
+<td><a name="16463"></a>
+short
+
+<tr><td><a name="16465"></a>
+I
+<td><a name="16467"></a>
+int
+
+<tr><td><a name="16469"></a>
+J
+<td><a name="16471"></a>
+long
+
+<tr><td><a name="16473"></a>
+F
+<td><a name="16475"></a>
+float
+
+<tr><td><a name="16477"></a>
+D
+<td><a name="16479"></a>
+double
+
+<tr><td><a name="16520"></a>
+<strong>L</strong> <em>fully-qualified-class</em> <strong>;</strong>
+<td><a name="16522"></a>
+fully-qualified-class
+
+<tr><td><a name="16528"></a>
+<strong>[</strong> <em>type</em>
+<td><a name="16530"></a>
+<em>type</em>[]
+
+<tr><td><a name="16534"></a>
+<strong>(</strong> <em>arg-types </em><strong>)</strong> <em>ret-type</em>
+<td><a name="16536"></a>
+メソッドの型
+
+
+</Table>
+</dd></dl><p><a name="16537"></a>
+たとえば次の Java メソッドには、
+<p><pre>    long f (int n, String s, int[] arr);
+</pre><a name="16540"></a>
+次のような型のシグネチャがあります。
+<p><pre>    (ILjava/lang/String;[I)J
+</pre><hr align=left><a name="16542"></a>
+<h1> UTF-8 文字列</h1>
+<a name="477"></a>
+JNI は UTF-8 文字列を使用して各種の文字列型を表現します。UTF-8 文字列は Java VM によって使用されるものと同じです。UTF-8 文字列は、1文字につき1バイトだけを使用して非 NULL ASCII 文字だけが含まれる文字シーケンスが表現できるようにコード化されており、16ビットまでの文字を表現するすることができます。次のように、<code>\u0001</code>〜<code>\u007F</code> の範囲のすべての文字が1バイトで表現されます。<p><a name="483"></a>
+<img src="types.doc.anc1.gif"><p>
+<a name="486"></a>
+バイトのうち7ビットのデータは、表現されている文字の値を示します。NUll 文字(<code>\u000</code>) および <code>\u0080〜\u07FF</code> の範囲のすべての文字は、次のように <var>x</var> と <var>y</var> の一対のバイトで表現されます。<p><a name="501"></a>
+<img src="types.doc.anc2.gif"><p>
+<a name="545"></a>
+このバイトは、値 <code>((x&amp;0x1f)&lt;&lt;6)+(y&amp;0x3f)</code> をもつ文字を表現します。<p><a name="546"></a>
+<code>\u0800</code>〜<code>\uFFFF</code> の範囲の文字は、次のように <var>x</var>、<var>y</var>および <var>z</var> の3バイトで表現されます。<p><a name="547"></a>
+<img src="types.doc.anc3.gif"><p>
+<a name="548"></a>
+値 <code>((x&amp;0xf)&lt;&lt;12)+(y&amp;0x3f)&lt;&lt;6)+(z&amp;0x3f)</code> をもつ文字は、3バイトで表現されます。<p><a name="608"></a>
+この形式と「標準」UTF-8 形式とでは、2つの相違点があります。第1は、NULL バイト <code>(byte)0</code> が、1バイト形式でなく2バイト形式でコード化されていることです。このことは Java VM UTF-8 文字列が NULL を組み込むことがないことを意味します。第2は、1バイト、2バイトおよび3バイト形式だけが使用されていることです。Java VM はこれより長い UTF-8 形式を認識しません。<p>
+
+<hr>
+<!-- This inserts footnotes--><p>
+<a href="jniTOC.doc.html">目次</a> | <a href="design.doc.html">前項目</a> | <a href="functions.doc.html">次項目</a> 
+
+<p>
+<font size=-1>Java ネイティブインタフェース仕様 (1997年3月15日にdkramer によって生成されたHTML)<br>
+<i><a href="copyright.doc.html">Copyright (C) 1996, 1997 Sun Microsystems, Inc.</a>
+All rights reserved</i>
+<br>
+コメントは、<a href="mailto:jni@java.sun.com">jni@java.sun.com</a>宛てに送ってください。
+</font>
+</body></html>

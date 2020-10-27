@@ -1,0 +1,93 @@
+<html>
+<head>
+<title>
+Java の Socket オプション
+</title>
+</head>
+<body>
+<!-- Changed by: David Brown,  1-Aug-1996 -->
+
+<P>
+<IMG SRC="images/duke4.gif" ALIGN=CENTER WIDTH=55 HEIGHT=68>
+<H2>Java の Socket オプション</H2>
+<H3>JDK1.1 のソケットクラスの javadoc は<A HREF="socketClassDocs.html">ここに
+あります。</A></H3>
+<H3>C の方法</H3>
+C でプログラミングするとき、次の行にシステム呼び出しを使用してオプションをセットします:
+<PRE>
+	setsockopt(int fd, int level, int optval, void *optdata, 
+		   int optdatalen);
+
+	fd = 既に開かれた (多分接続された) ソケット fd;
+	level = オプションが適用されるプロトコルスタック (IP, UDP, TCP) のレベル;
+	optval = オプション、CONSTANT;
+	optdata = 特定のオプションにだけ関係するパラメータのオプション依存 sturuct への ptr;
+</PRE>
+
+<H3>java の方法</H3>
+C でのオプションセットの方法は、オブジェクト指向プログラミングの型の安全性を欠いています。セット/取得したいオプションは int として識別され、認定/取得する値は型がはっきりしない <B>void*</B> に入ります。間違ったオプション識別し、<B>void*</B> パラメータの間違った型のオブジェクト、またはそのパラメータに対して間違ったものを渡すことは全く簡単です。さらに悪いことには、これらエラーのコードは通常コンパイルされ、エラーは実行時にだけ表示されます。
+<P>
+Java は現在オプションをセットするとき型を保護する方法を提供します。各ソケットク
+ラスは、自分がサポートする各オプション用の取得/設定メソッドを持ち、適当な型を取得したり返したりします。サポートされるオプション、そのソケットクラスと意味を簡略に述べます:
+<P>
+<UL> 
+<LI><B>TCP_NODELAY</B>
+	  <UL>
+	    <LI>Nagle アルゴリズムを使用不可にする。
+	    <LI>(クライアント) Sockets に対して有効。
+	   </UL>
+<LI><B>SO_LINGER</B>
+	  <UL>
+	    <LI>linger-on-close タイムアウトを指定する。
+	    <LI>(クライアント) Sockets に対して有効。
+          </UL>
+<LI><B>SO_TIMEOUT</B>
+	  <UL>
+	    <LI>ソケット操作をブロックするタイムアウトを指定する。(永久にブロックしないこと。)
+	    <LI>すべてのソケットに有効: Socket、ServerSocket、DatagramSocket。
+	  </UL>
+<LI><B>IP_MULTICAST_IF</B>
+	  <UL>
+	    <LI>マルチキャストパケットに対して送出するインタフェースを指定する (マルチホームホスト上で)。
+	    <LI>MulticastSockets に対して有効。
+	   </UL>
+</UL>
+さらに、JDK1.1 は Socket、ServerSocket および DatagramSocket に対して新しい構築子を提供し、この構築子はソケットがバインドするローカルアドレス/ポートの仕様設定を許し、同様にこれらにクラスはそのローカルアドレスを公開できます。
+<P>
+JDK1.1 のソケットクラスに対して、すべてのオプションの取得/設定の方法の詳細を含めて、完全な javadoc を<A HREF="socketClassDocs.html">ここに</A>提供します。java で使用したい他のオプションがあれば、<A HREF="mailto:java-net@sai.eng.sun.com">連絡してください。</A>
+<P>
+<H3>横道にそれて...</H3>
+java でサポート<B>されていない</B>いくつかの可能な BSD オプションは次のとおりで
+す:
+<UL>
+<LI>SO_KEEPALIVE:<BR>
+このオプションに関して、OS は繰り返し接続ピアに ping しそれがそこにあることを確
+認する。これに関する月並みな知恵としては、アプリケーションレベルでこの機能を一番うまく処理できるということである。ホスト要件の RFC は 2 時間の ping 間隔を指定し、これは実際上は有用ではない。
+<LI>MSG_OOB:<BR>
+これは、帯域内データの前に帯域外または「至急」とマークされたデータを存在すれば読み込むために、実際ソケット上の read() または recv() に渡すオプションである。これを含める場合、オプション SO_OOBINLINE (下記) もまた含める必要があるが、これが必要とも思われない。このことに対する本当の複雑さは、OOB データを<i>書き込む</I>対称的な方法を提供する必要があるということであるが、これも要求されていない。
+<LI>SO_OOBINLINE:<BR>
+このオプションは OOB データをインラインにし、それを「通常の」データのようにインラインに表示する。これは MSG_OOB と連携して動作する。
+<LI>RAW/ICMP SOCKETS:<BR>
+これに賛同する主要な議論は、人々が java で "ping" を書くことができるということのようである。セキュリティの悪夢である。UNIX コンピュータ上の root でなければならない。
+</UL>
+<H3>実装の詳細...</H3>
+...サブクラスが SocketImpl/DatagramSocketImpl でなければ、これは知る必要がありません。すべての *Socket オブジェクトはネイティブコードとのインタフェースとなる内在する SocketImpl/DatagramSocketImpl を持っています。Impl クラスは2つのメソッドを実装しオプションをサポートします。
+<PRE>
+	void setOption(int optID, Object val) throws SocketException;
+	Object getOption(int optID) throws SocketException ;
+</PRE>
+これは大変 C に似ています。これらのメソッドはネイティブメソッドに対して糊のよう
+な働きをし、ネイティブメソッドを起動する前に型の安全を保証します。
+<P> 
+<!--#config timefmt="%r, %A %B %e, %Y" -->
+<i>
+<!--This file last modified-->
+<!--#flastmod file="socketOpt.html" -->
+</i>
+<HR><ADDRESS>
+<!-- IMG SRC = "images/monkey3.jpg" --><!--BR-->
+brown@monkey.eng.sun.com
+</ADDRESS>
+</body>
+</html>
+

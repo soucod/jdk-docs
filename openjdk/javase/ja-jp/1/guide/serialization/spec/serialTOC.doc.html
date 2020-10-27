@@ -1,0 +1,131 @@
+<html><head><title>オブジェクト直列化仕様
+</title></head>
+<body bgcolor=#ffffff>
+ 
+[目次] [前項目] <a href="serial-arch.doc.html">[次項目]</a>
+<hr><br>
+ 
+<center>
+<h1><a name="1322">
+                オブジェクト直列化仕様
+</a></h1>
+</center>
+
+<hr><p>
+<h2>目次</h2>
+<dl>
+<dd><a href="serial-arch.doc.html">
+システムアーキテクチャ
+</a></dd><dl>
+<dd><a href="serial-arch.doc.html#4895">
+概要
+</a></dd><dd><a href="serial-arch.doc.html#4176">
+オブジェクトストリームへの書き込み
+</a></dd><dd><a href="serial-arch.doc.html#4188">
+オブジェクツストリームからの読み込み
+</a></dd><dd><a href="serial-arch.doc.html#962">
+コンテナとしてのオブジェクトストリーム
+</a></dd><dd><a href="serial-arch.doc.html#4542">
+ObjectOutput インタフェース
+</a></dd><dd><a href="serial-arch.doc.html#4548">
+ObjectInput インタフェース
+</a></dd><dd><a href="serial-arch.doc.html#4539">
+Serializable インタフェース				
+</a></dd><dd><a href="serial-arch.doc.html#4333">
+Externalizable インタフェース
+</a></dd><dd><a href="serial-arch.doc.html#4160">
+センシティブ情報の保護
+</a></dd></dl>
+<dd><a href="output.doc.html">
+オブジェクト出力インタフェース
+</a></dd><dl>
+<dd><a href="output.doc.html#933">
+ObjectOutputStream クラス
+</a></dd><dd><a href="output.doc.html#861">
+writeObject メソッド
+</a></dd><dd><a href="output.doc.html#3146">
+writeExternal メソッド
+</a></dd></dl>
+<dd><a href="input.doc.html">
+オブジェクト入力インタフェース
+</a></dd><dl>
+<dd><a href="input.doc.html#961">
+ObjectInputStream クラス
+</a></dd><dd><a href="input.doc.html#3403">
+ObjectInputValidation インタフェース
+</a></dd><dd><a href="input.doc.html#2971">
+readObject メソッド
+</a></dd><dd><a href="input.doc.html#4602">
+readExternal メソッド
+</a></dd></dl>
+<dd><a href="class.doc.html">
+クラス記述子
+</a></dd><dl>
+<dd><a href="class.doc.html#3127">
+直列化可能クラスの検査
+</a></dd><dd><a href="class.doc.html#4100">
+ストリーム固有識別子
+</a></dd></dl>
+<dd><a href="version.doc.html">
+直列化可能オブジェクトのバージョン化
+</a></dd><dl>
+<dd><a href="version.doc.html#8130">
+概要
+</a></dd><dd><a href="version.doc.html#4569">
+目標
+</a></dd><dd><a href="version.doc.html#4595">
+前提条件
+</a></dd><dd><a href="version.doc.html#4602">
+ストリームのバージョン化はだれが行うか
+</a></dd><dd><a href="version.doc.html#6519">
+互換性のある Java の型展開
+</a></dd><dd><a href="version.doc.html#6678">
+直列化に影響する型変更
+</a></dd></dl>
+<dd><a href="protocol.doc.html">
+オブジェクト直列化ストリームプロトコル
+</a></dd><dl>
+<dd><a href="protocol.doc.html#8130">
+概要
+</a></dd><dd><a href="protocol.doc.html#8299">
+ストリーム要素
+</a></dd><dd><a href="protocol.doc.html#5849">
+ストリーム形式の規則
+</a></dd><dd><a href="protocol.doc.html#9884">
+例
+</a></dd></dl>
+<dd><a href="security.doc.html">
+オブジェクト直列化におけるセキュリティ
+</a></dd><dl>
+<dd><a href="security.doc.html#3435">
+概要
+</a></dd><dd><a href="security.doc.html#2630">
+設計目標
+</a></dd><dd><a href="security.doc.html#2595">
+transient の使用による重要なシステムリソースの保護
+</a></dd><dd><a href="security.doc.html#2605">
+クラス固有の直列化メソッドの作成
+</a></dd><dd><a href="security.doc.html#2492">
+バイトストリームの暗号化
+</a></dd></dl>
+<dd><a href="exceptions.doc.html">
+オブジェクト直列化における例外
+</a></dd></dl>
+
+<hr><br>
+ 
+[目次] [前項目] <a href="serial-arch.doc.html">[次項目]</a>
+<hr><br>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- このファイルは Quadralay WebWorks Publisher 3.0.4で作成されています。-->
+<!-- -->
+<!-- このドキュメントおよびこのサーバの残りの部分がどのように作成されている-->
+<!-- のかについては、email rmi-support@javasoft.comにお問い合わせください。-->
+<!-- -->
+<!-- Last updated: 02/04/97 16:45:47 -->
+
+</body>
+</html>

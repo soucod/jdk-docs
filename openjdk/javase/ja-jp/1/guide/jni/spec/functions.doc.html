@@ -1,0 +1,3163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title> </title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><a href="jniTOC.doc.html">目次</a> | <a href="types.doc.html">前項目</a> | <a href="invocation.doc.html">次項目</a> 
+</td><td align=right><i>Java ネイティブインタフェース仕様
+</i></td>
+</tr></table>
+ 
+
+<hr><br>
+ 
+<h1><a name="15773"></a>
+<strong> 4 -  JNI 関数
+ </strong></h1>
+<hr><p><a name="15899"></a>
+本章は、JNI の関数を参照するためのもです。本章では、JNI の関数をすべて取り上げます。また、JNI 関数表の配置そのままに記載されています。
+<p><a name="5821"></a>
+「しなければならない」（または「する必要がある」）という表現は、JNI プログラマに対する制約を表していることに注意してください。たとえば、ある JNI 関数について、それが NULL 以外のオブジェクトを受け取ら<em>なければならない</em> と説明されている場合、プログラマの責任において、その JNI 関数に NULL を渡さないようにしなければならないという意味になります。それによって、JNI 実装の際に、その JNI 関数における NULL のポインタチェックを行う必要がなくなります。
+<p><a name="5310"></a>
+本章の一部は Netscape の JRI 文書から改作したものです。
+<p><a name="3476"></a>
+参照資料は、関数を使用用途によってグループ化しています。参照セクションは、次の機能分野から構成されています。
+<p><ul><a name="3739"></a>
+<li><a href="functions.doc.html#23717"><em>バージョン情報</em></a>
+
+<a name="3744"></a>
+<li><a href="functions.doc.html#15982"><em>クラスオペレーション</em></a>
+
+<a name="3749"></a>
+<li><a href="functions.doc.html#5234"><em>例外</em></a>
+
+<a name="3754"></a>
+<li><a href="functions.doc.html#16270"><em>グローバルおよびローカル参照</em></a>
+
+<a name="3759"></a>
+<li><a href="functions.doc.html#16334"><em>オブジェクトオペレーション</em></a>
+
+<a name="3764"></a>
+<li><a href="functions.doc.html#16536"><em>オブジェクトのフィールドへのアクセス</em></a>
+
+<a name="3769"></a>
+<li><a href="functions.doc.html#16656"><em>インスタンスメソッドの呼び出し</em></a>
+
+<a name="3774"></a>
+<li><a href="functions.doc.html#5901"><em>static フィールドへのアクセス</em></a>
+
+<a name="3779"></a>
+<li><a href="functions.doc.html#20949"><em>static メソッドの呼び出し</em></a>
+
+<a name="3784"></a>
+<li><a href="functions.doc.html#5386"><em>文字列オペレーション</em></a>
+
+<a name="3789"></a>
+<li><a href="functions.doc.html#17314"><em>配列オペレーション</em></a>
+
+<a name="3794"></a>
+<li><a href="functions.doc.html#5833"><em>ネイティブメソッドの登録</em></a>
+
+<a name="3799"></a>
+<li><a href="functions.doc.html#5256"><em>モニタオペレーション</em></a>
+
+<a name="3804"></a>
+<li><a href="functions.doc.html#5263"><em>Java VM インタフェース</em></a>
+
+</ul><hr align=left><a name="23720"></a>
+<h1> インタフェース関数表
+</h1>
+<a name="23721"></a>
+各関数には、<var>JNIEnv</var> 引数を介し、固定オフセットでアクセスすることが可能です。
+<var>JNIEnv</var> 型は、すべての JNI 関数のポインタを格納する構造体を指すポインタです。これは次のように定義されます。
+<p><pre>    typedef const struct JNINativeInterface *JNIEnv;
+</pre><a name="23802"></a>
+VM は、<a href="functions.doc.html#3818">コード &#32;例 &#32;4-1 </a> に示されているように関数表を初期化します。
+最初の 3 エントリは、将来の COM との互換性のために予約されていることに注意してください。さらに、関数表の始めの近辺にいくつかの追加の <code>NULL</code> エントリを予約してあります。したがって、たとえば、将来、クラス関連の JNI 演算は、表の終わりではなく FindClass の後に追加することができます。
+<p><a name="5267"></a>
+関数表は、すべての JNI インタフェースポインタの間で共用されることに注意してください。 
+<p><a name="3818"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="2556"></a>
+<h4>コード例 4-1	 
+</h4>
+</caption>
+<tr><td><pre>    const struct JNINativeInterface ... = {</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>        GetVersion,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        DefineClass,</pre>
+<tr><td><pre>        FindClass,</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>        GetSuperclass,</pre>
+<tr><td><pre>        IsAssignableFrom,</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        Throw,</pre>
+<tr><td><pre>        ThrowNew,</pre>
+<tr><td><pre>        ExceptionOccurred,</pre>
+<tr><td><pre>        ExceptionDescribe,</pre>
+<tr><td><pre>        ExceptionClear,</pre>
+<tr><td><pre>        FatalError,</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        NewGlobalRef,</pre>
+<tr><td><pre>        DeleteGlobalRef,</pre>
+<tr><td><pre>        DeleteLocalRef,</pre>
+<tr><td><pre>        IsSameObject,</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>        NULL,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        AllocObject,</pre>
+<tr><td><pre>        NewObject,</pre>
+<tr><td><pre>        NewObjectV,</pre>
+<tr><td><pre>        NewObjectA,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        GetObjectClass,</pre>
+<tr><td><pre>        IsInstanceOf,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        GetMethodID,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        CallObjectMethod,</pre>
+<tr><td><pre>        CallObjectMethodV,</pre>
+<tr><td><pre>        CallObjectMethodA,</pre>
+<tr><td><pre>        CallBooleanMethod,</pre>
+<tr><td><pre>        CallBooleanMethodV,</pre>
+<tr><td><pre>        CallBooleanMethodA,</pre>
+<tr><td><pre>        CallByteMethod,</pre>
+<tr><td><pre>        CallByteMethodV,</pre>
+<tr><td><pre>        CallByteMethodA,</pre>
+<tr><td><pre>        CallCharMethod,</pre>
+<tr><td><pre>        CallCharMethodV,</pre>
+<tr><td><pre>        CallCharMethodA,</pre>
+<tr><td><pre>        CallShortMethod,</pre>
+<tr><td><pre>        CallShortMethodV,</pre>
+<tr><td><pre>        CallShortMethodA,</pre>
+<tr><td><pre>        CallIntMethod,</pre>
+<tr><td><pre>        CallIntMethodV,</pre>
+<tr><td><pre>        CallIntMethodA,</pre>
+<tr><td><pre>        CallLongMethod,</pre>
+<tr><td><pre>        CallLongMethodV,</pre>
+<tr><td><pre>        CallLongMethodA,</pre>
+<tr><td><pre>        CallFloatMethod,</pre>
+<tr><td><pre>        CallFloatMethodV,</pre>
+<tr><td><pre>        CallFloatMethodA,</pre>
+<tr><td><pre>        CallDoubleMethod,</pre>
+<tr><td><pre>        CallDoubleMethodV,</pre>
+<tr><td><pre>        CallDoubleMethodA,</pre>
+<tr><td><pre>        CallVoidMethod,</pre>
+<tr><td><pre>        CallVoidMethodV,</pre>
+<tr><td><pre>        CallVoidMethodA,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        CallNonvirtualObjectMethod,</pre>
+<tr><td><pre>        CallNonvirtualObjectMethodV,</pre>
+<tr><td><pre>        CallNonvirtualObjectMethodA,</pre>
+<tr><td><pre>        CallNonvirtualBooleanMethod,</pre>
+<tr><td><pre>        CallNonvirtualBooleanMethodV,</pre>
+<tr><td><pre>        CallNonvirtualBooleanMethodA,</pre>
+<tr><td><pre>        CallNonvirtualByteMethod,</pre>
+<tr><td><pre>        CallNonvirtualByteMethodV,</pre>
+<tr><td><pre>        CallNonvirtualByteMethodA,</pre>
+<tr><td><pre>        CallNonvirtualCharMethod,</pre>
+<tr><td><pre>        CallNonvirtualCharMethodV,</pre>
+<tr><td><pre>        CallNonvirtualCharMethodA,</pre>
+<tr><td><pre>        CallNonvirtualShortMethod,</pre>
+<tr><td><pre>        CallNonvirtualShortMethodV,</pre>
+<tr><td><pre>        CallNonvirtualShortMethodA,</pre>
+<tr><td><pre>        CallNonvirtualIntMethod,</pre>
+<tr><td><pre>        CallNonvirtualIntMethodV,</pre>
+<tr><td><pre>        CallNonvirtualIntMethodA,</pre>
+<tr><td><pre>        CallNonvirtualLongMethod,</pre>
+<tr><td><pre>        CallNonvirtualLongMethodV,</pre>
+<tr><td><pre>        CallNonvirtualLongMethodA,</pre>
+<tr><td><pre>        CallNonvirtualFloatMethod,</pre>
+<tr><td><pre>        CallNonvirtualFloatMethodV,</pre>
+<tr><td><pre>        CallNonvirtualFloatMethodA,</pre>
+<tr><td><pre>        CallNonvirtualDoubleMethod,</pre>
+<tr><td><pre>        CallNonvirtualDoubleMethodV,</pre>
+<tr><td><pre>        CallNonvirtualDoubleMethodA,</pre>
+<tr><td><pre>        CallNonvirtualVoidMethod,</pre>
+<tr><td><pre>        CallNonvirtualVoidMethodV,</pre>
+<tr><td><pre>        CallNonvirtualVoidMethodA,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        GetFieldID,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        GetObjectField,</pre>
+<tr><td><pre>        GetBooleanField,</pre>
+<tr><td><pre>        GetByteField,</pre>
+<tr><td><pre>        GetCharField,</pre>
+<tr><td><pre>        GetShortField,</pre>
+<tr><td><pre>        GetIntField,</pre>
+<tr><td><pre>        GetLongField,</pre>
+<tr><td><pre>        GetFloatField,</pre>
+<tr><td><pre>        GetDoubleField,</pre>
+<tr><td><pre>        SetObjectField,</pre>
+<tr><td><pre>        SetBooleanField,</pre>
+<tr><td><pre>        SetByteField,</pre>
+<tr><td><pre>        SetCharField,</pre>
+<tr><td><pre>        SetShortField,</pre>
+<tr><td><pre>        SetIntField,</pre>
+<tr><td><pre>        SetLongField,</pre>
+<tr><td><pre>        SetFloatField,</pre>
+<tr><td><pre>        SetDoubleField,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        GetStaticMethodID,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        CallStaticObjectMethod,</pre>
+<tr><td><pre>        CallStaticObjectMethodV,</pre>
+<tr><td><pre>        CallStaticObjectMethodA,</pre>
+<tr><td><pre>        CallStaticBooleanMethod,</pre>
+<tr><td><pre>        CallStaticBooleanMethodV,</pre>
+<tr><td><pre>        CallStaticBooleanMethodA,</pre>
+<tr><td><pre>        CallStaticByteMethod,</pre>
+<tr><td><pre>        CallStaticByteMethodV,</pre>
+<tr><td><pre>        CallStaticByteMethodA,</pre>
+<tr><td><pre>        CallStaticCharMethod,</pre>
+<tr><td><pre>        CallStaticCharMethodV,</pre>
+<tr><td><pre>        CallStaticCharMethodA,</pre>
+<tr><td><pre>        CallStaticShortMethod,</pre>
+<tr><td><pre>        CallStaticShortMethodV,</pre>
+<tr><td><pre>        CallStaticShortMethodA,</pre>
+<tr><td><pre>        CallStaticIntMethod,</pre>
+<tr><td><pre>        CallStaticIntMethodV,</pre>
+<tr><td><pre>        CallStaticIntMethodA,</pre>
+<tr><td><pre>        CallStaticLongMethod,</pre>
+<tr><td><pre>        CallStaticLongMethodV,</pre>
+<tr><td><pre>        CallStaticLongMethodA,</pre>
+<tr><td><pre>        CallStaticFloatMethod,</pre>
+<tr><td><pre>        CallStaticFloatMethodV,</pre>
+<tr><td><pre>        CallStaticFloatMethodA,</pre>
+<tr><td><pre>        CallStaticDoubleMethod,</pre>
+<tr><td><pre>        CallStaticDoubleMethodV,</pre>
+<tr><td><pre>        CallStaticDoubleMethodA,</pre>
+<tr><td><pre>        CallStaticVoidMethod,</pre>
+<tr><td><pre>        CallStaticVoidMethodV,</pre>
+<tr><td><pre>        CallStaticVoidMethodA,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        GetStaticFieldID,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        GetStaticObjectField,</pre>
+<tr><td><pre>        GetStaticBooleanField,</pre>
+<tr><td><pre>        GetStaticByteField,</pre>
+<tr><td><pre>        GetStaticCharField,</pre>
+<tr><td><pre>        GetStaticShortField,</pre>
+<tr><td><pre>        GetStaticIntField,</pre>
+<tr><td><pre>        GetStaticLongField,</pre>
+<tr><td><pre>        GetStaticFloatField,</pre>
+<tr><td><pre>        GetStaticDoubleField,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        SetStaticObjectField,</pre>
+<tr><td><pre>        SetStaticBooleanField,</pre>
+<tr><td><pre>        SetStaticByteField,</pre>
+<tr><td><pre>        SetStaticCharField,</pre>
+<tr><td><pre>        SetStaticShortField,</pre>
+<tr><td><pre>        SetStaticIntField,</pre>
+<tr><td><pre>        SetStaticLongField,</pre>
+<tr><td><pre>        SetStaticFloatField,</pre>
+<tr><td><pre>        SetStaticDoubleField,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        NewString,</pre>
+<tr><td><pre>        GetStringLength,</pre>
+<tr><td><pre>        GetStringChars,</pre>
+<tr><td><pre>        ReleaseStringChars,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        NewStringUTF,</pre>
+<tr><td><pre>        GetStringUTFLength,</pre>
+<tr><td><pre>        GetStringUTFChars,</pre>
+<tr><td><pre>        ReleaseStringUTFChars,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        GetArrayLength,</pre>
+<tr><td><pre>     </pre>
+<tr><td><pre>        NewObjectArray,</pre>
+<tr><td><pre>        GetObjectArrayElement,</pre>
+<tr><td><pre>        SetObjectArrayElement,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        NewBooleanArray,</pre>
+<tr><td><pre>        NewByteArray,</pre>
+<tr><td><pre>        NewCharArray,</pre>
+<tr><td><pre>        NewShortArray,</pre>
+<tr><td><pre>        NewIntArray,</pre>
+<tr><td><pre>        NewLongArray,</pre>
+<tr><td><pre>        NewFloatArray,</pre>
+<tr><td><pre>        NewDoubleArray,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        GetBooleanArrayElements,</pre>
+<tr><td><pre>        GetByteArrayElements,</pre>
+<tr><td><pre>        GetCharArrayElements,</pre>
+<tr><td><pre>        GetShortArrayElements,</pre>
+<tr><td><pre>        GetIntArrayElements,</pre>
+<tr><td><pre>        GetLongArrayElements,</pre>
+<tr><td><pre>        GetFloatArrayElements,</pre>
+<tr><td><pre>        GetDoubleArrayElements,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        ReleaseBooleanArrayElements,</pre>
+<tr><td><pre>        ReleaseByteArrayElements,</pre>
+<tr><td><pre>        ReleaseCharArrayElements,</pre>
+<tr><td><pre>        ReleaseShortArrayElements,</pre>
+<tr><td><pre>        ReleaseIntArrayElements,</pre>
+<tr><td><pre>        ReleaseLongArrayElements,</pre>
+<tr><td><pre>        ReleaseFloatArrayElements,</pre>
+<tr><td><pre>        ReleaseDoubleArrayElements,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        GetBooleanArrayRegion,</pre>
+<tr><td><pre>        GetByteArrayRegion,</pre>
+<tr><td><pre>        GetCharArrayRegion,</pre>
+<tr><td><pre>        GetShortArrayRegion,</pre>
+<tr><td><pre>        GetIntArrayRegion,</pre>
+<tr><td><pre>        GetLongArrayRegion,</pre>
+<tr><td><pre>        GetFloatArrayRegion,</pre>
+<tr><td><pre>        GetDoubleArrayRegion,</pre>
+<tr><td><pre>        SetBooleanArrayRegion,</pre>
+<tr><td><pre>        SetByteArrayRegion,</pre>
+<tr><td><pre>        SetCharArrayRegion,</pre>
+<tr><td><pre>        SetShortArrayRegion,</pre>
+<tr><td><pre>        SetIntArrayRegion,</pre>
+<tr><td><pre>        SetLongArrayRegion,</pre>
+<tr><td><pre>        SetFloatArrayRegion,</pre>
+<tr><td><pre>        SetDoubleArrayRegion,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        RegisterNatives,</pre>
+<tr><td><pre>        UnregisterNatives,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        MonitorEnter,</pre>
+<tr><td><pre>        MonitorExit,</pre>
+<tr><td><pre>    </pre>
+<tr><td><pre>        GetJavaVM,</pre>
+<tr><td><pre>    };</pre>
+
+</Table>
+</dd></dl>
+<p><hr align=left><a name="23717"></a>
+<h1> バージョン情報
+</h1>
+<br><a name="15951"></a>
+<h2>		 GetVersion
+</h2>
+<a name="15956"></a>
+<code>jint GetVersion(JNIEnv *env);
+</code><p><a name="3616"></a>
+ネイティブメソッドインタフェースのバージョンを返します。
+<p><a name="3623"></a>
+<h4> パラメータ:
+</h4>
+<a name="18147"></a>
+<code>env</code>: JNI インタフェースポインタ
+<p><a name="18146"></a>
+<h4> 返り値:
+</h4>
+<a name="18122"></a>
+主バージョン番号を高位の 16 ビットで、副バージョン番号を下位の 16 ビットで返します。
+
+<p><a name="23205"></a>
+JDK1.1 では、<code>GetVersion()</code> が 0x00010001 を返します。
+<p><hr align=left><a name="15982"></a>
+<h1> クラスオペレーション
+</h1>
+<br><a name="15986"></a>
+<h2>		 DefineClass
+</h2>
+<a name="15990"></a>
+<code>jclass DefineClass(JNIEnv *env, jobject loader, <br>
+     const jbyte *buf, jsize bufLen);
+</code><p><a name="15994"></a>
+生のクラスデータのバッファからクラスをロードします。 
+<p><a name="18144"></a>
+<h4> パラメータ: 
+</h4>
+<a name="18148"></a>
+<code>env</code>: JNI インタフェースポインタ
+<p><a name="18152"></a>
+<code>loader</code>: 定義されたクラスに割り当てられるクラスローダ
+<p><a name="18153"></a>
+<code>buf</code>: <code>.class</code>ファイルデータを含むバッファ 
+<p><a name="18151"></a>
+<code>bufLen</code>: バッファ長
+<p><a name="18157"></a>
+<h4> 返り値:
+</h4>
+<a name="18156"></a>
+クラスオブジェクトを返すか、またはエラーが発生した場合は <code>NULL</code> を返します。
+<p><a name="16013"></a>
+<h4> 例外:
+</h4>
+<a name="16015"></a>
+<code>ClassFormatError</code>: クラスデータが有効なクラスを指定しなかった場合
+<p><a name="5936"></a>
+<code>ClassCircularityError</code>: クラスまたはインタフェースが、それ自体のスーパークラスまたはスーパーインタフェースになる場合
+<p><a name="5935"></a>
+<code>OutOfMemoryError</code>: システムがメモリ不足の場合
+<p><br><a name="16027"></a>
+<h2>		 FindClass
+</h2>
+<a name="16031"></a>
+<code>jclass FindClass(JNIEnv *env, const char *name);
+</code><p><a name="18197"></a>
+この関数は、局所的に定義されたクラスをロードします。また、指定された名前を有するクラスに対して<code>CLASSPATH</code> 環境変数が指定するディレクトリおよび ZIP ファイルを検索します。
+<p><a name="18187"></a>
+<h4> パラメータ:
+</h4>
+<a name="18188"></a>
+<code>env</code>: the JNI インタフェース ポインタ
+<p><a name="18189"></a>
+<code>name</code>: 完全修飾クラス名 (すなわち、"<code>/</code>" で区切った後にクラス名を付けたパッケージ名)。その名前が "<code>[</code>" (配列シグネチャ文字) で開始されている場合は、配列クラスを返します。 
+<p><a name="18213"></a>
+<h4> 返り値:
+</h4>
+<a name="18214"></a>
+完全修飾名からクラスオブジェクトを返すか、またはクラスが見つからない場合は、<code>NULL</code> を返します。
+<p><a name="5939"></a>
+<h4> 例外:
+</h4>
+<a name="5940"></a>
+<code>ClassFormatError</code>: クラスデータが有効なクラスを指定しなかった場合
+<p><a name="5950"></a>
+<code>ClassCircularityError</code>: クラスまたはインタフェースが、それ自体のスーパークラスまたはスーパーインタフェースになる場合
+<p><a name="5952"></a>
+<code>NoClassDefFoundError</code>: 要求されたクラスまたはインタフェースに対する定義が見つからなかった場合
+<p><a name="5942"></a>
+<code>OutOfMemoryError</code>: システムがメモリ不足の場合
+<p><br><a name="18292"></a>
+<h2>		 GetSuperclass
+</h2>
+<a name="18301"></a>
+<code>jclass GetSuperclass(JNIEnv *env, jclass clazz);
+</code><p><a name="18290"></a>
+<code>clazz</code> がクラス <code>Object</code> 以外のクラスを表す場合、この関数は、<code>clazz</code> によって指定されたクラスのスーパークラスを表すオブジェクトを返します。 
+<p><a name="18304"></a>
+<code>clazz</code> がクラス <code>Object</code> を指定する場合、または、<code>clazz</code> がインタフェースを表す場合は、この関数は <code>NULL</code> を返します。
+<p><a name="3627"></a>
+<h4> パラメータ:
+</h4>
+<a name="18312"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18313"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="3634"></a>
+<h4> 返り値:
+</h4>
+<a name="18315"></a>
+<code>clazz</code> によって表されるクラスのスーパークラスまたは <code>NULL </code>を返します。
+<p><br><a name="16061"></a>
+<h2>		 IsAssignableFrom
+</h2>
+<a name="16065"></a>
+<code>jboolean IsAssignableFrom(JNIEnv *env, jclass clazz1, <br>
+     jclass clazz2);
+</code><p><a name="16069"></a>
+<code>clazz1</code> のオブジェクトが安全に <code>clazz2</code> へキャストされるかどうかを決定します。
+<p><a name="16071"></a>
+<h4> パラメータ:
+</h4>
+<a name="18243"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18244"></a>
+<code>clazz1</code>: 最初のクラス引数
+<p><a name="18245"></a>
+<code>clazz2</code>: 2 番目のクラス引数
+<p><a name="18246"></a>
+<h4> 返り値:
+</h4>
+<a name="18254"></a>
+次のいずれかが真の場合に <code>JNI_TRUE</code> を返します。 
+<p><ul><a name="5311"></a>
+<li>最初と 2 番目のクラス引数が同じ Java クラスを表している。
+
+<a name="5316"></a>
+<li>最初のクラスが 2 番目のクラスのサブクラスである。
+
+<a name="5319"></a>
+<li>最初のクラスがそのインタフェースとして 2 番目のクラスを有している。
+
+</ul><hr align=left><a name="5234"></a>
+<h1> 例外
+</h1>
+<br><a name="16086"></a>
+<h2>		 Throw
+</h2>
+<a name="16090"></a>
+<code>jint Throw(JNIEnv *env, jthrowable obj);
+</code><p><a name="16094"></a>
+<code>java.lang.Throwable</code> オブジェクトがスローされます。
+<p><a name="16095"></a>
+<h4> パラメータ:
+</h4>
+<a name="18340"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18341"></a>
+<code>obj</code>: <code>java.lang.Throwable</code> オブジェクト
+<p><a name="18344"></a>
+<h4> 返り値:
+</h4>
+<a name="18345"></a>
+成功の場合は 0 を返し、失敗の場合は負の値を返します。
+<p><a name="5963"></a>
+<h4> 例外:
+</h4>
+<a name="5964"></a>
+<code> java.lang.Throwable オブジェクト obj
+</code><p><br><a name="16104"></a>
+<h2>		 ThrowNew
+</h2>
+<a name="16108"></a>
+<code>jint ThrowNew(JNIEnv *env, jclass clazz, <br>
+     const char *message);
+</code><p><a name="16112"></a>
+<code>メッセージ</code> によって指定されたメッセージを使用して、指定されたクラスから例外オブジェクトを構築し、その例外がスローされるようにします。
+<p><a name="18365"></a>
+<h4> パラメータ:
+</h4>
+<a name="18366"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18367"></a>
+<code>clazz</code>: <code>java.lang.Throwable</code> のサブクラス
+<p><a name="18371"></a>
+<code>message</code>: <code>java.lang.Throwable</code> オブジェクトの構築に使用するメッセージ 
+<p><a name="18370"></a>
+<h4> 返り値:
+</h4>
+<a name="18369"></a>
+成功の場合は 0 を返し、失敗の場合は負の値を返します。
+<p><a name="5974"></a>
+<h4> 例外:
+</h4>
+<a name="5975"></a>
+新しく構築された <code> java.lang.Throwable </code> オブジェクト
+<p><br><a name="16124"></a>
+<h2>		 ExceptionOccurred
+</h2>
+<a name="16128"></a>
+<code>jthrowable ExceptionOccurred(JNIEnv *env);
+</code><p><a name="3661"></a>
+例外がスローされるかどうかを決定します。例外は、ネイティブコードが <code>ExceptionClear()</code> を呼び出すか、または Java コードがその例外を処理するまで立ち上がった状態を続けます。
+<p><a name="18387"></a>
+<h4> パラメータ:
+</h4>
+<a name="18388"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18391"></a>
+<h4> 返り値:
+</h4>
+<a name="18385"></a>
+現在、スローされている例外オブジェクトを返します。現在、スローされている例外が何もない場合は、<code>NULL</code> を返します。
+<p><br><a name="16146"></a>
+<h2>		 ExceptionDescribe
+</h2>
+<a name="16150"></a>
+<code>void ExceptionDescribe(JNIEnv *env);
+</code><p><a name="16154"></a>
+<code>stderr</code> など、例外およびスタックのバックトレースをシステムエラーのレポーティングチャネルにプリントします。これは、デバッグのために提供されている便利なルーチンです。
+<p><a name="18460"></a>
+<h4> パラメータ:
+</h4>
+<a name="18461"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><br><a name="16166"></a>
+<h2>		 ExceptionClear
+</h2>
+<a name="16170"></a>
+<code>void ExceptionClear(JNIEnv *env);
+</code><p><a name="16174"></a>
+現在、スロー されている例外があればそれをクリアします。現在、スローされている例外が何もなければ、このルーチンは特に何も影響を及ぼしません。
+<p><a name="18549"></a>
+<h4> パラメータ:
+</h4>
+<a name="18550"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><br><a name="16186"></a>
+<h2>		 FatalError
+</h2>
+<a name="16190"></a>
+<code>void FatalError(JNIEnv *env, const char *msg);
+</code><p><a name="16194"></a>
+致命的エラーを発生させます。VMは復帰しません。この関数は何も値を返しません。 
+<p><a name="18552"></a>
+<h4> パラメータ:
+</h4>
+<a name="18553"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18543"></a>
+<code>msg</code>: エラー メッセージ
+<p><hr align=left><a name="16270"></a>
+<h1> グローバルおよびローカル参照
+</h1>
+<br><a name="16274"></a>
+<h2>		 NewGlobalRef
+</h2>
+<a name="16278"></a>
+<code>jobject NewGlobalRef(JNIEnv *env, jobject obj);
+</code><p><a name="16282"></a>
+<code>obj</code> 引数によって参照されたオブジェクトの新たなグローバル参照を作成します。<code>obj</code> 引数は、グローバル参照またはローカル参照のどちらでも構いません。グローバル参照は、<code>DeleteGlobalRef()</code> を呼び出すことによって、必ず明示的に処理しておく必要があります。
+<p><a name="18585"></a>
+<h4> パラメータ:
+</h4>
+<a name="18586"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18587"></a>
+<code>obj</code>: グローバル参照またはローカル参照
+<p><a name="18589"></a>
+<h4> 返り値:
+</h4>
+<a name="18590"></a>
+グローバル参照を返すか、またはシステムがメモリ不足の場合は <code>NULL</code> を返します。
+<p><br><a name="16294"></a>
+<h2>		 DeleteGlobalRef
+</h2>
+<a name="16298"></a>
+<code>void DeleteGlobalRef(JNIEnv *env, jobject globalRef);
+</code><p><a name="16302"></a>
+<code>globalRef</code> によって示されたグローバル参照を削除します。 
+<p><a name="23724"></a>
+<h4> パラメータ:
+</h4>
+<a name="18651"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18652"></a>
+<code>globalRef</code>: グローバル参照
+<p><br><a name="18654"></a>
+<h2>		 DeleteLocalRef
+</h2>
+<a name="18655"></a>
+<code>void DeleteLocalRef(JNIEnv *env, jobject localRef);
+</code><p><a name="18656"></a>
+<code>localRef</code>によって示されたローカル参照を削除します。
+<p><a name="18657"></a>
+<h4> パラメータ:
+</h4>
+<a name="18658"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18659"></a>
+<code>localRef</code>: ローカル参照
+<p><hr align=left><a name="16334"></a>
+<h1> オブジェクトオペレーション
+</h1>
+<br><a name="16337"></a>
+<h2>		 AllocObject
+</h2>
+<a name="16341"></a>
+<code>jobject AllocObject(JNIEnv *env, jclass clazz);
+</code><p><a name="16345"></a>
+オブジェクト用として構築子を呼び出さずに、新しい Java オブジェクトを割り当てます。オブジェクトに対する参照を返します。
+<p><a name="5280"></a>
+clazz 引数は、いかなる配列クラスも参照してはなりません。
+<p><a name="18680"></a>
+<h4> パラメータ:
+</h4>
+<a name="18681"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18682"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="18683"></a>
+<h4> 返り値:
+</h4>
+<a name="18684"></a>
+Java オブジェクト、またはオブジェクトが構築できない場合は <code>NULL</code> を返します。
+<p><a name="18678"></a>
+<h4> 例外:
+</h4>
+<a name="16353"></a>
+<code>InstantiationException</code>: クラスがインタフェースまたは abstract クラスの場合
+<p><a name="5982"></a>
+<code>OutOfMemoryError</code>:システムがメモリ不足の場合
+<p><br><a name="4517"></a>
+<h2>		 NewObject<br>
+NewObjectA<br>
+NewObjectV
+</h2>
+<a name="16368"></a>
+<code>jobject NewObject(JNIEnv *env, jclass clazz, <br>
+     jmethodID methodID, ...);
+</code><p><a name="4522"></a>
+<code>jobject NewObjectA(JNIEnv *env, jclass clazz, <br>
+     jmethodID methodID, jvalue *args);
+</code><p><a name="4528"></a>
+<code>jobject NewObjectV(JNIEnv *env, jclass clazz, <br>
+     jmethodID methodID, va_list args);
+</code><p><a name="5335"></a>
+Java オブジェクトを構築します。メソッド ID は、呼び出すべき構築子メソッドを表しています。この ID は、メソッド名として 
+<code>&lt;init&gt;</code> を、また返り値の型として <code>void</code> (<code>V</code>) を使用して <code>GetMethodID()</code> を呼び出すことによって取得しなければなりません。
+<p><a name="5774"></a>
+<code>clazz</code> 引数は、いかなる配列クラスも参照してはなりません。
+<p><a name="5336"></a>
+<h4> NewObject
+</h4>
+<a name="4529"></a>
+プログラマは、構築子に渡す引数をすべて、<code>methodID</code> 引数のすぐ後に置きます。
+<code>NewObject()</code> は、これらの引数を受け取り、プログラマが呼び出したい Java メソッドに渡します。
+<p><a name="4531"></a>
+<h4> NewObjectA
+</h4>
+<a name="4536"></a>
+プログラマは、構築子に渡す引数をすべて、<code>methodID</code> 引数のすぐ後に続く <code>jvalues</code> の 
+<code>args</code> 配列内に置きます。
+<code>NewObjectA()</code> はこの配列内の引数を受け取り、プログラマが呼び出したい Java メソッドに渡します。
+<p><a name="4534"></a>
+<h4> NewObjectV
+</h4>
+<a name="4538"></a>
+プログラマは、構築子に渡す引数をすべて、<code>methodID</code> 引数のすぐ後に続く型 <code>va_list</code> の 
+<code>args</code> 引数内に置きます。
+<code>NewObjectV()</code> はこれらの引数を受け取り、プログラマが呼び出したい Java メソッドに渡します。
+<p><a name="18736"></a>
+<h4> パラメータ:
+</h4>
+<a name="18724"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18725"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="18730"></a>
+<code>methodID</code>: 構築子のメソッド ID
+<p><a name="5076"></a>
+<h4> NewObject に必要な追加パラメータ:
+</h4>
+<a name="5077"></a>
+構築子の引数
+<p><a name="4541"></a>
+<h4> NewObjectA に必要な追加パラメータ:
+</h4>
+<a name="4546"></a>
+<code>args</code>: 構築子の引数の配列 
+<p><a name="4544"></a>
+<h4> NewObjectV に必要な追加パラメータ:
+</h4>
+<a name="4550"></a>
+<code>args</code>: 構築子の引数の va_list
+<p><a name="18726"></a>
+<h4> 返り値:
+</h4>
+<a name="18727"></a>
+Java オブジェクトを返します。Java オブジェクトが構築できなかった場合は、 <code>NULL</code> を返します。 
+<p><a name="18728"></a>
+<h4> 例外:
+</h4>
+<a name="18729"></a>
+<code>InstantiationException</code>: クラスがインタフェースまたは abstract クラスの場合
+<p><a name="5987"></a>
+<code>OutOfMemoryError</code>: システムがメモリ不足の場合
+<p><a name="5990"></a>
+構築子によってスローされるすべての例外
+<p><br><a name="16454"></a>
+<h2>		 GetObjectClass
+</h2>
+<a name="16458"></a>
+<code>jclass GetObjectClass(JNIEnv *env, jobject obj);
+</code><p><a name="16462"></a>
+オブジェクトのクラスを返します。 
+<p><a name="18795"></a>
+<h4> パラメータ:
+</h4>
+<a name="18796"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18797"></a>
+<code>obj</code>: Java オブジェクト (<code>NULL</code> であってはならない) 
+<p><a name="18800"></a>
+<h4> 返り値:
+</h4>
+<a name="18801"></a>
+Java クラスオブジェクトを返します。
+<p><br><a name="16472"></a>
+<h2>		 IsInstanceOf
+</h2>
+<a name="16476"></a>
+<code>jboolean IsInstanceOf(JNIEnv *env, jobject obj, <br>
+     jclass clazz);
+</code><p><a name="16480"></a>
+オブジェクトがクラスのインスタンスであるかどうかをチェックします。
+<p><a name="18855"></a>
+<h4> パラメータ:
+</h4>
+<a name="18856"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18861"></a>
+<code>obj</code>: Java オブジェクト
+<p><a name="18863"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="18858"></a>
+<h4> 返り値:
+</h4>
+<a name="16481"></a>
+<code>obj</code> を <code>clazz</code> にキャストすることができる場合は、<code>JNI_TRUE</code> を返します。そうでない場合は、 
+<code>JNI_FALSE</code>を返します。<code>NULL</code> オブジェクトは、いずれのクラスにもキャストすることができます。
+<p><br><a name="16514"></a>
+<h2>		 IsSameObject
+</h2>
+<a name="16518"></a>
+<code>jboolean IsSameObject(JNIEnv *env, jobject ref1, <br>
+     jobject ref2);
+</code><p><a name="16522"></a>
+2 つの参照が同じ Java オブジェクトを参照するかどうかをテストします。 
+<p><a name="18896"></a>
+<h4> パラメータ:
+</h4>
+<a name="18897"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18898"></a>
+<code>ref1</code>: Java オブジェクト
+<p><a name="18899"></a>
+<code>ref2</code>: Java オブジェクト
+<p><a name="18900"></a>
+<h4> 返り値:
+</h4>
+<a name="18901"></a>
+<code>ref1</code> と <code>ref2</code> が同じ Java オブジェクトを参照する場合、または、両方が <code>NULL</code> である場合は、<code>JNI_TRUE</code> を返します。それ以外の場合は、<code>JNI_FALSE</code> を返します。
+<p><hr align=left><a name="16536"></a>
+<h1> オブジェクトのフィールドへのアクセス
+</h1>
+<br><a name="16540"></a>
+<h2>		 GetFieldID
+</h2>
+<a name="18916"></a>
+<code>jfieldID GetFieldID(JNIEnv *env, jclass clazz, <br>
+     const char *name, const char *sig);
+</code><p><a name="4199"></a>
+クラスのインスタンス (非 static) フィールドを表すフィールド ID を返します。
+このフィールドは、その名前およびシグネチャで指定します。アクセス用関数の <var>Get&lt;type&gt;Field</var> ファミリと <var>Set&lt;type&gt;Field</var> ファミリは、フィールド ID を使用してオブジェクトフィールドを検索します。 
+<p><a name="5991"></a>
+<code>GetFieldID()</code>  によって、まだ初期化されていないクラスが初期化されます。 
+<p><a name="5783"></a>
+配列の長さフィールドを得るために <code>GetFieldID()</code>  を使用することはできません。代わりに、
+<code>GetArrayLength()</code> を使用してください。
+<p><a name="18928"></a>
+<h4> パラメータ:
+</h4>
+<a name="18929"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="18930"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="18935"></a>
+<code>name</code>: 0 で終了する UTF-8 文字列内のフィールド名
+<p><a name="18937"></a>
+<code>sig</code>: 0 で終了する UTF-8 文字列内のフィールドシグネチャ 
+<p><a name="18932"></a>
+<h4> 返り値:
+</h4>
+<a name="16552"></a>
+フィールド ID を返すか、または演算が失敗した場合は <code>NULL</code> を返します。
+<p><a name="16560"></a>
+<h4> 例外:
+</h4>
+<a name="18944"></a>
+<code>NoSuchFieldError</code>: 指定されたフィールドが見つからない場合
+<p><a name="5992"></a>
+<code>ExceptionInInitializerError</code>: 例外のために、クラス初期化が失敗した場合
+<p><a name="5998"></a>
+<code>OutOfMemoryError</code>:システムがメモリ不足の場合
+<p><br><a name="16572"></a>
+<h2>		 Get&lt;type&gt;Field ルーチン
+</h2>
+<a name="16576"></a>
+<var>NativeType</var><code> </code><var>Get&lt;type&gt;Field</var><code>(JNIEnv *env, jobject obj, <br>
+     jfieldID fieldID);
+</code><p><a name="3691"></a>
+このアクセス用ルーチンのファミリは、オブジェクトのインスタンス (非 static) フィールドの値を返します。アクセスすべきフィールドは、<code>GetFieldID()</code> を呼び出すことによって取得されるフィールド ID を使用して指定します。
+<p><a name="3766"></a>
+次の表には、<em>Get&lt;type&gt;Field</em> ルーチン名と結果の型が示されています。<var>Get&lt;type&gt;Field</var> 内の <var>type</var> をフィールドの Java 型と置き換えるか、あるいは表の実際のルーチン名のひとつを使用するかする必要と、<var>NativeType</var> をそのルーチンに対応するネイティブ型と置き換える必要があります。
+<p><a name="4033"></a>
+ <strong><dl><dd>
+<Table Border="0">
+<caption><a name="5526"></a>
+<h4>表 4-1	 アクセス用ルーチンの Get&lt;type&gt;Field ファミリ
+</h4>
+</caption>
+<tr><th><a name="5530"></a>
+Get&lt;type&gt;Field ルーチン名
+
+<th><a name="5532"></a>
+ネイティブ型
+
+
+<tr><td><a name="5534"></a>
+<code>GetObjectField()
+</code>
+<td><a name="5536"></a>
+
+
+jobject
+
+
+<tr><td><a name="5538"></a>
+<code>GetBooleanField()
+</code>
+<td><a name="5540"></a>
+jboolean
+
+
+<tr><td><a name="5542"></a>
+<code>GetByteField()
+</code>
+<td><a name="5544"></a>
+jbyte
+
+
+<tr><td><a name="5546"></a>
+<code>GetCharField()
+</code>
+<td><a name="5548"></a>
+jchar
+
+
+<tr><td><a name="5550"></a>
+<code>GetShortField()
+</code>
+<td><a name="5552"></a>
+jshort
+
+
+<tr><td><a name="5554"></a>
+<code>GetIntField()
+</code>
+<td><a name="5556"></a>
+jint
+
+
+<tr><td><a name="5558"></a>
+<code>GetLongField()
+</code>
+<td><a name="5560"></a>
+jlong
+
+
+<tr><td><a name="5562"></a>
+<code>GetFloatField()
+</code>
+<td><a name="5564"></a>
+jfloat
+
+
+<tr><td><a name="5566"></a>
+<code>GetDoubleField()
+</code>
+<td><a name="5568"></a>
+jdouble
+
+
+
+</Table>
+</dd></dl>
+</strong><p><a name="3767"></a>
+<h4> パラメータ:
+</h4>
+<a name="19123"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="19124"></a>
+<code>obj</code>: Java オブジェクト (<code>NULL</code> であってはならない) 
+<p><a name="19125"></a>
+<code>fieldID</code>: 有効フィールド ID
+<p><a name="19127"></a>
+<h4> 返り値:
+</h4>
+<a name="19130"></a>
+フィールドの内容を返します。
+<p><br><a name="16613"></a>
+<h2>		 Set&lt;type&gt;Field ルーチン
+</h2>
+<a name="16617"></a>
+<code>void </code><var>Set&lt;type&gt;Field</var><code>(JNIEnv *env, jobject obj, jfieldID fieldID,<br>
+     </code><var>NativeType</var><code> value);
+</code><p><a name="16622"></a>
+このアクセス用ルーチンのファミリは、オブジェクトのインスタンス (非 static) フィールドの値を設定します。アクセスすべきフィールドは、
+<code>GetFieldID()</code>
+を呼び出すことによって得られるフィールド ID を使用して指定します。
+<p><a name="16626"></a>
+次の表には、<em>Set&lt;type&gt;Field</em> ルーチン名と結果の型が示されています。<var>Set&lt;type&gt;Field</var> 内の <var>type</var> をフィールドの Java 型と置き換えるか、あるいは表の実際のルーチン名のひとつを使用するかする必要と、<var>NativeType</var> をそのルーチンに対応するネイティブ型と置き換える必要があります。
+<p><a name="4050"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="5570"></a>
+<h4>表 4-2	アクセス用ルーチンの Set&lt;type&gt;Field ファミリ 
+</h4>
+</caption>
+<tr><th><a name="5574"></a>
+Set&lt;type&gt;Field ルーチン
+
+<th><a name="5576"></a>
+ネイティブ型
+
+
+<tr><td><a name="5578"></a>
+<code>SetObjectField()
+</code>
+<td><a name="5580"></a>
+jobject
+
+
+<tr><td><a name="5582"></a>
+S<code>etBooleanField()
+</code>
+<td><a name="5584"></a>
+jboolean
+
+
+<tr><td><a name="5586"></a>
+<code>SetByteField()
+</code>
+<td><a name="5588"></a>
+jbyte
+
+
+<tr><td><a name="5590"></a>
+<code>SetCharField()
+</code>
+<td><a name="5592"></a>
+jchar
+
+
+<tr><td><a name="5594"></a>
+<code>SetShortField()
+</code>
+<td><a name="5596"></a>
+jshort
+
+
+<tr><td><a name="5598"></a>
+<code>SetIntField()
+</code>
+<td><a name="5600"></a>
+jint
+
+
+<tr><td><a name="5602"></a>
+<code>SetLongField()
+</code>
+<td><a name="5604"></a>
+jlong
+
+
+<tr><td><a name="5606"></a>
+<code>SetFloatField()
+</code>
+<td><a name="5608"></a>
+jfloat
+
+
+<tr><td><a name="5610"></a>
+<code>SetDoubleField()
+</code>
+<td><a name="5612"></a>
+jdouble
+
+
+
+</Table>
+</dd></dl>
+<p><a name="19440"></a>
+<h4> パラメータ:
+</h4>
+<a name="19441"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="19442"></a>
+<code>obj</code>: Java オブジェクト (<code>NULL</code> であってはならない)
+<p><a name="19454"></a>
+<code>fieldID</code>: 有効フィールド ID
+<p><a name="19457"></a>
+<code>value</code>: そのフィールドの新しい値
+<p><hr align=left><a name="16656"></a>
+<h1> インスタンスメソッドの呼出し
+</h1>
+<br><a name="16660"></a>
+<h2>		 GetMethodID
+</h2>
+<a name="16664"></a>
+<code>jmethodID GetMethodID(JNIEnv *env, jclass clazz, <br>
+     const char *name, const char *sig);
+</code><p><a name="16668"></a>
+クラスまたはインタフェースのインスタンス (非 static) メソッドを表すメソッド ID を返します。このメソッドは、<code>clazz</code> のスーパークラスのひとつの中で定義し、<code>clazz</code> によって継承できます。このメソッドは、その名前およびシグネチャによって決定されます。
+<p><a name="6004"></a>
+<code>GetMethodID()</code> によって、まだ初期化されていないクラスが初期化されます。
+<p><a name="23206"></a>
+構築子のメソッド ID を取得するには、メソッド名として <code>&lt;init&gt;</code> を指定し、返り値の型として <code>void</code> (<code>V</code>) を指定します。
+<p><a name="19485"></a>
+<h4> パラメータ:
+</h4>
+<a name="19486"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="3783"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="3784"></a>
+<code>name</code>: 0 で終了する UTF-8 文字列内のメソッド名
+<p><a name="3785"></a>
+<code>sig</code>: 0 で終了する UTF-8 文字列内のメソッドシグネチャ
+<p><a name="19490"></a>
+<h4> 返り値:
+</h4>
+<a name="19491"></a>
+メソッド ID を返すか、または指定されたメソッドが見つからなかった場合は、<code>NULL</code> を返します。
+<p><a name="19492"></a>
+<h4> 例外:
+</h4>
+<a name="19493"></a>
+<code>NoSuchMethodError</code>: 指定されたメソッドが見つからない場合
+<p><a name="6021"></a>
+<code>ExceptionInInitializerError</code>: 例外のために、クラス初期化が失敗した場合
+<p><a name="6022"></a>
+<code>OutOfMemoryError</code>: システムがメモリ不足の場合
+<p><br><a name="4256"></a>
+<h2>		 Call&lt;type&gt;Method ルーチン<br>
+Call&lt;type&gt;MethodA ルーチン<br>
+Call&lt;type&gt;MethodV ルーチン
+</h2>
+<a name="5337"></a>
+<var>NativeType</var><code> </code><var>Call&lt;type&gt;Method</var><code>(JNIEnv *env, jobject obj, <br>
+     jmethodID methodID, ...);
+</code><p><a name="4277"></a>
+<var>NativeType</var><code> </code><var>Call&lt;type&gt;MethodA</var><code>(JNIEnv *env, jobject obj, <br>
+     jmethodID methodID, jvalue *args);
+</code><p><a name="4279"></a>
+<var>NativeType</var><code> </code><var>Call&lt;type&gt;MethodV</var><code>(JNIEnv *env, jobject obj, <br>
+     jmethodID methodID, va_list args);
+</code><p><a name="19682"></a>
+これら 3 種類の演算ファミリは、ネイティブメソッドから Java インスタンスメソッドを呼び出す際に使用されます。これら 3 種類のファミリは、呼び出したメソッドにパラメータを渡すメカニズムが異なるだけです。
+<p><a name="4302"></a>
+これらの演算ファミリは、指定されたメソッド ID に従って、Java オブジェクト上のインスタンス (非 static) メソッドを呼び出します。<code>methodID</code> 引数は、<code>GetMethodID()</code> を呼び出すことによって取得する必要があります。
+
+<p><a name="23729"></a>
+これらの関数を private メソッドや構築子を呼び出すために使用する場合は、メソッド ID を <code>obj</code> の実クラスのスーパークラスのひとつからではなく、実クラス自体から導き出す必要があります。
+<p><a name="4317"></a>
+<h4> Call&lt;type&gt;Method ルーチン
+</h4>
+<a name="4305"></a>
+プログラマは、メソッドに渡す引数をすべて、<code>methodID</code> 引数のすぐ後に置きます。<var>Call&lt;type&gt;Method</var> ルーチンは、これらの引数を受け取り、プログラマが呼び出したい Java メソッドに渡します。
+<p><a name="4307"></a>
+<h4> Call&lt;type&gt;MethodA ルーチン
+</h4>
+<a name="4312"></a>
+プログラマは、メソッドに渡す引数をすべて、<code>methodID</code> 引数のすぐ後に続く <code>jvalues</code> の <code>args</code> 配列内に置きます。
+The <var>Call&lt;type&gt;MethodA</var> ルーチンはこの配列内の引数を受け取り、プログラマが呼び出したい Java メソッドに渡します。
+<p><a name="4309"></a>
+<h4> Call&lt;type&gt;MethodV ルーチン
+</h4>
+<a name="4314"></a>
+プログラマは、そのメソッドに渡す引数をすべて、<code>methodID</code> 引数のすぐ後に続く型 
+<code>va_list</code> の <code>args</code> 引数内に置きます。
+<var>Call&lt;type&gt;MethodV </var>ルーチンはこれらの引数を受け取り、プログラマが呼び出したい Java メソッドに渡します。
+<p><a name="3830"></a>
+次の表には、メソッド呼び出しルーチンの各々がその結果の型に応じて示されています。<var>Call&lt;type&gt;Method </var> 内の <var>type</var> を呼び出しているメソッドの Java 型と置き換え (または、表の実際のメソッド呼び出しルーチン名のひとつを使用する)、かつ <var>NativeType</var> をそのルーチンに対応するネイティブ型と置き換える必要があります。
+<p><a name="4049"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="5390"></a>
+<h4>表 4-3	 インスタンスメソッドを呼び出すルーチン
+</h4>
+</caption>
+<tr><th><a name="5394"></a>
+Call&lt;type&gt;Method ルーチン名
+
+<th><a name="5396"></a>
+ネイティブ型
+
+
+<tr><td><a name="5398"></a>
+<code>CallVoidMethod()
+</code>
+<a name="5399"></a>
+<code>CallVoidMethodA()
+</code>
+<a name="5400"></a>
+<code>CallVoidMethodV()
+</code>
+<td><a name="5402"></a>
+void
+
+
+<tr><td><a name="5404"></a>
+<code>CallObjectMethod()
+</code>
+<a name="5405"></a>
+<code>CallObjectMethodA()
+</code>
+<a name="5406"></a>
+<code>CallObjectMethodV()
+</code>
+<td><a name="5408"></a>
+jobject
+
+
+<tr><td><a name="5410"></a>
+<code>CallBooleanMethod()
+</code>
+<a name="5411"></a>
+<code>CallBooleanMethodA()
+</code>
+<a name="5412"></a>
+<code>CallBooleanMethodV()
+</code>
+<td><a name="5414"></a>
+jboolean
+
+
+<tr><td><a name="5416"></a>
+<code>CallByteMethod()
+</code>
+<a name="5417"></a>
+<code>CallByteMethodA()
+</code>
+<a name="5418"></a>
+<code>CallByteMethodV()
+</code>
+<td><a name="5420"></a>
+jbyte
+
+
+<tr><td><a name="5422"></a>
+<code>CallCharMethod()
+</code>
+<a name="5423"></a>
+<code>CallCharMethodA()
+</code>
+<a name="5424"></a>
+<code>CallCharMethodV()
+</code>
+<td><a name="5426"></a>
+jchar
+
+
+<tr><td><a name="5428"></a>
+<code>CallShortMethod()
+</code>
+<a name="5429"></a>
+<code>CallShortMethodA()
+</code>
+<a name="5430"></a>
+<code>CallShortMethodV()
+</code>
+<td><a name="5432"></a>
+jshort
+
+
+<tr><td><a name="5434"></a>
+<code>CallIntMethod()
+</code>
+<a name="5435"></a>
+<code>CallIntMethodA()
+</code>
+<a name="5436"></a>
+<code>CallIntMethodV()
+</code>
+<td><a name="5438"></a>
+jint
+
+
+<tr><td><a name="5440"></a>
+<code>CallLongMethod()
+</code>
+<a name="5441"></a>
+<code>CallLongMethodA()
+</code>
+<a name="5442"></a>
+<code>CallLongMethodV()
+</code>
+<td><a name="5444"></a>
+jlong
+
+
+<tr><td><a name="5446"></a>
+<code>CallFloatMethod()
+</code>
+<a name="5447"></a>
+<code>CallFloatMethodA()
+</code>
+<a name="5448"></a>
+<code>CallFloatMethodV()
+</code>
+<td><a name="5450"></a>
+jfloat
+
+
+<tr><td><a name="5452"></a>
+<code>CallDoubleMethod()
+</code>
+<a name="5453"></a>
+<code>CallDoubleMethodA()
+</code>
+<a name="5454"></a>
+<code>CallDoubleMethodV()
+</code>
+<td><a name="5456"></a>
+jdouble
+
+
+
+</Table>
+</dd></dl>
+<p><a name="4356"></a>
+<h4> パラメータ:
+</h4>
+<a name="4337"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="4338"></a>
+<code>obj</code>: Java オブジェクト
+<p><a name="4339"></a>
+<code>methodID</code>: メソッド ID
+<p><a name="5083"></a>
+<h4> Call&lt;type&gt;Method ルーチンに必要な追加パラメータ:
+</h4>
+<a name="5084"></a>
+Java メソッドの引数
+<p><a name="5098"></a>
+<h4> Call&lt;type&gt;MethodA ルーチンに必要な追加パラメータ:
+</h4>
+<a name="4340"></a>
+<code>args</code>: 引数の配列。
+<p><a name="4348"></a>
+<h4> Call&lt;type&gt;MethodV ルーチンに必要な追加パラメータ:
+</h4>
+<a name="4350"></a>
+<code>args</code>: 引数の va_list
+<p><a name="19867"></a>
+<h4> 返り値:
+</h4>
+<a name="19868"></a>
+Java メソッドを呼び出した結果を返します。
+<p><a name="5870"></a>
+<h4> 例外:
+</h4>
+<a name="5871"></a>
+<code> Java メソッドを実行している間に発生した例外
+</code><p><br><a name="4581"></a>
+<h2>		 CallNonvirtual&lt;type&gt;Method ルーチン<br>
+CallNonvirtual&lt;type&gt;MethodA ルーチン<br>
+CallNonvirtual&lt;type&gt;MethodV ルーチン
+</h2>
+<a name="20106"></a>
+<var>NativeType</var><code> </code><var>CallNonvirtual&lt;type&gt;Method</var><code>(JNIEnv *env, jobject obj, <br>
+     jclass clazz, jmethodID methodID, ...);
+</code><p><a name="4605"></a>
+<var>NativeType</var><code> </code><var>CallNonvirtual&lt;type&gt;MethodA</var><code>(JNIEnv *env, jobject obj, <br>
+     jclass clazz, jmethodID methodID, jvalue *args);
+</code><p><a name="4607"></a>
+<var>NativeType</var><code> </code><var>CallNonvirtual&lt;type&gt;MethodV</var><code>(JNIEnv *env, jobject obj,<br>
+     jclass clazz, jmethodID methodID, va_list args);
+</code><p><a name="3988"></a>
+これらの演算ファミリは、指定されたクラスおよびメソッド ID に従って、Java オブジェクト上のインスタンス (非 static) メソッドを呼び出します。<code>methodID</code> 引数は、<code>clazz</code> 上の <code>GetMethodID()</code> を呼び出すことによって取得する必要があります。
+<p><a name="5110"></a>
+<var>CallNonvirtual&lt;type&gt;Method</var> ルーチンファミリと <var>Call&lt;type&gt;Method</var> ルーチンファミリとは異なります。<var>Call&lt;type&gt;Method</var> ルーチンは、オブジェクトのクラスに基づいてメソッドを呼び出しますが、<var>CallNonvirtual&lt;type&gt;Method</var> ルーチンの方は、メソッド ID が得られるクラス - <code>clazz</code> パラメータによって指定 - に基づいてメソッドを呼び出します。メソッド ID は、このオブジェクトの実クラスまたはその実クラスのスーパークラスのひとつから取得しなければなりません。
+<p><a name="4599"></a>
+<h4> CallNonvirtual&lt;type&gt;Method ルーチン
+</h4>
+<a name="5103"></a>
+プログラマは、メソッドに渡す引数をすべて、<code>methodID</code> 引数のすぐ後に置きます。 
+<var>CallNonvirtual&lt;type&gt;Method</var> ルーチンは、これらの引数を受け取り、プログラマが呼び出したい Java メソッドに渡します。
+<p><a name="5104"></a>
+<h4> CallNonvirtual&lt;type&gt;MethodA ルーチン
+</h4>
+<a name="5106"></a>
+プログラマは、メソッドに渡す引数をすべて、<code>methodID</code> 引数のすぐ後に続く <code>jvalues</code> の <code>args</code> 配列内に置きます。 
+<var>CallNonvirtual&lt;type&gt;MethodA</var> ルーチンはこの配列内の引数を受け取り、プログラマが呼び出したい Java メソッドにそれらを渡します。
+<p><a name="4614"></a>
+<h4> CallNonvirtual&lt;type&gt;MethodV ルーチン
+</h4>
+<a name="4620"></a>
+プログラマは、そのメソッドに渡す引数をすべて、<code>methodID</code> 引数のすぐ後に続く型 
+<code>va_list</code> の <code>args</code> 引数内に置きます。 
+<var>CallNonvirtualMethodV</var>  ルーチンはこれらの引数を受け取り、プログラマが呼び出したい Java メソッドに渡します。
+<p><a name="4613"></a>
+次の表には、メソッド呼び出しルーチンの各々がその結果の型に応じて示されています。<var>CallNonvirtual&lt;type&gt;Method </var>内の <var>type</var> をメソッドの Java 型と置き換えるか、あるいは表から実際のメソッド呼び出しルーチン名のひとつを使用するかする必要と、 <var>NativeType</var> をそのルーチンに対応するネイティブ型と置き換える必要があります。
+<p><a name="4061"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="5458"></a>
+<h4>Table 4-4	 CallNonvirtual&lt;type&gt;Method ルーチン
+</h4>
+</caption>
+<tr><th><a name="5462"></a>
+CallNonvirtual&lt;type&gt;Method ルーチン名
+
+<th><a name="5464"></a>
+ネイティブ型
+
+
+<tr><td><a name="5466"></a>
+<code>CallNonvirtualVoidMethod()
+</code>
+<a name="5467"></a>
+<code>CallNonvirtualVoidMethodA()
+</code>
+<a name="5468"></a>
+<code>CallNonvirtualVoidMethodV()</code>
+
+<td><a name="5470"></a>
+void
+
+
+<tr><td><a name="5472"></a>
+<code>CallNonvirtualObjectMethod()
+</code>
+<a name="5473"></a>
+<code>CallNonvirtualObjectMethodA()
+</code>
+<a name="5474"></a>
+<code>CallNonvirtualObjectMethodV()</code>
+
+<td><a name="5476"></a>
+jobject
+
+
+<tr><td><a name="5478"></a>
+<code>CallNonvirtualBooleanMethod()
+</code>
+<a name="5479"></a>
+<code>CallNonvirtualBooleanMethodA()
+</code>
+<a name="5480"></a>
+<code>CallNonvirtualBooleanMethodV()</code>
+
+<td><a name="5482"></a>
+jboolean
+
+
+<tr><td><a name="5484"></a>
+<code>CallNonvirtualByteMethod()
+</code>
+<a name="5485"></a>
+<code>CallNonvirtualByteMethodA()
+</code>
+<a name="5486"></a>
+<code>CallNonvirtualByteMethodV()</code>
+
+<td><a name="5488"></a>
+jbyte
+
+
+<tr><td><a name="5490"></a>
+<code>CallNonvirtualCharMethod()
+</code>
+<a name="5491"></a>
+<code>CallNonvirtualCharMethodA()
+</code>
+<a name="5492"></a>
+<code>CallNonvirtualCharMethodV()</code>
+
+<td><a name="5494"></a>
+jchar
+
+
+<tr><td><a name="5496"></a>
+<code>CallNonvirtualShortMethod()
+</code>
+<a name="5497"></a>
+<code>CallNonvirtualShortMethodA()
+</code>
+<a name="5498"></a>
+<code>CallNonvirtualShortMethodV()</code>
+
+<td><a name="5500"></a>
+jshort
+
+
+<tr><td><a name="5502"></a>
+<code>CallNonvirtualIntMethod()
+</code>
+<a name="5503"></a>
+<code>CallNonvirtualIntMethodA()
+</code>
+<a name="5504"></a>
+<code>CallNonvirtualIntMethodV()</code>
+
+<td><a name="5506"></a>
+jint
+
+
+<tr><td><a name="5508"></a>
+<code>CallNonvirtualLongMethod()
+</code>
+<a name="5509"></a>
+<code>CallNonvirtualLongMethodA()
+</code>
+<a name="5510"></a>
+<code>CallNonvirtualLongMethodV()</code>
+
+<td><a name="5512"></a>
+jlong
+
+
+<tr><td><a name="5514"></a>
+<code>CallNonvirtualFloatMethod()
+</code>
+<a name="5515"></a>
+<code>CallNonvirtualFloatMethodA()
+</code>
+<a name="5516"></a>
+<code>CallNonvirtualFloatMethodV()</code>
+
+<td><a name="5518"></a>
+jfloat
+
+
+<tr><td><a name="5520"></a>
+<code>CallNonvirtualDoubleMethod()
+</code>
+<a name="5521"></a>
+<code>CallNonvirtualDoubleMethodA()
+</code>
+<a name="5522"></a>
+<code>CallNonvirtualDoubleMethodV()</code>
+
+<td><a name="5524"></a>
+jdouble
+
+
+
+</Table>
+</dd></dl>
+<p><a name="4086"></a>
+<h4> パラメータ:
+</h4>
+<a name="20184"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="4836"></a>
+<code>clazz: a</code> Java クラス
+<p><a name="20185"></a>
+<code>obj</code>: Java オブジェクト
+<p><a name="20186"></a>
+<code>methodID</code>: メソッド ID
+<p><a name="5385"></a>
+<h4> CallNonvirtual&lt;type&gt;Method ルーチンに必要な追加パラメータ:
+</h4>
+<a name="5386"></a>
+メソッドに対する引数。
+<p><a name="4622"></a>
+<h4> CallNonvirtual&lt;type&gt;MethodA ルーチンに必要な追加パラメータ:
+</h4>
+<a name="4626"></a>
+<code>args</code>: 引数の配列
+<p><a name="4624"></a>
+<h4> CallNonvirtual&lt;type&gt;MethodV ルーチンに必要な追加パラメータ: 
+</h4>
+<a name="4628"></a>
+<code>args</code>:  引数の <code>va_list</code>
+<p><a name="5898"></a>
+<h4> 返り値:
+</h4>
+<a name="5899"></a>
+<h4> Java メソッドを呼び出した結果を返します。
+</h4>
+<a name="5904"></a>
+<h4> 例外:
+</h4>
+<a name="5905"></a>
+<code> Java メソッドを実行している間に発生した例外</code>
+<p><hr align=left><a name="5901"></a>
+<h1> static フィールドへのアクセス
+</h1>
+<br><a name="16823"></a>
+<h2>		 GetStaticFieldID
+</h2>
+<a name="16827"></a>
+<code>jfieldID GetStaticFieldID(JNIEnv *env, jclass clazz, <br>
+     const char *name, const char *sig);
+</code><p><a name="16831"></a>
+クラスの static フィールドを表すフィールド ID を返します。このフィールドは、その名前とシグネチャで指定します。<var>GetStatic&lt;type&gt;Field</var> と <var>SetStatic&lt;type&gt;Field</var> ファミリのアクセス用関数は、フィールド ID を使用して static フィールドを取り出します。
+<p><a name="6009"></a>
+<code> GetStaticFieldID()</code> によって、まだ初期化されていないクラスが初期化されます。
+<p><a name="20734"></a>
+<h4> パラメータ:
+</h4>
+<a name="20735"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="20736"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="20737"></a>
+<code>name</code>: 0 で終了する UTF-8 文字列内の static フィールド
+<p><a name="20738"></a>
+<code>sig</code>: 0 で終了する UTF-8 文字列内のフィールドシグネチャ
+<p><a name="20739"></a>
+<h4> 返り値:
+</h4>
+<a name="20740"></a>
+フィールド ID を返すか、または指定された static フィールドが見つからなかった場合には <code>NULL</code> を返します。
+<p><a name="20741"></a>
+<h4> 例外:
+</h4>
+<a name="20742"></a>
+<code>NoSuchFieldError</code>:  指定された static フィールドが見つからない場合
+<p><a name="6027"></a>
+<code>ExceptionInInitializerError</code>: 例外のためにクラス初期化が失敗した場合
+<p><a name="6028"></a>
+<code>OutOfMemoryError</code>: システムがメモリ不足の場合
+<p><br><a name="20752"></a>
+<h2>		 GetStatic&lt;type&gt;Field ルーチン
+</h2>
+<a name="20753"></a>
+<var>NativeType</var><code> </code><var>GetStatic&lt;type&gt;Field</var><code>(JNIEnv *env, jclass clazz,<br>
+     jfieldID fieldID);
+</code><p><a name="20754"></a>
+このアクセス用ルーチンのファミリは、オブジェクトの static フィールドを返します。アクセスするフィールドはフィールド ID で指定します。フィールド ID は、 
+<code>GetStaticFieldID()</code>を呼び出すことによって取得することができます。
+<p><a name="20822"></a>
+次の表には、 get ルーチン名のファミリと結果の型が示されています。<var>GetStatic&lt;type&gt;Field </var>内の <var>type</var> をフィールドの Java 型と置き換える、あるいは表の実際の static フィールドアクセス用ルーチン名のひとつを使用って <var>NativeType</var> をそのルーチンに対応するネイティブ型と置き換える必要があります。
+<p><a name="4077"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="5614"></a>
+<h4>表 4-5	 アクセス用ルーチンの GetStatic&lt;type&gt;Field ファミリ
+</h4>
+</caption>
+<tr><th><a name="5618"></a>
+GetStatic&lt;type&gt;Field ルーチン名
+
+<th><a name="5620"></a>
+ネイティブ型
+
+
+<tr><td><a name="5622"></a>
+<code>GetStaticObjectField()
+</code>
+<td><a name="5624"></a>
+jobject
+
+
+<tr><td><a name="5626"></a>
+<code>GetStaticBooleanField()
+</code>
+<td><a name="5628"></a>
+
+
+jboolean
+
+
+<tr><td><a name="5630"></a>
+<code>GetStaticByteField()
+</code>
+<td><a name="5632"></a>
+jbyte
+
+
+<tr><td><a name="5634"></a>
+<code>GetStaticCharField()
+</code>
+<td><a name="5636"></a>
+jchar
+
+
+<tr><td><a name="5638"></a>
+<code>GetStaticShortField()
+</code>
+<td><a name="5640"></a>
+jshort
+
+
+<tr><td><a name="5642"></a>
+<code>GetStaticIntField()
+</code>
+<td><a name="5644"></a>
+jint
+
+
+<tr><td><a name="5646"></a>
+<code>GetStaticLongField()
+</code>
+<td><a name="5648"></a>
+jlong
+
+
+<tr><td><a name="5650"></a>
+<code>GetStaticFloatField()
+</code>
+<td><a name="5652"></a>
+jfloat
+
+
+<tr><td><a name="5654"></a>
+<code>GetStaticDoubleField()
+</code>
+<td><a name="5656"></a>
+jdouble
+
+
+
+</Table>
+</dd></dl>
+<p><a name="20823"></a>
+<h4> パラメータ:
+</h4>
+<a name="20824"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="20825"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="20826"></a>
+<code>fieldID</code>: static フィールド ID
+<p><a name="20827"></a>
+<h4> 返り値:
+</h4>
+<a name="20828"></a>
+static フィールドの内容を返します。
+<p><br><a name="20829"></a>
+<h2>		 SetStatic&lt;type&gt;Field ルーチン
+</h2>
+<a name="20830"></a>
+<code>void </code><var>SetStatic&lt;type&gt;Field</var><code>(JNIEnv *env, jclass clazz, <br>
+     jfieldID fieldID, </code><var>NativeType</var><code> value);
+</code><p><a name="20831"></a>
+このアクセス用ルーチンのファミリは、オブジェクトの static フィールドの値を設定します。アクセスするフィールドは、フィールド ID で指定します。フィールド ID は、<code>GetStaticFieldID()</code> を呼び出すことによって取得することができます。
+<p><a name="20899"></a>
+次の表には、セットルーチン名と値の型が示されています。<var>SetStatic&lt;type&gt;Field  </var>内の <var>type</var> をフィールドの Java 型と置き換えるか、あるいは表の実際のセット static フィールドルーチン名のひとつを使用するかする必要と、<var>NativeType</var> をそのルーチンに対応するネイティブ型と置き換える必要があります。
+<dl><dd>
+<Table Border="0">
+<caption><a name="5658"></a>
+<h4>表 4-6	 アクセス用ルーチンの SetStatic&lt;type&gt;Field ファミリ
+</h4>
+</caption>
+<tr><th><a name="5662"></a>
+SetStatic&lt;type&gt;Field ルーチン名
+
+<th><a name="5664"></a>
+ネイティブ型
+
+
+<tr><td><a name="5666"></a>
+<code>SetStaticObjectField()
+</code>
+<td><a name="5668"></a>
+jobject
+
+
+<tr><td><a name="5670"></a>
+<code>SetStaticBooleanField()
+</code>
+<td><a name="5672"></a>
+jboolean
+
+
+<tr><td><a name="5674"></a>
+<code>SetStaticByteField()
+</code>
+<td><a name="5676"></a>
+jbyte
+
+
+<tr><td><a name="5678"></a>
+<code>SetStaticCharField()
+</code>
+<td><a name="5680"></a>
+jchar
+
+
+<tr><td><a name="5682"></a>
+<code>SetStaticShortField()
+</code>
+<td><a name="5684"></a>
+jshort
+
+
+<tr><td><a name="5686"></a>
+<code>SetStaticIntField()
+</code>
+<td><a name="5688"></a>
+jint
+
+
+<tr><td><a name="5690"></a>
+<code>SetStaticLongField()
+</code>
+<td><a name="5692"></a>
+jlong
+
+
+<tr><td><a name="5694"></a>
+<code>SetStaticFloatField()
+</code>
+<td><a name="5696"></a>
+jfloat
+
+
+<tr><td><a name="5698"></a>
+<code>SetStaticDoubleField()
+</code>
+<td><a name="5700"></a>
+jdouble
+
+
+
+</Table>
+</dd></dl>
+<p><a name="20900"></a>
+<h4> パラメータ:
+</h4>
+<a name="20901"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="20902"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="20903"></a>
+<code>fieldID</code>: static フィールド ID
+<p><a name="20904"></a>
+<code>value</code>: そのフィールドの新しい値
+<p><hr align=left><a name="20949"></a>
+<h1> static メソッドの呼出し
+</h1>
+<br><a name="20950"></a>
+<h2>		 GetStaticMethodID
+</h2>
+<a name="20951"></a>
+<code>jmethodID GetStaticMethodID(JNIEnv *env, jclass clazz,<br>
+     const char *name, const char *sig);
+</code><p><a name="20952"></a>
+クラスの static メソッドを表すメソッド ID を返します。このメソッドは、その名前とシグネチャで指定します。
+<p><a name="6014"></a>
+<code>GetStaticMethodID()</code> によって、まだ初期化されていないクラスが初期化されます。
+<p><a name="20953"></a>
+<h4> パラメータ:
+</h4>
+<a name="20954"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="20955"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="20956"></a>
+<code>name</code>:  0 で終了する UTF-8 文字列内の static メソッド名
+<p><a name="20957"></a>
+<code>sig</code>: 0 で終了する UTF-8 文字列内のメソッドシグネチャ
+<p><a name="20958"></a>
+<h4> 返り値:
+</h4>
+<a name="20959"></a>
+メソッド ID を返すか、または演算が失敗した場合は <code>NULL</code> を返します。
+<p><a name="20960"></a>
+<h4> 例外:
+</h4>
+<a name="20961"></a>
+<code>NoSuchMethodError</code>: 指定された static メソッドが見つからない場合
+<p><a name="6033"></a>
+<code>ExceptionInInitializerError</code>: 例外のため、クラス初期化が失敗した場合
+<p><a name="6034"></a>
+<code>OutOfMemoryError</code>: システムがメモリ不足の場合
+<p><br><a name="4796"></a>
+<h2>		 CallStatic&lt;type&gt;Method ルーチン<br>
+CallStatic&lt;type&gt;MethodA ルーチン<br>
+CallStatic&lt;type&gt;MethodV ルーチン
+</h2>
+<a name="20963"></a>
+<var>NativeType</var><code> </code><var>CallStatic&lt;type&gt;Method</var><code>(JNIEnv *env, jclass clazz,<br>
+     jmethodID methodID, ...);
+</code><p><a name="4821"></a>
+<var>NativeType</var><code> </code><var>CallStatic&lt;type&gt;MethodA</var><code>(JNIEnv *env, jclass clazz,<br>
+     jmethodID methodID, jvalue *args);
+</code><p><a name="4823"></a>
+<var>NativeType</var><code> </code><var>CallStatic&lt;type&gt;MethodV</var><code>(JNIEnv *env, jclass clazz,<br>
+     jmethodID methodID, va_list args);
+</code><p><a name="20964"></a>
+この演算のファミリは、指定されたメソッド ID に従って、Java オブジェクト上の static メソッドを呼び出します。<code>methodID</code> 引数は、
+<code>GetStaticMethodID()</code>を呼び出すことによって取得しなければなりません。
+<p><a name="4496"></a>
+メソッド ID は、<code>clazz</code> のスーパークラスのひとつからではなく、
+<code>clazz</code> 自体から導き出す必要があります。
+<p><a name="4360"></a>
+<h4> CallStatic&lt;type&gt;Method ルーチン
+</h4>
+<a name="4808"></a>
+プログラマは、メソッドに渡す引数はすべて、<code>methodID</code> 引数のすぐ後に置かなければなりません。<var>CallStatic&lt;type&gt;Method</var> ルーチンは、これらの引数を受け取り、プログラマが呼び出したい Java メソッドに渡します。
+<p><a name="4809"></a>
+<h4> CallStatic&lt;type&gt;MethodA ルーチン
+</h4>
+<a name="4825"></a>
+プログラマは、メソッドに渡す引数はすべて、<code>methodID</code> 引数のすぐ後に続く 
+<code>jvalues</code> の <code>args</code> 配列内に置かなければなりません。
+
+<var>CallStaticMethodA</var> ルーチンはこの配列内の引数を受け取り、プログラマが呼び出したい Java メソッドに渡します。 
+<p><a name="4815"></a>
+<h4> CallStatic&lt;type&gt;MethodV ルーチン
+</h4>
+<a name="4827"></a>
+プログラマは、メソッドに渡す引数はすべて、<code>methodID</code> 引数のすぐ後に続く型 <code>va_list</code> の <code>args</code> 引数内に置かなければなりません。
+<var>CallStaticMethodV</var> はこれらの引数を受け取り、プログラマが呼び出したい Java メソッドに渡します。
+<p><a name="4813"></a>
+次の表には、メソッド呼び出しルーチン値の各々がその結果の型によって示されています。<var>CallStatic&lt;type&gt;Method </var>内の <var>type</var> をメソッドの Java 型と置き換えるか、あるいは表の実際のメソッド呼び出しルーチン名のひとつを使用するかする必要と、<var>NativeType</var> をそのルーチンに対応するネイティブ型と置き換える必要があります。
+<p><a name="4094"></a>
+<strong><dl><dd>
+<Table Border="0">
+<caption><a name="5702"></a>
+<h4>表 4-7	 CallStatic&lt;type&gt;Method 呼び出しルーチン
+</h4>
+</caption>
+<tr><th><a name="5706"></a>
+CallStatic&lt;type&gt;Method ルーチン名
+
+<th><a name="5708"></a>
+ネイティブ型
+
+
+<tr><td><a name="5710"></a>
+<code>CallStaticVoidMethod()
+</code>
+<a name="5711"></a>
+<code>CallStaticVoidMethodA()
+</code>
+<a name="5712"></a>
+<code>CallStaticVoidMethodV()</code>
+
+<td><a name="5714"></a>
+void
+
+
+<tr><td><a name="5716"></a>
+<code>CallStaticObjectMethod()
+</code>
+<a name="5717"></a>
+<code>CallStaticObjectMethodA()
+</code>
+<a name="5718"></a>
+<code>CallStaticObjectMethodV()</code>
+
+<td><a name="5720"></a>
+jobject
+
+
+<tr><td><a name="5722"></a>
+<code>CallStaticBooleanMethod()
+</code>
+<a name="5723"></a>
+<code>CallStaticBooleanMethodA()
+</code>
+<a name="5724"></a>
+<code>CallStaticBooleanMethodV()</code>
+
+<td><a name="5726"></a>
+jboolean
+
+
+<tr><td><a name="5728"></a>
+<code>CallStaticByteMethod()
+</code>
+<a name="5729"></a>
+<code>CallStaticByteMethodA()
+</code>
+<a name="5730"></a>
+<code>CallStaticByteMethodV()</code>
+
+<td><a name="5732"></a>
+jbyte
+
+
+<tr><td><a name="5734"></a>
+<code>CallStaticCharMethod()
+</code>
+<a name="5735"></a>
+<code>CallStaticCharMethodA()
+</code>
+<a name="5736"></a>
+<code>CallStaticCharMethodV()</code>
+
+<td><a name="5738"></a>
+jchar
+
+
+<tr><td><a name="5740"></a>
+<code>CallStaticShortMethod()
+</code>
+<a name="5741"></a>
+<code>CallStaticShortMethodA()
+</code>
+<a name="5742"></a>
+<code>CallStaticShortMethodV()</code>
+
+<td><a name="5744"></a>
+jshort
+
+
+<tr><td><a name="5746"></a>
+<code>CallStaticIntMethod()
+</code>
+<a name="5747"></a>
+<code>CallStaticIntMethodA()
+</code>
+<a name="5748"></a>
+<code>CallStaticIntMethodV()</code>
+
+<td><a name="5750"></a>
+jint
+
+
+<tr><td><a name="5752"></a>
+<code>CallStaticLongMethod()
+</code>
+<a name="5753"></a>
+<code>CallStaticLongMethodA()
+</code>
+<a name="5754"></a>
+<code>CallStaticLongMethodV()</code>
+
+<td><a name="5756"></a>
+jlong
+
+
+<tr><td><a name="5758"></a>
+<code>CallStaticFloatMethod()
+</code>
+<a name="5759"></a>
+<code>CallStaticFloatMethodA()
+</code>
+<a name="5760"></a>
+<code>CallStaticFloatMethodV()</code>
+
+<td><a name="5762"></a>
+jfloat
+
+
+<tr><td><a name="5764"></a>
+<code>CallStaticDoubleMethod()
+</code>
+<a name="5765"></a>
+<code>CallStaticDoubleMethodA()
+</code>
+<a name="5766"></a>
+<code>CallStaticDoubleMethodV()</code>
+
+<td><a name="5768"></a>
+jdouble
+
+
+
+</Table>
+</dd></dl></strong>
+<p><a name="21040"></a>
+<h4> パラメータ:
+</h4>
+<a name="21041"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21042"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="21043"></a>
+<code>methodID</code>: static メソッド ID
+<p><a name="5380"></a>
+<h4> CallStatic&lt;type&gt;Method ルーチンに必要な追加パラメータ:
+</h4>
+<a name="5381"></a>
+static メソッドの引数
+<p><a name="4900"></a>
+<h4> CallStatic&lt;type&gt;MethodA ルーチンに必要な追加パラメータ:
+</h4>
+<a name="4906"></a>
+<code>args</code>: 引数の配列
+<p><a name="4904"></a>
+<h4> CallStatic&lt;type&gt;MethodV ルーチンに必要な追加パラメータ:
+</h4>
+<a name="4912"></a>
+<code>args</code>: 引数の <code>va_list</code>
+<p><a name="5373"></a>
+<h4> 返り値:
+</h4>
+<a name="5374"></a>
+static Java メソッドを呼び出した結果を返します。
+<p><a name="5910"></a>
+<h4> 例外:
+</h4>
+<a name="5911"></a>
+<code> Java メソッドを実行している間に発生した例外 </code>
+<p><hr align=left><a name="5386"></a>
+<h1> 文字列オペレーション
+</h1>
+<br><a name="4925"></a>
+<h2>		 NewString
+</h2>
+<a name="4926"></a>
+<code>jstring NewString(JNIEnv *env, const jchar *unicodeChars,<br>
+     jsize len);
+</code><p><a name="17121"></a>
+Unicode 文字配列から新しい <code>java.lang.String</code> オブジェクトを構築します。
+
+<p><a name="21294"></a>
+<h4> パラメータ:
+</h4>
+<a name="21295"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21296"></a>
+<code>unicodeChars</code>: Unicode 文字列を参照するポインタ
+<p><a name="21297"></a>
+<code>len</code>: Unicode 文字列の長さ
+<p><a name="21299"></a>
+<h4> 返り値:
+</h4>
+<a name="21300"></a>
+Java 文字列オブジェクトを返すか、または文字列が構築できない場合は、<code>NULL</code> を返します。
+<p><a name="6039"></a>
+<h4> 例外:
+</h4>
+<a name="6042"></a>
+<code>OutOfMemoryError</code>: システムがメモリ不足の場合
+<p><br><a name="17132"></a>
+<h2>		 GetStringLength
+</h2>
+<a name="17136"></a>
+<code>jsize GetStringLength(JNIEnv *env, jstring string);
+</code><p><a name="17140"></a>
+Java 文字列の長さ (Unicode 文字のカウント) を返します。 
+<p><a name="21326"></a>
+<h4> パラメータ:
+</h4>
+<a name="21327"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21328"></a>
+<code>string</code>: Java 文字列オブジェクト
+<p><a name="21330"></a>
+<h4> 返り値:
+</h4>
+<a name="21331"></a>
+Java 文字列の長さを返します。
+<p><br><a name="17158"></a>
+<h2>		 GetStringChars
+</h2>
+<a name="17162"></a>
+<code>const jchar * GetStringChars(JNIEnv *env, jstring string,<br>
+     jboolean *isCopy);
+</code><p><a name="17166"></a>
+文字列の Unicode 文字の配列を参照するポインタを返します。このポインタは、<code>ReleaseStringchars()</code> が呼び出されるまで有効です。
+
+<p><a name="21360"></a>
+<code>isCopy</code> が <code>NULL</code> ではない場合にコピーが作成されると、<code>*isCopy</code> は <code>JNI_TRUE</code> に設定されます。コピーが作成されない場合は、<code>JNI_FALSE</code> に設定されます。
+<p><a name="21364"></a>
+<h4> パラメータ:
+</h4>
+<a name="21365"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21366"></a>
+<code>string</code>: Java 文字列オブジェクト
+<p><a name="21374"></a>
+<code>isCopy</code>: ブール値に対するポインタ
+<p><a name="21367"></a>
+<h4> 返り値:
+</h4>
+<a name="21368"></a>
+Unicode 文字列を参照するポインタを返すか、または演算が失敗した場合は <code>NULL</code> を返します。 
+<p><br><a name="17188"></a>
+<h2>		 ReleaseStringChars
+</h2>
+<a name="17192"></a>
+<code>void ReleaseStringChars(JNIEnv *env, jstring string, <br>
+     const jchar *chars);
+</code><p><a name="17196"></a>
+ネイティブコードが <code>chars</code> へのアクセスをもはや必要としていないことを VM に知らせます。
+<code>chars</code> 引数は、 
+<code>GetStringChars()</code> を使用して<code>string</code> から取得することができるポインタです。
+<p><a name="21416"></a>
+<h4> パラメータ:
+</h4>
+<a name="21417"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21418"></a>
+<code>string</code>: Java 文字列オブジェクト
+<p><a name="21419"></a>
+<code>chars</code>: Unicode 文字列を参照するポインタ
+<p><br><a name="17220"></a>
+<h2>		 NewStringUTF
+</h2>
+<a name="17224"></a>
+<code>jstring NewStringUTF(JNIEnv *env, const char *bytes);
+</code><p><a name="17228"></a>
+UTF-8 文字の配列から新しい <code>java.lang.String</code> オブジェクトを構築します。
+<p><a name="21516"></a>
+<h4> パラメータ:
+</h4>
+<a name="21517"></a>
+<code>env</code>: JNI インタフェースポインタ、または文字列が構築できない場合は <code>NULL</code>。
+<p><a name="21518"></a>
+<code>bytes</code>: UTF-8 文字列を参照するポインタ
+<p><a name="23869"></a>
+<h4> 返り値:
+</h4>
+<a name="23870"></a>
+Java 文字列オブジェクトを返すか、または文字列が構築できない場合は <code>NULL</code> を返します。
+<p><a name="6053"></a>
+<h4> 例外:
+</h4>
+<a name="6054"></a>
+<code>OutOfMemoryError</code>: システムがメモリ不足の場合
+<p><br><a name="23871"></a>
+<h2>		 GetStringUTFLength
+</h2>
+<a name="17243"></a>
+<code>jsize GetStringUTFLength(JNIEnv *env, jstring string);
+</code><p><a name="17247"></a>
+文字列のバイトで UTF-8 長を返します。
+<p><a name="21535"></a>
+<h4> パラメータ:
+</h4>
+<a name="21536"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21537"></a>
+<code>string</code>: Java 文字列オブジェクト
+<p><a name="21538"></a>
+<h4> 返り値:
+</h4>
+<a name="21539"></a>
+文字列の UTF-8 長を返します。
+<p><br><a name="17265"></a>
+<h2>		 GetStringUTFChars
+</h2>
+<a name="17269"></a>
+<code>const jbyte* GetStringUTFChars(JNIEnv *env, jstring string, <br>
+     jboolean *isCopy);
+</code><p><a name="17273"></a>
+UTF-8 文字の文字列配列を参照するポインタを返します。この配列は、<code>ReleaseStringUTFChars()</code> によって解放されるまで有効です。
+<p><a name="4116"></a>
+<code>isCopy</code> が <code>NULL</code> ではない場合にコピーが作成されると、<code>*isCopy</code> は <code>JNI_TRUE</code> に設定されます。コピーが作成されない場合は、<code>JNI_FALSE</code> に設定されます。
+<p><a name="21562"></a>
+<h4> パラメータ:
+</h4>
+<a name="21563"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21564"></a>
+<code>string</code>: Java 文字列オブジェクト
+<p><a name="21565"></a>
+<code>isCopy</code>: ブール値に対するポインタ
+<p><a name="21566"></a>
+<h4> 返り値:
+</h4>
+<a name="21567"></a>
+UTF-8 文字列を参照するポインタを返すか、または演算が失敗した場合は <code>NULL</code> を返します。 
+<p><br><a name="17294"></a>
+<h2>		 ReleaseStringUTFChars
+</h2>
+<a name="17298"></a>
+<code>void ReleaseStringUTFChars(JNIEnv *env, jstring string,<br>
+     const char *utf);
+</code><p><a name="17302"></a>
+ネイティブコードが <code>utf</code> へのアクセスをもはや必要としていないことを VM に知らせます。<code>utf</code> 引数は、<code>GetStringUTFChars()</code> を使用して <code>string</code> から取得することができるポインタです。
+<p><a name="21577"></a>
+<h4> パラメータ:
+</h4>
+<a name="21578"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21579"></a>
+<code>string</code>: Java 文字列オブジェクト
+<p><a name="21580"></a>
+<code>utf</code>: UTF-8 文字列を参照するポインタ
+<p><hr align=left><a name="17314"></a>
+<h1> 配列オペレーション
+</h1>
+<br><a name="21732"></a>
+<h2>		 GetArrayLength
+</h2>
+<a name="21736"></a>
+<code>jsize GetArrayLength(JNIEnv *env, jarray array);
+</code><p><a name="21740"></a>
+配列内の要素の数を返します。
+<p><a name="21766"></a>
+<h4> パラメータ:
+</h4>
+<a name="21767"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21768"></a>
+<code>array</code>: Java 配列オブジェクト
+<p><a name="21770"></a>
+<h4> 返り値:
+</h4>
+<a name="21771"></a>
+配列の長さを返します。
+<p><br><a name="21619"></a>
+<h2>		 NewObjectArray
+</h2>
+<a name="21623"></a>
+<code>jarray NewObjectArray(JNIEnv *env, jsize length, <br>
+     jclass elementClass, jobject initialElement);
+</code><p><a name="21628"></a>
+クラス <code>elementClass</code> にオブジェクトを有する新しい配列を構築します。要素はすべて、最初に <code>initialElement</code> に設定されます。
+<p><a name="21868"></a>
+<h4> パラメータ:
+</h4>
+<a name="21869"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21885"></a>
+<code>length</code>: 配列サイズ
+<p><a name="21888"></a>
+<code>elementClass</code>: 配列要素クラス
+<p><a name="21899"></a>
+<code>initialElement</code>: 初期化値
+<p><a name="21871"></a>
+<h4> 返り値:
+</h4>
+<a name="21872"></a>
+Java 配列オブジェクトを返すか、または配列が構築できない場合は <code>NULL</code> を返します。 
+<p><a name="6114"></a>
+<h4> 例外:
+</h4>
+<a name="6115"></a>
+<code>OutOfMemoryError</code>: システムがメモリ不足の場合
+<p><br><a name="21671"></a>
+<h2>		 GetObjectArrayElement
+</h2>
+<a name="21675"></a>
+<code>jobject GetObjectArrayElement(JNIEnv *env, <br>
+     jobjectArray array, jsize index);
+</code><p><a name="21679"></a>
+<code>Object</code> 配列の要素を返します。
+<p><a name="21922"></a>
+<h4> パラメータ:
+</h4>
+<a name="21923"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21924"></a>
+<code>array</code>: Java 配列
+<p><a name="21925"></a>
+<code>index</code>: 配列添字
+<p><a name="21927"></a>
+<h4> 返り値:
+</h4>
+<a name="21928"></a>
+Java オブジェクトを返します。
+<p><a name="21680"></a>
+<h4> 例外:
+</h4>
+<a name="21686"></a>
+<code>ArrayIndexOutOfBoundsException</code>: <code>index</code> が配列内に有効な添字を指定しなかった場合
+<p><br><a name="21699"></a>
+<h2>		 SetObjectArrayElement
+</h2>
+<a name="21703"></a>
+<code>void SetObjectArrayElement(JNIEnv *env, jobjectArray array, <br>
+     jsize index, jobject value);
+</code><p><a name="21707"></a>
+<code>オブジェクト</code> 配列の要素を設定します。
+<p><a name="21972"></a>
+<h4> パラメータ:
+</h4>
+<a name="21973"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="21974"></a>
+<code>array</code>: Java 配列
+<p><a name="21975"></a>
+<code>index</code>: 配列添字
+<p><a name="21985"></a>
+<code>value</code>: 新しい値
+<p><a name="21978"></a>
+<h4> 例外:
+</h4>
+<a name="21980"></a>
+<code> ArrayIndexOutOfBoundsException</code>: <code>index</code> が配列内に有効な添字の値を指定しなかった場合 
+<p><a name="21717"></a>
+<code> ArrayStoreException</code>: <code>value</code> のクラスが、配列の要素クラスのサブクラスではない場合
+<p><br><a name="17318"></a>
+<h2>		 New&lt;PrimitiveType&gt;Array ルーチン
+</h2>
+<a name="17322"></a>
+<var>ArrayType</var><code> </code><var>New&lt;PrimitiveType&gt;Array</var><code>(JNIEnv *env, jsize length);
+</code><p><a name="17326"></a>
+新しいプリミティブ配列オブジェクトを構築するために使用される演算のファミリ。<a href="functions.doc.html#4122">表 &#32;4-8</a> には、特定のプリミティブ配列構築子が示されています。
+<var>New&lt;PrimitiveType&gt;Array </var> を、次の表の実際のプリミティブ配列構築子ルーチン名のひとつと置き換え、<em>ArrayType</em> をそのルーチンに対応する配列型と置き換える必要があります。
+<p><a name="4122"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="5339"></a>
+<h4>表 4-8	 配列構築子の New&lt;PrimitiveType&gt;Array ファミリ
+</h4>
+</caption>
+<tr><th><a name="5343"></a>
+New&lt;PrimitiveType&gt;Array ルーチン
+
+<th><a name="5345"></a>
+配列型
+
+
+<tr><td><a name="5347"></a>
+<code>NewBooleanArray()
+</code>
+<td><a name="5349"></a>
+jbooleanArray
+
+
+<tr><td><a name="5351"></a>
+<code>NewByteArray()
+</code>
+<td><a name="5353"></a>
+jbyteArray
+
+
+<tr><td><a name="5355"></a>
+<code>NewCharArray()
+</code>
+<td><a name="5357"></a>
+jcharArray
+
+
+<tr><td><a name="5359"></a>
+<code>NewShortArray()
+</code>
+<td><a name="5361"></a>
+jshortArray
+
+
+<tr><td><a name="5363"></a>
+<code>NewIntArray()
+</code>
+<td><a name="5365"></a>
+jintArray
+
+
+<tr><td><a name="5367"></a>
+<code>NewLongArray()
+</code>
+<td><a name="5369"></a>
+jlongArray
+
+
+<tr><td><a name="5371"></a>
+<code>NewFloatArray()
+</code>
+<td><a name="5373"></a>
+jfloatArray
+
+
+<tr><td><a name="5375"></a>
+<code>NewDoubleArray()
+</code>
+<td><a name="5377"></a>
+jdoubleArray
+
+
+
+</Table>
+</dd></dl>
+<p><a name="5092"></a>
+<h4> パラメータ:
+</h4>
+<a name="22207"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="22208"></a>
+<code>length</code>: 配列長
+<p><a name="22210"></a>
+<h4> 返り値:
+</h4>
+<a name="22211"></a>
+Java 配列を返すか、または Java 配列が構築できなかった場合は <code>NULL</code> を返します。 
+<p><br><a name="17382"></a>
+<h2>		 Get&lt;PrimitiveType&gt;ArrayElements ルーチン
+</h2>
+<a name="17386"></a>
+<var>NativeType</var><code> *</code><var>Get&lt;PrimitiveType&gt;ArrayElements</var><code>(JNIEnv *env, <br>
+     </code>ArrayType<code> array, jboolean *isCopy);
+</code><p><a name="17390"></a>
+プリミティブ配列の本体を返す関数のファミリです。その結果は、対応する <var>Release</var>&lt;<var>PrimitiveType</var>&gt;<var>ArrayElements()</var> 関数が呼び出されるまで有効です。<em>返</em><em>された配列は Java 配列のコピーである場合もあるため、その返された配列に加えられている変更は、
+</em>Release&lt;PrimitiveType&gt;ArrayElements()<em> </em><em>が呼び出されるまでは、必ずしも元の</em><code>array</code><em>に反映されているとは限りません。
+</em><p><a name="4127"></a>
+<code>isCopy</code> が <code>NULL</code> ではない場合にコピーが作成されると、<code>*isCopy</code> は <code>JNI_TRUE</code> に設定されます。コピーが作成されない場合は、<code>JNI_FALSE</code> に設定されます。
+<p><a name="4637"></a>
+次の表には、特定のプリミティブ配列要素アクセス機能を示されています。次の置換を行う必要があります
+<p><ul><a name="6198"></a>
+<li><var>Get&lt;PrimitiveType&gt;ArrayElements </var> を、表の実際のプリミティブ要素アクセス機能ルーチン名のひとつと置き換えます。
+<a name="6201"></a>
+<li><em>ArrayType</em> を対応する配列型と置き換えます。 
+<a name="6204"></a>
+<li><var>NativeType </var>をそのルーチンに対応するネイティブ型と置き換えます。
+</ul><a name="4590"></a>
+Java VM 内でブール配列がどのように表されているかに関らず、
+<code>GetBooleanArrayElements()</code> は常に <code>jbooleans</code> を参照するポインタを返してきます。各バイトがひとつの要素を表しています (アンパック表示)。その他の型の配列はすべて、メモリ内で必ず隣接するようになっています。
+<p><a name="4136"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="4963"></a>
+<h4>表 4-9	 アクセス機能ルーチンの Get&lt;PrimitiveType&gt;ArrayElements ファミリ
+</h4>
+</caption>
+<tr><th><a name="4649"></a>
+Get&lt;PrimitiveType&gt;ArrayElements ルーチン
+
+<th><a name="4651"></a>
+配列型
+
+<th><a name="4653"></a>
+ネイティブ型
+
+
+<tr><td><a name="4655"></a>
+<code>GetBooleanArrayElements()
+</code>
+<td><a name="4657"></a>
+jbooleanArray
+
+<td><a name="4659"></a>
+jboolean
+
+
+<tr><td><a name="4661"></a>
+<code>GetByteArrayElements()
+</code>
+<td><a name="4663"></a>
+jbyteArray
+
+<td><a name="4665"></a>
+jbyte
+
+
+<tr><td><a name="4667"></a>
+<code>GetCharArrayElements()
+</code>
+<td><a name="4669"></a>
+jcharArray
+
+<td><a name="4671"></a>
+jchar
+
+
+<tr><td><a name="4673"></a>
+<code>GetShortArrayElements()
+</code>
+<td><a name="4675"></a>
+jshortArray
+
+<td><a name="4677"></a>
+jshort
+
+
+<tr><td><a name="4679"></a>
+<code>GetIntArrayElements()
+</code>
+<td><a name="4681"></a>
+jintArray
+
+<td><a name="4683"></a>
+jint
+
+
+<tr><td><a name="4685"></a>
+<code>GetLongArrayElements()
+</code>
+<td><a name="4687"></a>
+jlongArray
+
+<td><a name="4689"></a>
+jlong
+
+
+<tr><td><a name="4691"></a>
+<code>GetFloatArrayElements()
+</code>
+<td><a name="4693"></a>
+jfloatArray
+
+<td><a name="4695"></a>
+
+
+jfloat
+
+
+<tr><td><a name="4697"></a>
+<code>GetDoubleArrayElements()
+</code>
+<td><a name="4699"></a>
+jdoubleArray
+
+<td><a name="4701"></a>
+jdouble
+
+
+
+</Table>
+</dd></dl>
+<p><a name="22652"></a>
+<h4> パラメータ:
+</h4>
+<a name="22281"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="22282"></a>
+<code>array</code>: Java 文字列オブジェクト
+<p><a name="22283"></a>
+<code>isCopy</code>: ブール値に対するポインタ
+<p><a name="22284"></a>
+<h4> 返り値:
+</h4>
+<a name="22285"></a>
+配列要素を参照するポインタを返すか、または演算が失敗した場合は、<code>NULL</code> を返します。 
+<p><br><a name="17440"></a>
+<h2>		 Release&lt;PrimitiveType&gt;ArrayElements ルーチン
+</h2>
+<a name="17444"></a>
+<code>void </code><var>Release&lt;PrimitiveType&gt;ArrayElements</var><code>(JNIEnv *env, <br>
+     </code>ArrayType<code> array, </code><var>NativeType</var><code> *elems, jint mode);
+</code><p><a name="5114"></a>
+ネイティブコードが <code>elems</code> へのアクセスをもはや必要としていないことを VM に知らせる関数のファミリです。<code>elems</code> 引数は、対応する <var>Get</var><code>&lt;</code><var>PrimitiveType</var><code>&gt;</code><var>ArrayElements()</var> 関数を使用して、<code>array</code> から導き出されるポインタです。必要に応じて、この関数は、 <code>elems</code> に施された変更をすべて元の配列にコピーし直します。
+<p><a name="17454"></a>
+<code>mode</code> 引数は、配列バッファの解放方法に関する情報を提供します。
+<code>mode</code> は、<code>elems</code> が <code>array</code> 内の要素のコピーではない場合は、何も影響を及ぼしません。<code>mode</code> が <code>array</code> 内の要素のコピーである場合は、次の表に示されているような影響を及ぼします。
+<p><a name="4137"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="1544"></a>
+<h4>表 4-10	 プリミティブ配列解放モード
+</h4>
+</caption>
+<tr><th><a name="22549"></a>
+モード
+
+<th><a name="22551"></a>
+動作
+
+
+<tr><td><a name="22553"></a>
+<code>0
+</code>
+<td><a name="22555"></a>
+内容をコピーバックし、<code>elems</code> バッファを解放する。
+
+
+<tr><td><a name="22557"></a>
+<code>JNI_COMMIT
+</code>
+<td><a name="22559"></a>
+内容をコピーバックするが、<code>elems</code> バッファを解放しない。
+
+
+<tr><td><a name="22561"></a>
+<code>JNI_ABORT
+</code>
+<td><a name="22563"></a>
+変更の可能性があってもその変更をコピーバックせずに、バッファを解放する。
+
+
+
+</Table>
+</dd></dl>
+<p><a name="17470"></a>
+多くの場合、プログラマは、ピン配列とコピー配列の両方に対して一貫した動作を保証するために、"0" を <code>mode</code> 引数に渡します。"0" 以外を渡す場合は、プログラマはメモリを十分に注意して管理する必要があります。
+<p><a name="17475"></a>
+次の表には、プリミティブ配列処置機能のファミリを構成する特定のルーチンが示されています。次の置換を行う必要があります。
+<p><ul><a name="6205"></a>
+<li><var>Release&lt;PrimitiveType&gt;ArrayElements </var>を、<a href="functions.doc.html#4140">表 &#32;4-11</a> に示されている実際のプリミティブ配列処置機能ルーチン名のひとつと置き換えます。
+
+<a name="6206"></a>
+<li><em>ArrayType</em> を対応する配列型と置き換えます。
+
+<a name="6209"></a>
+<li><var>NativeType </var>をそのルーチンに対応するネイティブ型と置き換えます。
+
+</ul><a name="4140"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="1629"></a>
+<h4>表 4-11	 配列ルーチンの Release&lt;PrimitiveType&gt;ArrayElements ファミリ
+</h4>
+</caption>
+<tr><th><a name="22662"></a>
+Release&lt;PrimitiveType&gt;ArrayElements ルーチン
+
+<th><a name="22664"></a>
+配列型
+
+<th><a name="22666"></a>
+ネイティブ型
+
+
+<tr><td><a name="22668"></a>
+<code>ReleaseBooleanArrayElements()
+</code>
+<td><a name="22670"></a>
+jbooleanArray
+
+<td><a name="22672"></a>
+jboolean
+
+
+<tr><td><a name="22674"></a>
+<code>ReleaseByteArrayElements()
+</code>
+<td><a name="22676"></a>
+jbyteArray
+
+<td><a name="22678"></a>
+jbyte
+
+
+<tr><td><a name="22680"></a>
+<code>ReleaseCharArrayElements()
+</code>
+<td><a name="22682"></a>
+jcharArray
+
+<td><a name="22684"></a>
+jchar
+
+
+<tr><td><a name="22686"></a>
+<code>ReleaseShortArrayElements()
+</code>
+<td><a name="22688"></a>
+jshortArray
+
+<td><a name="22690"></a>
+jshort
+
+
+<tr><td><a name="22692"></a>
+<code>ReleaseIntArrayElements()
+</code>
+<td><a name="22694"></a>
+jintArray
+
+<td><a name="22696"></a>
+jint
+
+
+<tr><td><a name="22698"></a>
+<code>ReleaseLongArrayElements()
+</code>
+<td><a name="22700"></a>
+jlongArray
+
+<td><a name="22702"></a>
+jlong
+
+
+<tr><td><a name="22704"></a>
+<code>ReleaseFloatArrayElements()
+</code>
+<td><a name="22706"></a>
+jfloatArray
+
+<td><a name="22708"></a>
+jfloat
+
+
+<tr><td><a name="22710"></a>
+<code>ReleaseDoubleArrayElements()
+</code>
+<td><a name="22712"></a>
+jdoubleArray
+
+<td><a name="22714"></a>
+jdouble
+
+
+
+</Table>
+</dd></dl>
+<p><a name="22735"></a>
+<h4> パラメータ:
+</h4>
+<a name="22736"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="22737"></a>
+<code>array</code>: Java 配列オブジェクト
+<p><a name="4797"></a>
+<code>elems</code>: 配列要素を参照するポインタ
+<p><a name="4798"></a>
+<code>mode</code>: 解放モード
+<p><br><a name="6212"></a>
+<h2>		 Get&lt;PrimitiveType&gt;ArrayRegion ルーチン
+</h2>
+<a name="6213"></a>
+<var>void</var><code> </code><var>Get&lt;PrimitiveType&gt;ArrayRegion</var><code>(JNIEnv *env, </code><var>ArrayType</var><code> array,<br>
+     jsize start, jsize len, </code><var>NativeType</var><code> *buf);
+</code><p><a name="17518"></a>
+プリミティブ配列の領域をバッファにコピーする機能のファミリ。
+<p><a name="17521"></a>
+次の表には、特定のプリミティブ配列要素アクセス機能が示されています。次の置換を行う必要があります。
+<p><ul><a name="6214"></a>
+<li><var>Get&lt;PrimitiveType&gt;ArrayRegion </var>を、<a href="functions.doc.html#4143">表 &#32;4-12</a> に示されている実際のプリミティブ要素アクセス機能ルーチン名のひとつと置き換えます。
+
+<a name="6217"></a>
+<li><var>ArrayType</var> を、対応する配列型と置き換えます。
+
+<a name="6220"></a>
+<li><var>NativeType </var>をそのルーチンに対応するネイティブ型と置き換えます。
+
+</ul><a name="4143"></a>
+<dl><dd>
+<Table Border="0">
+<caption><a name="1716"></a>
+<h4>表 4-12	 配列アクセス機能ルーチンの Get&lt;PrimitiveType&gt;ArrayRegion ファミリ
+</h4>
+</caption>
+<tr><th><a name="22777"></a>
+Get&lt;PrimitiveType&gt;ArrayRegion ルーチン
+
+<th><a name="22779"></a>
+配列型
+
+<th><a name="22781"></a>
+ネイティブ型
+
+
+<tr><td><a name="22783"></a>
+<code>GetBooleanArrayRegion()
+</code>
+<td><a name="22785"></a>
+jbooleanArray
+
+<td><a name="22787"></a>
+jboolean
+
+
+<tr><td><a name="22789"></a>
+<code>GetByteArrayRegion()
+</code>
+<td><a name="22791"></a>
+jbyteArray
+
+<td><a name="22793"></a>
+jbyte
+
+
+<tr><td><a name="22795"></a>
+<code>GetCharArrayRegion()
+</code>
+<td><a name="22797"></a>
+jcharArray
+
+<td><a name="22799"></a>
+jchar
+
+
+<tr><td><a name="22801"></a>
+<code>GetShortArrayRegion()
+</code>
+<td><a name="22803"></a>
+jshortArray
+
+<td><a name="22805"></a>
+jhort
+
+
+<tr><td><a name="22807"></a>
+<code>GetIntArrayRegion()
+</code>
+<td><a name="22809"></a>
+jintArray
+
+<td><a name="22811"></a>
+jint
+
+
+<tr><td><a name="22813"></a>
+<code>GetLongArrayRegion()
+</code>
+<td><a name="22815"></a>
+jlongArray
+
+<td><a name="22817"></a>
+jlong
+
+
+<tr><td><a name="22819"></a>
+<code>GetFloatArrayRegion()
+</code>
+<td><a name="22821"></a>
+jfloatArray
+
+<td><a name="22823"></a>
+jloat
+
+
+<tr><td><a name="22825"></a>
+<code>GetDoubleArrayRegion()
+</code>
+<td><a name="22827"></a>
+jdoubleArray
+
+<td><a name="22829"></a>
+jdouble
+
+
+
+</Table>
+</dd></dl>
+<p><a name="22935"></a>
+<h4> パラメータ:
+</h4>
+<a name="22936"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="22937"></a>
+<code>array</code>: Java 配列
+<p><a name="5199"></a>
+<code>start</code>: 開始添字
+<p><a name="5205"></a>
+<code>len</code>: コピー対象の要素の数
+<p><a name="5207"></a>
+<code>buf</code>: 転送先バッファ
+<p><a name="22941"></a>
+<h4> 例外:
+</h4>
+<a name="22943"></a>
+<code>ArrayIndexOutOfBoundsException</code>: 領域内の添字のひとつでも有効ではない場合
+<p><br><a name="22933"></a>
+<h2>		 Set&lt;PrimitiveType&gt;ArrayRegion ルーチン
+</h2>
+<a name="17563"></a>
+<code>void </code><var>Set&lt;PrimitiveType&gt;ArrayRegion</var><code>(JNIEnv *env, </code><var>ArrayType</var><code> array, <br>
+     jsize start, jsize len, </code><var>NativeType</var><code> *buf);
+</code><p><a name="17568"></a>
+バッファからのプリミティブ配列の領域をコピーバックする機能のファミリ
+<p><a name="22912"></a>
+次の表には、特定のプリミティブ配列要素アクセス機能が示されています。次の置換を行う必要があります。
+<p><ul><a name="6221"></a>
+<li><var>Set&lt;PrimitiveType&gt;ArrayRegion </var>を、表に示されている実際のプリミティブ要素アクセス機能ルーチン名のひとつと置き換えます。
+
+<a name="6224"></a>
+<li><em>ArrayType</em> を対応する配列型と置き換えます。 
+
+<a name="6227"></a>
+<li><var>NativeType</var> を、そのルーチンに対応するネイティブ型と置き換えます。<dl><dd>
+<Table Border="0">
+<caption><a name="1803"></a>
+<h4>表 4-13	 配列アクセス機能ルーチンの Set&lt;PrimitiveType&gt;ArrayRegion ファミリ
+</h4>
+</caption>
+<tr><th><a name="22859"></a>
+Set&lt;PrimitiveType&gt;ArrayRegion ルーチン
+
+<th><a name="22861"></a>
+配列型
+
+<th><a name="22863"></a>
+ネイティブ型
+
+
+<tr><td><a name="22865"></a>
+<code>SetBooleanArrayRegion()
+</code>
+<td><a name="22867"></a>
+jbooleanArray
+
+<td><a name="22869"></a>
+jboolean
+
+
+<tr><td><a name="22871"></a>
+<code>SetByteArrayRegion()
+</code>
+<td><a name="22873"></a>
+jbyteArray
+
+<td><a name="22875"></a>
+jbyte
+
+
+<tr><td><a name="22877"></a>
+<code>SetCharArrayRegion()
+</code>
+<td><a name="22879"></a>
+jcharArray
+
+<td><a name="22881"></a>
+jchar
+
+
+<tr><td><a name="22883"></a>
+<code>SetShortArrayRegion()
+</code>
+<td><a name="22885"></a>
+jshortArray
+
+<td><a name="22887"></a>
+jshort
+
+
+<tr><td><a name="22889"></a>
+<code>SetIntArrayRegion()
+</code>
+<td><a name="22891"></a>
+jintArray
+
+<td><a name="22893"></a>
+jint
+
+
+<tr><td><a name="22895"></a>
+<code>SetLongArrayRegion()
+</code>
+<td><a name="22897"></a>
+jlongArray
+
+<td><a name="22899"></a>
+jlong
+
+
+<tr><td><a name="22901"></a>
+<code>SetFloatArrayRegion()
+</code>
+<td><a name="22903"></a>
+jfloatArray
+
+<td><a name="22905"></a>
+jfloat
+
+
+<tr><td><a name="22907"></a>
+<code>SetDoubleArrayRegion()
+</code>
+<td><a name="22909"></a>
+jdoubleArray
+
+<td><a name="22911"></a>
+jdouble
+
+
+
+</Table>
+</dd></dl>
+
+</ul><a name="22951"></a>
+<h4> パラメータ:
+</h4>
+<a name="22952"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="5232"></a>
+<code>array</code>: Java 配列
+<p><a name="5233"></a>
+<code>start</code>: 開始添字
+<p><a name="5234"></a>
+<code>len</code>: コピー対象の要素の数
+<p><a name="5235"></a>
+<code>buf</code>: 転送先バッファ
+<p><a name="5830"></a>
+<h4> 例外:
+</h4>
+<a name="5835"></a>
+<code>ArrayIndexOutOfBoundsException</code>: 領域内の添字のひとつでも有効ではない場合
+<p><hr align=left><a name="5833"></a>
+<h1> Registering Native Methods
+</h1>
+<br><a name="17734"></a>
+<h2>		 RegisterNatives
+</h2>
+<a name="17738"></a>
+<code>jint RegisterNatives(JNIEnv *env, jclass clazz, <br>
+     const JNINativeMethod *methods, jint nMethods);
+</code><p><a name="4894"></a>
+<code>clazz</code> 引数によって指定されたクラスでネイティブメソッドを登録します。
+
+<code>methods</code> パラメータは、そのネイティブメソッドの名前、シグネチャ、関数ポインタを含む <code>JNINativeMethod</code> 構造体の配列を指定します。
+<code>nMethods</code> パラメータは、配列内のネイティブメソッドの数を指定します。<code>JNINativeMethod</code> 構造体は次のように定義されます。
+<p><pre>    typedef struct {
+        char *name;
+        char *signature;
+        void *fnPtr;
+    } JNINativeMethod;
+</pre><a name="5854"></a>
+関数ポインタは、形式上、次のシグネチャを備えている必要があります。 
+<p><pre>    <code>ReturnType (*fnPtr)(JNIEnv *env, jobject objectOrClass, ...);
+</code></pre><a name="23061"></a>
+<h4> パラメータ:
+</h4>
+<a name="23062"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="23063"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="23064"></a>
+<code>methods</code>: クラス内のネイティブメソッド
+<p><a name="4889"></a>
+<code>nMethods</code>: そのクラス内のネイティブメソッドの数
+<p><a name="23113"></a>
+<h4> 返り値:
+</h4>
+<a name="23114"></a>
+成功の場合は "0" を、失敗の場合は負の値を返します。
+<p><a name="17760"></a>
+<h4> 例外:
+</h4>
+<a name="17763"></a>
+<code>NoSuchMethodError</code>: 指定されたメソッドが見つからなかった場合、または、そのメソッドがネイティブではなかった場合
+<p><br><a name="17775"></a>
+<h2>		 UnregisterNatives
+</h2>
+<a name="5119"></a>
+<code>jint UnregisterNatives(JNIEnv *env, jclass clazz,<br>
+     const JNINativeMethod *methods, jint nMethods);
+</code><p><a name="5120"></a>
+あるクラスのネイティブメソッドを抹消します。そのクラスは、そのネイティブメソッド機能にリンクされる前または再登録される前の状態に戻ります。<code>methods</code> パラメータは、そのネイティブメソッドの名前を含む文字列の <code>NULL</code>で終了する配列を指定します。<code>nMethods</code> パラメータは、その配列内のネイティブメソッドの数を指定します。
+<p><a name="5130"></a>
+この関数は、通常のネイティブコードでは使用するべきではありません。その代わりに、特殊なプログラムにネイティブライブラリを再ロードしたり再リンクしたりする方法を提供します。
+<p><a name="5121"></a>
+<h4> パラメータ:
+</h4>
+<a name="23076"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="23077"></a>
+<code>clazz</code>: Java クラスオブジェクト
+<p><a name="5041"></a>
+<code>methods</code>: そのクラス内のネイティブメソッドの名前
+<p><a name="5042"></a>
+<code>nMethods</code>: そのクラス内のネイティブメソッドの数
+<p><a name="23120"></a>
+<h4> 返り値:
+</h4>
+<a name="4160"></a>
+成功の場合は "0" を、失敗の場合は負の値を返します。
+<p><hr align=left><a name="5256"></a>
+<h1> モニタオペレーション
+</h1>
+<br><a name="23124"></a>
+<h2>		 MonitorEnter
+</h2>
+<a name="23125"></a>
+<code>jint MonitorEnter(JNIEnv *env, jobject obj);
+</code><p><a name="23126"></a>
+
+<code>obj</code> によって参照される基底の Java オブジェクトに関連するモニタに入ります。
+<p><a name="5310"></a>
+Java オブジェクトは、それぞれ、関連するモニタを有しています。現在のスレッドがすでに <code>obj</code> に関連するモニタを有している場合は、このスレッドがモニタに入った回数を表すモニタ内のカウンタが増加されます。<code>obj</code> に関連するモニタがいかなるスレッドにも所有されていない場合は、現在のスレッドがそのモニタの所有者となり、このモニタのエントリ カウントを 1 に設定します。別のスレッドがすでに <code>obj</code> に関連するモニタを所有している場合は、現在のスレッドはモニタが解放されるのを待ち、再度、所有を試みます。
+
+<p><a name="23127"></a>
+<h4> パラメータ:
+</h4>
+<a name="23128"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="23129"></a>
+<code>obj</code>: 通常の Java オブジェクトまたはクラスオブジェクト
+<p><a name="23130"></a>
+<h4> 返り値:
+</h4>
+<a name="5251"></a>
+成功の場合は "0" を、失敗の場合は負の値を返します。
+<p><br><a name="5252"></a>
+<h2>		 MonitorExit
+</h2>
+<a name="5253"></a>
+<code>jint MonitorExit(JNIEnv *env, jobject obj);
+</code><p><a name="23139"></a>
+現在のスレッドは、<code>obj</code> によって参照された基底の Java オブジェクトに関連するモニタの所有者でなければなりません。このスレッドは、このモニタに入った回数を表すカウンタを減少させます。カウンタの値がゼロになると、現在のスレッドはモニタを解放します。
+<p><a name="23140"></a>
+<h4> パラメータ:
+</h4>
+<a name="23141"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="23142"></a>
+<code>obj</code>: 通常の Java オブジェクトまたはクラスオブジェクト
+<p><a name="23143"></a>
+<h4> 返り値:
+</h4>
+<a name="4180"></a>
+成功の場合は "0" を、失敗の場合は負の値を返します。
+<p><hr align=left><a name="5263"></a>
+<h1> Java VM インタフェース
+</h1>
+<br><a name="23168"></a>
+<h2>		 GetJavaVM
+</h2>
+<a name="23169"></a>
+<code>jint GetJavaVM(JNIEnv *env, JavaVM **vm);
+</code><p><a name="23170"></a>
+現在のスレッドに関連する Java VM インタフェース (呼び出し API で使用) を返します。その結果は、2 番目の引数<code>vm</code>で示されたロケーションに置かれます。
+
+<p><a name="23171"></a>
+<h4> パラメータ:
+</h4>
+<a name="23172"></a>
+<code>env</code>: JNI インタフェース ポインタ
+<p><a name="23173"></a>
+<code>vm</code>: 結果を返すポインタ
+<p><a name="23174"></a>
+<h4> 返り値:
+</h4>
+<a name="4184"></a>
+成功の場合は "0" を、失敗の場合は負の値を返します。
+<p><a name="4850"></a>
+
+<p>
+
+<hr>
+<!-- This inserts footnotes--><p>
+<a href="jniTOC.doc.html">目次</a> | <a href="types.doc.html">前項目</a> | <a href="invocation.doc.html">次項目</a> 
+
+<p>
+<font size=-1>Java ネイティブインタフェース仕様 (1997年3月15日にdkramer によって生成されたHTML)<br>
+<i><a href="copyright.doc.html">Copyright (C) 1996, 1997 Sun Microsystems, Inc.</a>
+All rights reserved</i>
+<br>
+コメントは、<a href="mailto:jni@java.sun.com">jni@java.sun.com</a>宛てに送ってください。
+</font>
+</body></html>

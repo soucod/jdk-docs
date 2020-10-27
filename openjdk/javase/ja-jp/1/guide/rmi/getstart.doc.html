@@ -1,0 +1,316 @@
+<html><head><title>Getting Started	 Using RMI</title></head>
+<body bgcolor=#ffffff>
+
+<a name="5344">
+<h1>RMI を使ってはじめましょう</h1>
+</a>
+<hr><p>
+<p>この章ではおなじみの Hello World プログラムの分散システム版を Java の RMI (Remote Method Invocation) を使って作成する手順をステップを追って説明します。<p>
+分散バージョンの Hello World はアプレットを使ってサーバのリモートメソッドを呼び出し、ここからプログラムをダウンロードして "Hello World" というメッセージを取り出します。このアプレットが走るとクライアント側にメッセージが表示されます。<p>
+これを完成させるには、次の3つのレッスンを実行しなければなりません。
+<p><ul><li><a href="getstart.doc.html#7738">HTML と Java のソースファイルを書く</a>
+<li><a href="getstart.doc.html#7437">クラスファイルと HTML ファイルをコンパイルと分配</a>
+<li><a href="getstart.doc.html#7445">リモートオブジェクトレジストリ、サーバ、そしてアプレットのスタート</a>
+</ul><h1><a name="7738">
+HTML と Java のソースファイルを書く
+</a></h1>
+Hello World のサーバとアプレットのために4つのファイルが必要です。
+<p><ol>
+<li>Java リモートインタフェース
+<li>リモートインタフェースを実装するためのリモートオブジェクト(サーバ)
+<li>サーバのメソッドをリモートから呼び出すための Java アプレット
+<li>アプレットを参照する web ページのための HTML コード
+</ol>
+Java 言語はクラスファイルの完全修飾されたパッケージ名とそのクラスへのディレクトリパスとの間のマッピングを必要とするため、Java のコードを書き始める前にパッケージとディレクトリの名前を決めなければなりません。（このマッピングにより Java コンパイラは Java プログラムが参照するクラスファイルのディレクトリを知ることができます）この章で作成する Hello World プログラムではパッケージ名を <code>examples.hello</code>、そしてルートディレクトリを <code>$HOME/jdk1.1/mysrc/examples/hello</code> とします。
+<BR>
+例えば Solaris の場合であればソースファイル用ディレクトリを作るには次のコマンドを実行します。
+<p><dl><a name="6640">
+<pre>mkdir $HOME/jdk1.1/mysrc/examples/hello
+</pre></a></dl><h2><a name="5174">
+リモートインタフェースを定義する
+</a></h2>
+リモートメソッド呼び出しは、ネットワーク通信やサーバの問題など、ローカルメソッド呼び出しとは全く異なる理由で失敗することがあります。<p>
+リモートオブジェクトであることをはっきりさせるために、オブジェクトはリモートインタフェースを実装しますが、このインタフェースは次の特徴を持っています。
+<p>
+<ul><li>リモートインタフェースは public でなければならない。そうでないと、クライアントはリモートインタフェースを実装してリモートオブジェクトをロードしようとした時点でエラーとなる。
+<li>リモートインタフェースは <code>java.rmi.Remote</code> インタフェースを拡張する。
+<li>各メソッドは、アプリケーションに固有の例外に加えて、throws 節の中で <code>java.rmi.RemoteException</code> を宣言しなければならない。
+<li>引数または返り値として渡されたリモートオブジェクト（直接またはローカルオブジェクトとして埋め込まれた）は実装クラスとしてではなく、リモートインタフェースとして宣言されなければならない。
+</ul>
+次に Hello World に対するインタフェース定義を示します。インタフェースはメソッド、 <code>sayHello</code> 、を一つだけ含み、呼び出し側に文字列を返します。
+<p><dl><a name="5180"><pre>package examples.hello;
+public interface Hello extends java.rmi.Remote {
+	String sayHello() throws java.rmi.RemoteException;
+}
+</pre></a></dl><h2><a name="5182">
+実装クラスを書く
+</a></h2>
+リモートオブジェクトを書くときは、一つ以上のリモートインタフェースを実装するクラスを作成します。実装クラスは次の条件を備えなければなりません。
+<p><ol>
+<li>一つ以上のリモートインタフェースを実装するよう指定します。
+<li>リモートオブジェクトのコンストラクタを定義します。
+<li>リモートに呼び出される可能性のあるメソッドを実装します。
+<li>セキュリティマネージャを作成してインストールします。
+<li>リモートオブジェクトのインスタンスを1つ以上作成します。
+<li>ブートストラッピングのために、リモートオブジェクトの少なくとも一つを RMI リモートオブジェクトレジストリに登録します。
+</ol>
+例えば、次に示す <code>HelloImpl.java</code> ファイルは Hello World サーバのためのコードを含んでいます。このコードは上に説明した6つのステップにしたがって記述されています。
+<p>
+<p><dl><a name="5192"><pre>package examples.hello;
+
+import java.rmi.*;
+import java.rmi.server.UnicastRemoteObject;
+
+public class HelloImpl
+	extends UnicastRemoteObject
+	implements Hello
+{
+	private String name;
+
+	public HelloImpl(String s) throws RemoteException {
+		super();
+		name = s;
+	}
+
+	public String sayHello() throws RemoteException {
+		return  "Hello World!";
+	}
+</pre></a><a name="6994"><pre>	public static void main(String args[])
+	{
+		// Create and install a security manager
+		System.setSecurityManager(new RMISecurityManager());
+
+		try {
+			HelloImpl obj = new HelloImpl("HelloServer");
+			Naming.rebind("//myhost/HelloServer", obj);
+			System.out.println("HelloServer bound in registry");
+		} catch (Exception e) {
+			System.out.println("HelloImpl err: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+}
+</pre></a></dl><h3><a name="5193">
+リモートインタフェースの実装
+</a></h3>
+Hello World での実装クラスは <code>HelloImpl</code> です。実装クラスは自分が実装する一つ以上のリモートインタフェースを指定します。オプションとして、自分が拡張するリモートサーバを指定します。この例では <code>java.rmi.server.UnicastRemoteObject</code> がこれにあたります。 <code>HelloImpl</code> クラス宣言を次に示します。<p>
+<p><dl><a name="5194"><pre>public class HelloImpl
+	implements Hello
+	extends java.rmi.server.UnicastRemoteObject
+</pre></a></dl>
+<code>UnicastRemoteObject</code> を拡張するということは <code>HelloImpl</code> クラスを使って単一の（複製されたものでない）リモートオブジェクトを作成し、そのオブジェクトは通信のために RMI のデフォルトソケットをベースとするトランスポートを使うことを示します。 リモートオブジェクトをリモートでないクラスから拡張する場合には、メソッド <code>UnicastRemoteObject.exportObject</code> を呼び出すことにより陽にリモートオブジェクトをエクスポートしなければなりません。<p>
+<p><h3><a name="5864">
+リモートオブジェクトのコンストラクタ定義
+</a></h3>
+リモートクラスのコンストラクタは非リモートクラスのコンストラクタと同じで、新規作成される各クラスインスタンスの変数を初期化します。
+<p>次に示すのは <code>HelloImpl</code> クラスのコンストラクタで、private な文字列変数 name をリモートオブジェクトの名前で初期化します。<p>
+<p><dl><a name="5199"><pre>private String name;
+public HelloImpl(String s) throws java.rmi.RemoteException {
+	super();
+	name = s;
+}
+</pre></a></dl>次の項目に注意してください。
+<p><ul>
+<li>メソッド <code>super</code> を呼び出すと <code>java.rmi.server.UnicastRemoteObject</code> の引数を持たないコンストラクタが呼び出され、無名ポート上にあるリモートオブジェクトに対する外部からの呼び出しに応じてそのリモートオブジェクトを "export（エクスポート）" する。 
+<li>RMI がコンストラクタの中でリモートオブジェクトをエクスポートすると、もし通信リソースが利用できない場合には失敗してしまうので、コンストラクタは必ず <code>java.rmi.RemoteException</code> をスローしなければならない。
+</ul>
+もし省略するとデフォルトで <code>super</code> の引数無しコンストラクタが呼び出されますが、この例では Java がクラス作成前にスーパークラスを作成することを明示するために省略せずに載せてあります。
+<p><h3><a name="5866">
+それぞれのリモートメソッドに実装を与える
+</a></h3>
+リモートオブジェクトの実装クラスはリモートインタフェースで指定されたそれぞれのリモートメソッドを実装するためのコードを含みます。
+<p>一例として次に <code>sayHello</code> メソッドの実装例を示します。この例では文字列 "Hello World!" を呼び出し側に返します。<p>
+<p><dl><a name="5206"><pre>public String sayHello() throws RemoteException {
+	return  "Hello World!";
+}
+</pre></a></dl>
+リモートメソッドへ渡す引数、またはリモートメソッドから返される値は Java の持つどの変数型でもかまいませんし、インタフェース <code>java.io.Serializable</code> を実装するものであればオブジェクトであってもかまいません。<code>java.lang</code> と <code>java.util</code> のコアとなるほとんどの Java クラスは Serializable インタフェースを実装しています。<p>
+<ul><li>ローカルオブジェクトはコピーにより渡されるが、デフォルトでコピーされるのは static でないフィールドと transient でないフィールドだけである。
+<li>リモートオブジェクトは参照し渡される。リモートオブジェクトへの参照は実際にはスタブへの参照であり、このスタブがリモートオブジェクトへのクライアント側プロキシになる。スタブについての詳細な説明は次の項<a href="getstart.doc.html#5287">スタブとスケルトンの生成</a>を参照 
+</ul>
+
+<em>クラスはリモートインタフェースで指定されないメソッドを定義することができますが、これらのメソッドはそのサービスを実行する仮想マシンからのみ呼び出し可能であり、リモートからの呼び出しはできません。
+</em><p><h3><a name="5872">
+セキュリティマネージャの生成とインストール
+</a></h3>
+サービスのメインメソッドはまずセキュリティマネージャの生成とインストールを行わなければなりません。セキュリティマネージャは <code>RMISecurityManager</code> かまたは自分自身で定義したものです。例えば、
+<p><dl><a name="5210"><pre>System.setSecurityManager(new RMISecurityManager());
+</pre></a></dl>
+セキュリティマネージャはロードされたメソッドを監視して "sensitive" な操作を行わないことを保証するもので、必ず実行されなければなりません。セキュリティマネージャが全く指定されないときは、ローカルであってもそれ以外であっても、RMI クラスからのクラスをロードすることはできません。<p>
+<p><h3><a name="5908">
+一つ以上のリモートオブジェクトインスタンスを作成する
+</a></h3>
+サービスのメインメソッドはサービスを提供するリモートオブジェクトの一つ以上のインスタンスを作成する必要があります。例えば、<p>
+<p><dl><a name="5213"><pre>HelloImpl obj = new HelloImpl("HelloServer");
+</pre></a></dl>
+コンストラクタはリモートオブジェクトをエクスポートします。この意味は、一度リモートオブジェクトが作成されると、そのリモートオブジェクトは外部からの呼び出しに応える準備ができたことを意味します。
+<p><h3><a name="5912">
+リモートオブジェクトを登録する
+</a></h3>
+呼び出し側 (クライアント、ピア、またはアプレット）がリモートオブジェクトのメソッドを呼び出し可能であるためには、まず呼び出し側がリモートオブジェクトへの参照を得る必要があります。多くの場合この参照は他のリモートメソッドへのパラメータか、または他のリモートメソッドの返り値として得ることができます。<p>
+ブートストラッピングの場合には、RMI システムが URL を基礎とするレジストリを与え、これにより <code>//host/objectname</code> の形式の URL を単なる文字列で指定されたリモートオブジェクトに結び付けることができます。いったんリモートオブジェクトがサーバに登録されると、呼び出し側はオブジェクトを名前で探し、リモートオブジェクトへの参照を得ることができ、そのオブジェクトのメソッドをリモートから呼び出すことができるようになります。<p>
+例えば、次のコードは <code>HelloServer</code> という名前のリモートオブジェクトの URL をリモートオブジェクトへの参照と結び付けるものです。<p>
+<p><dl><a name="5222"><pre>Naming.rebind("//myhost/HelloServer", obj);
+</pre></a></dl>
+呼び出しの引数について次の項目に注意が必要です。<p>
+<ul><li>URL でホスト名を省略すると自動的に現在のホストが仮定され、この場合は URL にプロトコルを指定する必要はない。
+<li>RMI のランタイムはリモートオブジェクトのスタブへの参照を、オブジェクトへの引数が指定する実際のオブジェクトへの参照と置き換える。HelloImpl のインスタンスのようなリモート実装オブジェクトはその上で生成された仮想マシンを離れることはない。したがってクライアントがサーバのリモートオブジェクトのルックアップを行った場合には、スタブへの参照が返される。
+<li>オプションとして URL にポート番号を付け加えることができる。例: //myhost:1234/HelloServer。デフォルトでは 1099 になる。ポート番号を指定しなければならないのはサーバがポート上にデフォルト値 1099 以外のレジストリを作成する場合のみである。
+</ul>
+
+<em>セキュリティ上の理由により、アプリケーションがバインド、またはアンバインドできるのは同一ホスト上でレジストリを実行している場合だけです。この制限によりクライアントがサーバのリモートレジストリを削除したり上書きしたりという事故を防ぐことができます。ルックアップはどのホストからでも可能です。
+</em><p><h2><a name="5228">
+リモートサービスを使うアプレットの書き方 
+</a></h2>
+分散システム版 Hello World のアプレット部分は "Hello World!" という文字列を得るために HelloServer の sayHello メソッドをリモートから呼び出し、アプレットを実行するとこの文字列が表示されます。次に示すのがこのアプレットのコードです。<p>
+<p><dl><a name="5235"><pre>package examples.hello;
+
+import java.awt.*;
+import java.rmi.*;
+
+public class HelloApplet extends java.applet.Applet {
+	String message = "";
+	public void init() {
+		try {
+			Hello obj = (Hello)Naming.lookup("//" +
+				getCodeBase().getHost() + "/HelloServer");
+			message = obj.sayHello();
+		} catch (Exception e) {
+			System.out.println("HelloApplet exception: " +
+				e.getMessage());
+			e.printStackTrace();
+		}
+	}
+	public void paint(Graphics g) {
+		g.drawString(message, 25, 50);
+	}
+}
+</pre></a></dl><ol>
+<li>アプレットは最初にサーバのレジストリから "HelloServer" への参照を取り出し、getCodeBase メソッドと getHost メソッドを使うことにより URL を作ります。
+<li>アプレットはリモートオブジェクト HelloServer の sayHello メソッドをリモートから呼び出し、その結果得られる返り値（"Hello World!" という文字列）を message という名前の変数に格納します。
+<li>アプレットは paint メソッドを呼び出してアプレットを画面に表示します。この結果 "Hello World!" が画面に現れます。
+</ol>
+
+<em>作成された URL はホストを含んでいなければなりません。そうでないとアプレットのルックアップはデフォルトでクライアントに向けられ、アプレットはローカルシステムにアクセスすることは許されませんから <code>AppletSecurityManager</code> が例外処理にスローしてしまい、その代わりにアプレットホストのみとの交信ができなくなってしまいます。
+</em><p><h2><a name="5236">
+アプレットを含んだ Web ページを書く
+</a></h2>
+次に示すのは Hello World アプレットへの参照を含んだ Web ページの HTML コードです。<p>
+<p><dl><a name="5238"><pre>&lt;HTML&gt;
+&lt;title&gt;Hello World&lt;/title&gt;
+&lt;center&gt; &lt;h1&gt;Hello World&lt;/h1&gt; &lt;/center&gt;
+
+The message from the HelloServer is:
+&lt;p&gt;
+&lt;applet codebase="../.."
+	code="examples.hello.HelloApplet"
+	width=500 height=120&gt;
+&lt;/applet&gt;
+&lt;/HTML&gt;
+</pre></a></dl>次の事項に注意してください。<p>
+<ul><li>そこからクラスをダウンロードしようとするマシン上で HTTP サーバが実行されていなければならない。アプレットの codebase 属性が URL をここで示すように表示する。
+<dl><a name="5241"><pre>codebase="../.."
+</pre></a>
+この例での codebase は web ページ自体がそこからロードされるディレクトリの2段上のレベルを示している。このように相対パスを使うのは良い方法である。
+<p></dl><li>アプレットのコード属性は完全パッケージ修飾されたアプレット名を指定し、この例では <code>examples.hello.HelloApplet</code> となる。
+<dl><a name="5244"><pre>code="examples.hello.HelloApplet"
+</pre></a></dl></ul><h1><a name="7437">
+クラスファイルと HTML ファイルのコンパイルと分配
+</a></h1>
+これで例題 Hello World のためのソースコードが完成し、<code>$HOME/jdk1.1/mysrc/hello</code> ディレクトリに下には4つのファイルが存在します。<p>
+<ul><li><code>Hello.java</code>, このファイルには Hello リモートインタフェースのソースコードが書かれている。
+<li><code>HelloImpl.java</code>, このファイルには HelloImpl リモートオブジェクトを実装するためのソースコードが書かれており、hello World アプレットのサーバになる。
+<li><code>HelloApplet.java</code>, これはアプレットのソースコードである。
+<li><code>index.html</code>, これは Hello World アプレットを参照する web ページである。</ul>
+
+この章では、.java ソースファイルをコンパイルして .class ファイルを作成します。次に rmic コンパイラを実行してスタブとスケルトンを作成します。スタブとはリモートオブジェクトのクライアント側のプロキシであり、RMI 呼び出しをサーバ側のスケルトンに伝える働きをします。するとスケルトンは呼び出しを実際のリモートオブジェクトの実装を呼び出します。<p>
+javac や rmic コンパイラを使用するときは、その結果生成するクラスファイルをどのディレクトリに置くかを指定しなければなりません。アプレットの場合には全てのファイルをそのアプレットの codebase ディレクトリに置かなければなりません。この例では <code>$HOME/public_html/codebase</code> になります。<BR>
+<em>Web サーバの中には、"http://host/~username/" の形式で構成された HTTP URL によってユーザの public_html ディレクトリにアクセスできるものがあります。もし Web サーバがこの規約をサポートしていなければ "file://home/username/public_html" の形式のファイル URL を使うことになります。
+</em><p><h2><a name="5284">
+Java ソースファイルのコンパイル
+</a></h2>
+結果を配置するディレクトリ <code>$HOME/public_html/codebase</code> と開発ディレクトリ <code>$HOME/jdk1.1/mysrc/examples/hello</code> がローカル <code>CLASSPATH</code> によって開発マシン上で明確に定義されていることを確認してください。<p>
+Java ソースファイルをコンパイルするには、次の形式の javac コマンドを実行します。:<p>
+<p><dl><a name="5286"><pre>javac -d $HOME/public_html/codebase
+	Hello.java HelloImpl.java HelloApplet.java
+</pre></a></dl>
+このコマンドはディレクトリ <code>examples/hello</code> (もし、まだ存在していなければ) をディレクトリ <code>$HOME/public_html/codebase</code> の下に作成します。このコマンドは今作成したディレクトリにファイル <code>Hello.class</code>, <code>HelloImpl.class</code>, and <code>HelloApplet.class</code> を書き込みます。 これらのファイルはそれぞれリモートインタフェース、サーバ、そしてアプレットです。
+<p><h2><a name="5287">
+スタブとスケルトンの生成
+</a></h2>
+スタブとスケルトンファイルを作成するには、コンパイル済みでその中でリモートオブジェクトの実装名を指定してあるファイル上で rmic コンパイラを実行します。<code>rmic</code> コンパイラには一つ以上のクラス名を入力として与え、出力として <code>myImpl_Skel.class</code> と <code>myImpl_Stub.class</code> の形式のクラスファイルが作られます。<p>
+例えば、HelloImpl リモートオブジェクト実装のスタブとスケルトンを作成するには次の形式で rmic を実行します。<p>
+<p><dl><a name="5292"><pre>rmic -d $HOME/public_html/codebase examples.hello.HelloImpl
+</pre></a></dl>
+<code>-d</code> オプションはコンパイルされたスタブとスケルトンファイルが置かれるルートディレクトリを示します。したがって、上のコマンドを実行すると次のファイルがディレクトリ <code>$HOME/public_html/codebase/examples/hello</code> の下に作成されます。<p>
+<ul><li><code>HelloImpl_Stub.class</code>
+<li><code>HelloImpl_Skel.class</code></ul>
+
+作成されたスタブはリモートオブジェクトの正確に同一セットのリモートインタフェースを実装することに注意してください。これはクライアントがキャストとタイプチェックのために Java 言語の組み込み演算子を使えることを意味し、同時に Java のリモートオブジェクトが真のオブジェクト指向ポリモーフィズムをサポートしていることを示します。<p><h2><a name="5295">
+HTML ファイルを配置ディレクトリへ移す
+</a></h2>
+アプレットを参照する web ページがクライアントから認識できるように、index.html ファイルを開発ディレクトリから codebase ディレクトリに移動させておかなければなりません。例えば次のコマンドを実行します。<p>
+<p><dl><a name="6899"><pre>mv $HOME/jdk1.1/mysrc/examples/hello/index.html
+	$HOME/public_html/codebase/examples/hello
+</pre></a></dl><h2><a name="6898">
+ランタイムパスの設定
+</a></h2>
+HelloImpl サーバを走らせる前に $<code>HOME/public_html/codebase</code> ディレクトリがサーバのローカル <code>CLASSPATH</code> で認識できることを確認しておいてください。
+<p><h1><a name="7445">
+リモートオブジェクトレジストリ、サーバ、そしてアプレットのスタート
+</a></h1><h2><a name="5522">
+RMI ブートストラップレジストリのスタート
+</a></h2>
+RMI レジストリはサーバ側の単純ブートストラップ名前サーバで、これによりリモートクライアントはリモートオブジェクトへの参照を得ることができます。このサーバは典型的には、アプリケーションが最初に通信するリモートオブジェクトの場所を特定するために使用されます。最初に指定されたオブジェクトが今度はアプリケーションが他のオブジェクトを見つけるサポートを行います。<p>
+サーバ上でレジストリをスタートされるためには rmiregistry コマンドを実行します。このコマンドは何も出力せず、一般にバックグランドで実行されます。Windows95、および Windows NT では次のようになります。<p>
+<p><dl><a name="7223"><pre>start rmiregistry
+</pre></a></dl>(start コマンドが使えなければ javaw を使う)<p>
+Solaris 上では次のようになります。<p>
+<p><dl><a name="5312"><pre>rmiregistry &amp;
+</pre></a></dl>
+デフォルト条件ではレジストリはポート 1099 で実行されます。異なるポート上でレジストリを実行するにはコマンド中でポート番号を指定しなければなりません。例えば、Windows NT 上でポート番号 2001 でレジストリをスタートさせるには次のようにします。
+<p><dl><a name="5314"><pre>start rmiregistry 2001
+</pre></a></dl>
+デフォルト条件以外のポートでレジストリを実行する場合は、レジストリ呼び出しをするときに java.rmi.Naming クラスの URL ベースメソッドの中でポート番号を指定する必要があります。例えば、例題 Hello World の中でポート番号 2001 でレジストリを実行するのであれば、HelloServer の URL とリモートオブジェクト参照を結び付けるために次の呼び出しが必要になります。
+<p><dl><a name="5316"><pre>Naming.rebind("//myhost:2001/HelloServer", obj);
+</pre></a></dl>
+同じような理由により、web ページに格納された URL もデフォルト以外のポートを指定しなければなりません。そうしないと、アプレットがレジストリファイルの中からサーバを探そうとした時点で試みは失敗します。<p>
+<p><dl><a name="5318"><pre>&lt;PARAM name="url" value="//myhost:2001/HelloServer"&gt;
+</pre></a></dl>
+<em>リモートインタフェースを変更するかまたは、リモートオブジェクト実装で変更/追加が発生したときはレジストリを一回停止してから再スタートしなければなりません。そうしないとレジストリで関係付けられたクラスと、修正されたクラスとが一致しなくなります。</em><p>
+<h2><a name="5321">サーバのスタート
+</a></h2>
+サーバをスタートさせる時点で <code>java.rmi.server.codebase</code> プロパティが正しく指定され、サーバが作成するリモートオブジェクトへの参照がスタブクラスをクライアントへ動的にダウンロードするための URL を含んでいなければなりません。<p>
+次のコマンドは、このプロパティを含んで HelloImpl サーバをスタートさせる方法を示します。<p>
+<p><dl><a name="7724"><pre>java -Djava.rmi.server.codebase=http://myhost/~myusrname/codebase/
+	examples.hello.HelloImpl &amp;
+</pre></a></dl>
+<em><code>codebase</code> URL の最後の / は省略できません。</em><p>
+スタブクラスはそれがすでにローカルで利用できる状態になっていない場合に限り、クライアントの仮想マシンへ動的にロードされます。
+<p><h2><a name="5326">
+アプレットの実行
+</a></h2>
+レジストリとサーバが一旦走り出せばアプレットの実行が可能になります。アプレットの実行はブラウザへ該当する web ページをロードするか、または次に示すように appletviewer で行います。<p>
+<p><dl><a name="5328"><pre>appletviewer
+	http://myhost/~myusrname/codebase/examples/hello/index.html &amp;
+</pre></a></dl>
+Appletviewer を走らせると、次の図のような出力がディスプレイ上に現れます。
+<p><a name="7264">
+ <center><img src="getstart.doc.anc.gif"></center><p>
+</a>
+<p>
+<p>
+<hr><br>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.4 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email rmi-support@javasoft.com -->
+<!-- -->
+<!-- Last updated: 02/04/97 16:04:03 -->
+
+</body>
+</html>

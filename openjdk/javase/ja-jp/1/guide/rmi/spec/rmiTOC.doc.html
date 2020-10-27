@@ -1,0 +1,207 @@
+<html><head><title>リモートメソッド呼出し (RMI) 仕様
+</title></head>
+<body bgcolor=#ffffff>
+ 
+目次 前項目 <a href="rmi-intro.doc.html">次項目</a>
+<hr><br>
+<a name="1558">
+<center>
+<h1>リモートメソッド呼出し (RMI) 仕様</h1>
+</center>
+</a>
+<hr><p>
+
+<h2>目次
+</h2>
+<dl>
+<a href="rmi-intro.doc.html#60">
+<dt><dd>入門				
+</a><dl>
+<a href="rmi-intro.doc.html#718">
+<dt><dd>概要
+</a><a href="rmi-intro.doc.html#215">
+<dt><dd>システムの目標				
+</a></dl>
+<a href="rmi-objmodel.doc.html#167">
+<dt><dd>Java 分散オブジェクトモデル				
+</a><dl>
+<a href="rmi-objmodel.doc.html#3441">
+<dt><dd>用語の定義				
+</a><a href="rmi-objmodel.doc.html#182">
+<dt><dd>分散モデルと非分散モデルの比較				
+</a><a href="rmi-objmodel.doc.html#213">
+<dt><dd>RMI インタフェースとクラス				
+</a><a href="rmi-objmodel.doc.html#1830">
+<dt><dd>リモートインタフェースの実装				
+</a><a href="rmi-objmodel.doc.html#307">
+<dt><dd>リモートオブジェクトとローカルスタブにおける型の等価性				
+</a><a href="rmi-objmodel.doc.html#2521">
+<dt><dd>リモートメソッド呼び出しでのパラメーター引き渡し				
+</a><a href="rmi-objmodel.doc.html#315">
+<dt><dd>リモートメソッド呼び出しにおける例外処理				
+</a><a href="rmi-objmodel.doc.html#3734">
+<dt><dd>RemoteObject クラスによる Object メソッドオーバーライド				
+</a><a href="rmi-objmodel.doc.html#2490">
+<dt><dd>final 宣言された Object メソッドのセマンティクス				
+</a><a href="rmi-objmodel.doc.html#357">
+<dt><dd>リモートオブジェクトの位置検出				
+</a></dl>
+<a href="rmi-arch.doc.html#60">
+<dt><dd>システムアーキテクチャ				
+</a><dl>
+<a href="rmi-arch.doc.html#194">
+<dt><dd>概要
+</a><a href="rmi-arch.doc.html#200">
+<dt><dd>アーキテクチャの概要
+</a><a href="rmi-arch.doc.html#240">
+<dt><dd>スタブ/スケルトン層				
+</a><a href="rmi-arch.doc.html#583">
+<dt><dd>リモート参照層				
+</a><a href="rmi-arch.doc.html#264">
+<dt><dd>トランスポート層				
+</a><a href="rmi-arch.doc.html#5112">
+<dt><dd>リモートメソッド呼び出しにおけるスレッドの使用法
+</a><a href="rmi-arch.doc.html#5097">
+<dt><dd>リモートオブジェクトのガベージコレクション				
+</a><a href="rmi-arch.doc.html#280">
+<dt><dd>クラスのダイナミックローディング				
+</a><a href="rmi-arch.doc.html#4041">
+<dt><dd>セキュリティ				
+</a><a href="rmi-arch.doc.html#4018">
+<dt><dd>コンフィギュレーションシナリオ				
+</a><a href="rmi-arch.doc.html#4799">
+<dt><dd>プロキシ経由で RMI をファイアウオールを通して使う				
+</a></dl>
+<a href="rmi-client.doc.html#60">
+<dt><dd>クライアントインタフェース				
+</a><dl>
+<a href="rmi-client.doc.html#1174">
+<dt><dd>リモートインタフェース				
+</a><a href="rmi-client.doc.html#163">
+<dt><dd>RemoteException クラス				
+</a><a href="rmi-client.doc.html#1620">
+<dt><dd>名前付けクラス				
+</a></dl>
+<a href="rmi-server.doc.html#60">
+<dt><dd>サーバインタフェース				
+</a><dl>
+<a href="rmi-server.doc.html#4597">
+<dt><dd>RemoteObject クラス				
+</a><a href="rmi-server.doc.html#5462">
+<dt><dd>RemoteServer クラス				
+</a><a href="rmi-server.doc.html#5794">
+<dt><dd>UnicastRemoteObject クラス				
+</a><a href="rmi-server.doc.html#179">
+<dt><dd>Unreferenced インタフェース				
+</a><a href="rmi-server.doc.html#1638">
+<dt><dd>RMISecurityManager クラス				
+</a><a href="rmi-server.doc.html#1639">
+<dt><dd>RMIClassLoader クラス				
+</a><a href="rmi-server.doc.html#6583">
+<dt><dd>LoaderHandler インタフェース				
+</a><a href="rmi-server.doc.html#4175">
+<dt><dd>RMISocketFactory クラス				
+</a><a href="rmi-server.doc.html#4381">
+<dt><dd>RMIFailureHandler インタフェース				
+</a><a href="rmi-server.doc.html#1621">
+<dt><dd>LogStream クラス				
+</a><a href="rmi-server.doc.html#5845">
+<dt><dd>スタブ、スケルトンコンパイラ				
+</a></dl>
+<a href="rmi-registry.doc.html#60">
+<dt><dd>レジストリインタフェース				
+</a><dl>
+<a href="rmi-registry.doc.html#186">
+<dt><dd>Registry インタフェース				
+</a><a href="rmi-registry.doc.html#6378">
+<dt><dd>LocateRegistry クラス				
+</a><a href="rmi-registry.doc.html#6564">
+<dt><dd>RegistryHandler インタフェース				
+</a></dl>
+<a href="rmi-stubs.doc.html#60">
+<dt><dd>スタブ/スケルトンインタフェース				
+</a><dl>
+<a href="rmi-stubs.doc.html#4526">
+<dt><dd>RemoteStub クラス				
+</a><a href="rmi-stubs.doc.html#161">
+<dt><dd>RemoteCall インタフェース				
+</a><a href="rmi-stubs.doc.html#5474">
+<dt><dd>RemoteRef インタフェース				
+</a><a href="rmi-stubs.doc.html#6689">
+<dt><dd>ServerRef インタフェース				
+</a><a href="rmi-stubs.doc.html#5718">
+<dt><dd>Skeleton インタフェース				
+</a><a href="rmi-stubs.doc.html#6598">
+<dt><dd>Operation クラス				
+</a></dl>
+<a href="rmi-dgc.doc.html#60">
+<dt><dd>ガベージコレクタインタフェース				
+</a><dl>
+<a href="rmi-dgc.doc.html#6449">
+<dt><dd>インタフェース DGC				
+</a><a href="rmi-dgc.doc.html#6770">
+<dt><dd>Lease クラス				
+</a><a href="rmi-dgc.doc.html#7144">
+<dt><dd>ObjID クラス				
+</a><a href="rmi-dgc.doc.html#6758">
+<dt><dd>UID クラス				
+</a><a href="rmi-dgc.doc.html#6613">
+<dt><dd>VMID クラス				
+</a></dl>
+<a href="rmi-protocol.doc.html#60">
+<dt><dd>RMI ワイヤプロトコル				
+</a><dl>
+<a href="rmi-protocol.doc.html#3243">
+<dt><dd>概要				
+</a><a href="rmi-protocol.doc.html#3249">
+<dt><dd>RMI トランスポートプロトコル				
+</a><a href="rmi-protocol.doc.html#3270">
+<dt><dd>RMI におけるオブジェクトシリアライゼイションプロトコルの使用				
+</a><a href="rmi-protocol.doc.html#3278">
+<dt><dd>RMI におけるHTTP POST プロトコルの使用				
+</a><a href="rmi-protocol.doc.html#3474">
+<dt><dd>RMI のアプリケーション固有の値				
+</a><a href="rmi-protocol.doc.html#3477">
+<dt><dd>RMI の多重プロトコル				
+</a></dl>
+<a href="rmi-exceptions.doc.html#3601">
+<dt><dd>RMI の例外				
+</a><dl>
+<a href="rmi-exceptions.doc.html#4746">
+<dt><dd>リモートオブジェクトのエクスポートにおける例外				
+</a><a href="rmi-exceptions.doc.html#4332">
+<dt><dd>RMI コールにおける例外				
+</a><a href="rmi-exceptions.doc.html#4940">
+<dt><dd>リターンにおける例外とエラー				
+</a><a href="rmi-exceptions.doc.html#4823">
+<dt><dd>名前付け例外				
+</a><a href="rmi-exceptions.doc.html#4824">
+<dt><dd>それ以外の例外				
+</a></dl>
+<a href="rmi-properties.doc.html#3601">
+<dt><dd>RMI のプロパティ				
+</a><dl>
+<a href="rmi-properties.doc.html#4746">
+<dt><dd>サーバのプロパティ				
+</a><a href="rmi-properties.doc.html#4332">
+<dt><dd>その他のプロパティ				
+</a></dl>
+</dl>
+
+<hr><br>
+ 
+目次 前項目 <a href="rmi-intro.doc.html">次項目</a>
+<hr><br>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.4 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email rmi-support@java.Sun.COM -->
+<!-- -->
+<!-- Last updated: 03/18/97 12:59:09 -->
+
+</body>
+</html>

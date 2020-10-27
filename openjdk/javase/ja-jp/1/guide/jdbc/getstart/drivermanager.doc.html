@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="connection.doc.html">前項目</a>  | <a href="statement.doc.html">次項目</a>
+</font></td><td align=right><i>JDBC<sup><font size=-2>TM</font></sup> ガイド: 「はじめましょう」</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+<a name="999037"></a>
+<h1>3  - ドライバマネージャ</h1>
+<a name="999046"></a>
+この概要は、現在 JavaSoft で作成中の <em>JDBC<font size=-1><sup>TM</sup></font> Database Access with Java<font size=-1><sup>TM</sup></font>:  A Tutorial and Annotated Reference,</em> からの引用です。この本は JDBC の自習書であるとともに決定版リファレンスマニュアルで、1997 年春に Addison-Wesley Publishing Company から Java シリーズの一部として発行されています。
+<p>
+<a name="999083"></a>
+<h2>3.1	 &nbsp;&nbsp; 概要</h2>
+<a name="999086"></a>
+<code>DriverManager</code> クラスは、ユーザとドライバの間で機能する JDBC の管理レイヤです。このドライバマネージャにより、データベースと適切なドライバとの接続を有効かつ容易に行うドライバを、常に知ることができます。加えて、<code>DriverManager</code> クラスは、ドライバのログイン時間の制限やログのプリントおよびメッセージの追跡などを行います。
+<p><a name="999049"></a>
+
+単純なアプリケーションにとって、このクラスにおける一般のプログラマが直接に使用しようとする唯一のメソッドは <code>DriverManager.getConnection</code> です。その名前が示すとおり、このメソッドはデータベースへの接続を行います。 JDBC によりユーザは、Driver メソッド connect と同様 DriverManager のメソッド、 <code>getDriver</code> 、 <code>getDrivers</code> 、および <code>registerDriver</code> を呼び出せますが、<code>DriverManager</code> のクラスにデータベースとの接続に関する詳細を管理させる方がよい場合が多いようです。
+<p>
+<a name="999050"></a>
+<h3>3.1.1	 &nbsp; &nbsp; 使用可能なドライバを常に知る方法</h3>
+<a name="999103"></a>
+<code>DriverManager</code> クラスは、<code>DriverManager.registerManager</code> メソッドの呼び出しによって登録される<code> Driver </code>クラスのリストを持っています。その Driver クラスは、 DriverManager クラスによってロードされるタイミングで DriverManager クラスに登録されます。したがって、ユーザは通常 <code>DriverManager.registerDriver</code> を直接呼び出すことはなく、ロード時にドライバによって自動的に呼び出されます。<code>Driver</code> クラスがロードされ自動的に <code>DriverManager</code> に記録されるには、以下の 2 通りの方法があります。
+
+
+<p><ol>
+<a name="999052"></a>
+<li><code>Class.forName</code> メソッドを呼び出す方法。これは明示的にドライバクラスをロードします。これは外部のどのセットアップにも依存していないので、この方法でのドライバのロードを推奨します。<code>acme.db.Driver</code> をロードするコードは以下のとおりです。
+<pre><a name="999053"></a>    Class.forName("acme.db.Driver");
+</pre><a name="999054"></a>
+ロードすることによって、インスタンスを作成し、そしてそのインスタンスを (あるべき形の) パラメータとして <code>DriverManager.registerDriver</code> を呼び出すために <code>acme.db.Driver</code> が書き込まれる場合、それはドライバの <code>DriverManager</code> のリストに存在し、接続するために使用することができます。
+<p>
+<a name="999056"></a>
+<li>ドライバを <code>java.lang.System</code> プロパティ <code>jdbc.drivers</code> に加える方法。これは <code>DriverManager</code> クラスがロードするドライバのクラス名のリストで、コロンで区切られています。<code>DriverManager</code> クラスが初期化されると、それはシステムプロパティ <code>jdbc.drivers</code> を検索し、ユーザが 1 つ以上のドライバを入力すると、<code>DriverManager</code> クラスがそれらをロードしようとします。以下のコードは、プログラマがどのように <code>~/.hotjava/properties</code> に 3 つのドライバクラスを入力するかを説明します（HotJavaがスタートアップ上のシステムプロパティ内にこれらをロードします）。
+
+</ol>
+<pre><a name="999057"></a>    jdbc.drivers=foo.bah.Driver:wombat.sql.Driver:bad.test.ourDriver;
+</pre><a name="999058"></a>
+<code>DriverManager</code> メソッドへの最初の呼び出しは、これらのドライバを自動的にロードします。
+<p>
+<a name="999059"></a>
+ドライバをロードするこの第 2 の方法では、持続的な環境をあらかじめ設定しておく必要があることに注意してください。もしこれについて疑問がある場合は、 <code>Class.forName</code>  メソッドを呼び出して、それぞれのドライバを正確にロードする方が安全です。いったん <code>DriverManager</code> クラスが初期化されると、<code>jdbc.drivers</code> プロパティリストを再チェックをしないため、これが特別なドライバを起動させるために用いるメソッドとなります。
+<p>
+<a name="999060"></a>
+上記の両方の場合において、 <code>DriverManager.registerDriver</code> を呼び出して自らを登録することは、新たにロードされた <code>Driver</code> クラスの責任です。上述のとおり、これはクラスのロード時に、自動的に行われる必要があります。
+<p>
+<a name="999061"></a>
+セキュリティ上の理由から、 JDBC 管理レイヤはクラスローダがどのドライバを供給するかを追跡します。そして <code>DriverManager</code> クラスが接続を開始するときに、ローカルファイルシステムから得られるドライバ、または接続のための要求を発行するコードと同一のクラスローダから得られるドライバのみを使用します。
+<p>
+<a name="999062"></a>
+<h3>3.1.2	 &nbsp; &nbsp; 接続の達成</h3>
+<a name="999106"></a>
+<code>Driver</code> のクラスがロードされ、<code>DriverManager</code> クラスに登録されると、それらはデータベースとの接続を達成するために使用可能です。接続要求が <code>DriverManager.getConnection</code> メソッドに対する呼び出しによって行われると、<code>DriverManager</code> は、順次各ドライバをテストして、それが接続を達成できるかどうか確認します。
+<p><a name="999064"></a>
+ときとして、複数の JDBC ドライバが URL と接続できる場合があるかもしれません。たとえば、リモートデータベースに接続する場合、JDBC−ODBC ブリッジドライバ、JDBC- 汎用ネットワークプロトコル間ドライバ、またはデータベースのベンダが供給するドライバを使用することが可能でしょう。このような場合、 <code>DriverManager</code> はその URL に正常に接続できることがわかった最初のドライバを使用するので、ドライバがどの順序でテストされるかは重要です。
+<p>
+<a name="999065"></a>
+<code>DriverManager</code> はまず、登録された順序でドライバを使用しようとします（jdbc.drivers にリストされているドライバは、常に最初に登録されます）。 DriverManager は、接続を開始しようとしているコードと同一のソースからロードされていない限り、信頼されないコードのドライバをすべて無視します。
+<p>
+<a name="999066"></a>
+<code>DriverManager</code> は、それぞれのメソッド Driverconnect を順次呼び出すことによってドライバをテストし、ユーザーが始めにメソッド <code>DriverManager.getConnection</code> に渡した URL をそれらのドライバに渡します。 URL を認識した最初のドライバが接続を行います。
+<p>
+<a name="999067"></a>
+一見したところではこの方法は非効率的に見えるかもしれませんが、これは数ダースものドライバが同時にロードされることはありえないため、2、3 のプロシージャコールと接続ごとの文字列比較しか必要ではありません。
+<p>
+<a name="999068"></a>
+以下のコードは、 JDBC−ODBC ブリッジドライバのようなドライバによって接続をセットアップするために通常要求されるコードの一例です。
+<p>
+<pre><a name="999069"></a>    Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");  //loads the driver
+<a name="999070"></a>    String url = "jdbc:odbc:fred";
+<a name="999071"></a>    DriverManager.getConnection(url, "userID", "passwd");
+<a name="998237"></a>    
+</pre>
+
+<br>
+<hr>
+<font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="connection.doc.html">前項目</a>  | <a href="statement.doc.html">次項目</a>
+</font>
+<hr>
+
+
+<address>
+<a href="mailto:jdbc@wombat.eng.sun.com">jdbc@wombat.eng.sun.com</a>
+または
+<a href="mailto:jdbc-odbc@wombat.eng.sun.com">jdbc-odbc@wombat.eng.sun.com</a>
+</address>
+
+<a href="copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>

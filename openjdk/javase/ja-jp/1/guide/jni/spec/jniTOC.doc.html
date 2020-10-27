@@ -1,0 +1,322 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title> </title>
+</head>
+<body bgcolor=#ffffff>
+ 
+目次 | 前項目 | <a href="copyright.doc.html">次項目</a> 
+<hr><br>
+ 
+<center>
+<h1>Java ネイティブインタフェース仕様書
+</h1>
+<h3></h3>
+<h3></h3>
+<h3></h3>
+<h4>1997 年3 月 6 日</h4>
+</center>
+<hr>
+<p>
+<h3>目次</h3>
+<dl>
+<br>
+<dt><dd><a href="intro.doc.html">
+<font size=+2><bold>	1.	  はじめに				</bold></font>
+</a><dl>
+<a href="intro.doc.html#16635">
+<dt><dd> Java ネイティブインタフェース概要				
+</a><a href="intro.doc.html#16230">
+<dt><dd> 背景				
+</a><dl>
+<a href="intro.doc.html#16684">
+<dt><dd> JDK 1.0 ネイティブメソッドインタフェース				
+</a><a href="intro.doc.html#16413">
+<dt><dd> Java ランタイムインタフェース				
+</a><a href="intro.doc.html#16442">
+<dt><dd> ローネイティブインタフェースと Java/COM インタフェース				
+</a></dl>
+<a href="intro.doc.html#16410">
+<dt><dd> 目的				
+</a><a href="intro.doc.html#16465">
+<dt><dd> Java ネイティブインタフェースのアプローチ				
+</a><a href="intro.doc.html#16539">
+<dt><dd> JNI でのプログラミング				
+</a></dl>
+<br>
+<dt><dd><a href="design.doc.html">
+<font size=+2><bold>	2.	 設計の概要				</bold></font>
+</a><dl>
+<a href="design.doc.html#16696">
+<dt><dd> JNI インタフェースの関数とポインタ				
+</a><a href="design.doc.html#679">
+<dt><dd> ネイティブメソッドのロードとリンク				
+</a><dl>
+<a href="design.doc.html#615">
+<dt><dd> ネイティブメソッド名の解決				
+</a><a href="design.doc.html#715">
+<dt><dd>ネイティブメソッドの引数				
+</a></dl>
+<a href="design.doc.html#16785">
+<dt><dd> Java オブジェクトの参照				
+</a><dl>
+<a href="design.doc.html#1242">
+<dt><dd> ローカルおよびグローバル参照				
+</a><a href="design.doc.html#529">
+<dt><dd>ローカル参照の実装				
+</a></dl>
+<a href="design.doc.html#1253">
+<dt><dd> Java オブジェクトへのアクセス				
+</a><dl>
+<a href="design.doc.html#1265">
+<dt><dd> プリミティブ配列へのアクセス				
+</a><a href="design.doc.html#17074">
+<dt><dd> フィールドおよびメソッドへのアクセス				
+</a></dl>
+<a href="design.doc.html#17593">
+<dt><dd> プログラミングエラーの報告				
+</a><a href="design.doc.html#770">
+<dt><dd> Java の例外				
+</a><dl>
+<a href="design.doc.html#815">
+<dt><dd> 例外とエラーコード				
+</a><a href="design.doc.html#17629">
+<dt><dd> 非同期な例外				
+</a><a href="design.doc.html#17626">
+<dt><dd> 例外の取扱い				
+</a></dl>
+</dl>
+<br>
+<dt><dd><a href="types.doc.html">
+<font size=+2><bold>	3.	 JNI の型とデータ構造				</bold></font>
+</a><dl>
+<a href="types.doc.html#428">
+<dt><dd>プリミティブ型				
+</a><a href="types.doc.html#15954">
+<dt><dd>参照型				
+</a><a href="types.doc.html#1064">
+<dt><dd>フィールドとメソッド ID				
+</a><a href="types.doc.html#568">
+<dt><dd>値の型				
+</a><a href="types.doc.html#16432">
+<dt><dd>型のシグネチャ				
+</a><a href="types.doc.html#16542">
+<dt><dd> UTF-8 文字列				
+</a></dl>
+<br>
+<dt><dd><a href="functions.doc.html">
+<font size=+2><bold>	4.	  JNI 関数				</bold></font>
+</a><dl>
+<a href="functions.doc.html#23720">
+<dt><dd>インタフェース関数表				
+</a><a href="functions.doc.html#23717">
+<dt><dd>バージョン情報				
+</a><dl>
+<a href="functions.doc.html#15951">
+<dt><dd> GetVersion				
+</a></dl>
+<a href="functions.doc.html#15982">
+<dt><dd>クラスオペレーション				
+</a><dl>
+<a href="functions.doc.html#15986">
+<dt><dd> DefineClass				
+</a><a href="functions.doc.html#16027">
+<dt><dd> FindClass				
+</a><a href="functions.doc.html#18292">
+<dt><dd> GetSuperclass				
+</a><a href="functions.doc.html#16061">
+<dt><dd> IsAssignableFrom				
+</a></dl>
+<a href="functions.doc.html#5234">
+<dt><dd>例外				
+</a><dl>
+<a href="functions.doc.html#16086">
+<dt><dd> Throw				
+</a><a href="functions.doc.html#16104">
+<dt><dd> ThrowNew				
+</a><a href="functions.doc.html#16124">
+<dt><dd> ExceptionOccurred				
+</a><a href="functions.doc.html#16146">
+<dt><dd> ExceptionDescribe				
+</a><a href="functions.doc.html#16166">
+<dt><dd> ExceptionClear				
+</a><a href="functions.doc.html#16186">
+<dt><dd> FatalError				
+</a></dl>
+<a href="functions.doc.html#16270">
+<dt><dd> グローバルおよびローカル参照				
+</a><dl>
+<a href="functions.doc.html#16274">
+<dt><dd> NewGlobalRef				
+</a><a href="functions.doc.html#16294">
+<dt><dd> DeleteGlobalRef				
+</a><a href="functions.doc.html#18654">
+<dt><dd> DeleteLocalRef				
+</a></dl>
+<a href="functions.doc.html#16334">
+<dt><dd>オブジェクトオペレーション				
+</a><dl>
+<a href="functions.doc.html#16337">
+<dt><dd> AllocObject				
+</a><a href="functions.doc.html#4517">
+<dt><dd> 
+</a><a href="functions.doc.html#16454">
+<dt><dd> GetObjectClass				
+</a><a href="functions.doc.html#16472">
+<dt><dd> IsInstanceOf				
+</a><a href="functions.doc.html#16514">
+<dt><dd> IsSameObject				
+</a></dl>
+<a href="functions.doc.html#16536">
+<dt><dd>オブジェクトのフィールドへのアクセス				
+</a><dl>
+<a href="functions.doc.html#16540">
+<dt><dd> GetFieldID				
+</a><a href="functions.doc.html#16572">
+<dt><dd> Get&lt;type&gt;Fieldルーチン				
+</a><a href="functions.doc.html#16613">
+<dt><dd> Set&lt;type&gt;Fieldルーチン				
+</a></dl>
+<a href="functions.doc.html#16656">
+<dt><dd>インスタンスメソッドの呼び出し				
+</a><dl>
+<a href="functions.doc.html#16660">
+<dt><dd> GetMethodID				
+</a><a href="functions.doc.html#4256">
+<dt><dd> Call&lt;type&gt;Method 
+</a><a href="functions.doc.html#4581">
+<dt><dd> CallNonvirtual&lt;type&gt;Method 
+</a></dl>
+<a href="functions.doc.html#5901">
+<dt><dd> static フィールドへのアクセス				
+</a><dl>
+<a href="functions.doc.html#16823">
+<dt><dd> GetStaticFieldID				
+</a><a href="functions.doc.html#20752">
+<dt><dd> GetStatic&lt;type&gt;Field ルーチン				
+</a><a href="functions.doc.html#20829">
+<dt><dd> SetStatic&lt;type&gt;Field ルーチン				
+</a></dl>
+<a href="functions.doc.html#20949">
+<dt><dd> static メソッドの呼び出し				
+</a><dl>
+<a href="functions.doc.html#20950">
+<dt><dd> GetStaticMethodID				
+</a><a href="functions.doc.html#4796">
+<dt><dd> CallStatic&lt;type&gt;Method 
+</a></dl>
+<a href="functions.doc.html#5386">
+<dt><dd>文字列オペレーション				
+</a><dl>
+<a href="functions.doc.html#4925">
+<dt><dd> NewString				
+</a><a href="functions.doc.html#17132">
+<dt><dd> GetStringLength				
+</a><a href="functions.doc.html#17158">
+<dt><dd> GetStringChars				
+</a><a href="functions.doc.html#17188">
+<dt><dd> ReleaseStringChars				
+</a><a href="functions.doc.html#17220">
+<dt><dd> NewStringUTF				
+</a><a href="functions.doc.html#23871">
+<dt><dd> GetStringUTFLength				
+</a><a href="functions.doc.html#17265">
+<dt><dd> GetStringUTFChars				
+</a><a href="functions.doc.html#17294">
+<dt><dd> ReleaseStringUTFChars				
+</a></dl>
+<a href="functions.doc.html#17314">
+<dt><dd>配列オペレーション				
+</a><dl>
+<a href="functions.doc.html#21732">
+<dt><dd> GetArrayLength				
+</a><a href="functions.doc.html#21619">
+<dt><dd> NewObjectArray				
+</a><a href="functions.doc.html#21671">
+<dt><dd> GetObjectArrayElement				
+</a><a href="functions.doc.html#21699">
+<dt><dd> SetObjectArrayElement				
+</a><a href="functions.doc.html#17318">
+<dt><dd> New&lt;PrimitiveType&gt;Array ルーチン				
+</a><a href="functions.doc.html#17382">
+<dt><dd> Get&lt;PrimitiveType&gt;ArrayElements ルーチン				
+</a><a href="functions.doc.html#17440">
+<dt><dd> Release&lt;PrimitiveType&gt;ArrayElements ルーチン				
+</a><a href="functions.doc.html#6212">
+<dt><dd> Get&lt;PrimitiveType&gt;ArrayRegion ルーチン				
+</a><a href="functions.doc.html#22933">
+<dt><dd> Set&lt;PrimitiveType&gt;ArrayRegion ルーチン				
+</a></dl>
+<a href="functions.doc.html#5833">
+<dt><dd>ネイティブメソッドの登録				
+</a><dl>
+<a href="functions.doc.html#17734">
+<dt><dd> RegisterNatives				
+</a><a href="functions.doc.html#17775">
+<dt><dd> UnregisterNatives				
+</a></dl>
+<a href="functions.doc.html#5256">
+<dt><dd> モニタオペレーション				
+</a><dl>
+<a href="functions.doc.html#23124">
+<dt><dd> MonitorEnter				
+</a><a href="functions.doc.html#5252">
+<dt><dd> MonitorExit				
+</a></dl>
+<a href="functions.doc.html#5263">
+<dt><dd> Java VM インタフェース				
+</a><dl>
+<a href="functions.doc.html#23168">
+<dt><dd> GetJavaVM				
+</a></dl>
+</dl>
+<br>
+<dt><dd><a href="invocation.doc.html">
+<font size=+2><bold>	5.	 呼び出し API				</bold></font>
+</a><dl>
+<a href="invocation.doc.html#15926">
+<dt><dd>概要				
+</a><dl>
+<a href="invocation.doc.html#15956">
+<dt><dd> VMの生成				
+</a><a href="invocation.doc.html#1060">
+<dt><dd>VM への接続				
+</a><a href="invocation.doc.html#16553">
+<dt><dd>VM のアンロード				
+</a></dl>
+<a href="invocation.doc.html#16554">
+<dt><dd>初期化構造				
+</a><a href="invocation.doc.html#756">
+<dt><dd> 呼び出し API の関数				
+</a><dl>
+<a href="invocation.doc.html#16064">
+<dt><dd> JNI_GetDefaultJavaVMInitArgs				
+</a><a href="invocation.doc.html#633">
+<dt><dd> JNI_GetCreatedJavaVMs				
+</a><a href="invocation.doc.html#16334">
+<dt><dd> JNI_CreateJavaVM				
+</a><a href="invocation.doc.html#16089">
+<dt><dd> DestroyJavaVM				
+</a><a href="invocation.doc.html#16436">
+<dt><dd> AttachCurrentThread				
+</a><a href="invocation.doc.html#16108">
+<dt><dd> DetachCurrentThread				
+</a>
+<dt><dd> 
+</dl>
+</dl>
+</dl>
+
+
+<hr>
+<!-- This inserts footnotes--><p>
+目次 | 前項目 | <a href="copyright.doc.html">次項目</a> 
+<p>
+<font size=-1>Java ネイティブインタフェース仕様 (1997年3月15日にdkramer によって生成されたHTML)<br>
+<i><a href="copyright.doc.html">Copyright (C) 1996, 1997 Sun Microsystems, Inc.</a>
+All rights reserved</i>
+<br>
+コメントは、<a href="mailto:jni@java.sun.com">jni@java.sun.com</a>宛てに送ってください。
+</font>
+</body></html>
+

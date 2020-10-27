@@ -1,0 +1,164 @@
+<html><head><title>オブジェクト入力インタフェース
+</title></head>
+<body bgcolor=#ffffff>
+ 
+<a href="serialTOC.doc.html">[目次]</a> <a href="output.doc.html">[前項目]</a>
+<a href="class.doc.html">[次項目]</a>
+<hr><br>
+ 
+<h1><a name="60">
+オブジェクト入力インタフェース
+
+</a></h1>
+<hr><p>
+<p><h3><a name="883">
+トピック:
+</a></h3><ul><li><a href="input.doc.html#961">ObjectInputStream クラス</a>
+<li><a href="input.doc.html#3403">ObjectInputValidation インタフェース</a>
+<li><a href="input.doc.html#2971">readObject メソッド</a>
+<li><a href="input.doc.html#4602">readExternal メソッド</a>
+</ul><h1><a name="961">
+ObjectInputStream クラス
+</a></h1>クラス <code>ObjectInputStream</code> は、オブジェクトの直列化復元を実装するためのものです。このクラスは、すでに直列化復元されたオブジェクト群などのストリームの状態を管理します。このクラスのメソッドを使えば、ObjectOutputStream によって書き込まれたストリームから、プリミティブ型やオブジェクトを読み込むことができます。このクラスは、それが参照するオブジェクトをストリームから復元します。
+<p><dl><pre>package java.io;
+
+public class ObjectInputStream
+	extends InputStream
+	implements ObjectInput, ObjectStreamConstants
+{
+	public ObjectInputStream(InputStream in)
+		throws StreamCorruptedException, IOException;
+
+	public final Object readObject()
+		throws OptionalDataException, ClassNotFoundException, 
+			IOException;
+
+	public final void defaultReadObject()
+		throws IOException, ClassNotFoundException,
+			NotActiveException;
+
+	public synchronized void registerValidation(
+		ObjectInputValidation obj, int prio)
+		throws NotActiveException, InvalidObjectException;
+
+	protected Class resolveClass(ObjectStreamClass v)
+		throws IOException, ClassNotFoundException;
+
+	protected Object resolveObject(Object obj)
+	    	throws IOException;
+
+	protected final boolean enableResolveObject(boolean enable)
+		throws SecurityException;
+
+	protected void readStreamHeader()
+		throws IOException, StreamCorruptedException;
+
+	public int read() throws IOException;
+
+	public int read(byte[] data, int offset, int length)
+		throws IOException
+
+	public int available() throws IOException;
+
+	public void close() throws IOException;
+
+	public boolean readBoolean() throws IOException;
+
+	public byte readByte() throws IOException;
+
+	public int readUnsignedByte()  throws IOException;
+
+	public short readShort()  throws IOException;
+
+	public int readUnsignedShort() throws IOException;
+
+	public char readChar()  throws IOException;
+
+	public int readInt()  throws IOException;
+
+	public long readLong()  throws IOException;
+
+	public float readFloat() throws IOException;
+
+	public double readDouble() throws IOException;
+
+	public void readFully(byte[] data) throws IOException;
+
+	public void readFully(byte[] data, int offset, int size)
+		throws IOException;
+
+	public int skipBytes(int len) throws IOException;
+
+	public String readLine() throws IOException;
+
+	public String readUTF() throws IOException;
+</pre><pre>}
+</pre></dl><code>ObjectInputStream</code> 構築子には InputStream が必要です。この構築子は、<code>readStreamHeader</code> を呼び出して読み込み、対応する <code>ObjectOutputStream</code>.<code>writeStreamHeader</code> メソッドによって書き込まれたヘッダーとバージョンを検査します。
+<p>ストリームからオブジェクトを直列化復元するには、<code>readObject</code> メソッドを使用します。このメソッドは、このストリームを読んで、オブジェクトを再構築します。
+<p><ol>
+<li>ブロックデータレコードがストリームにあると、BlockDataException をスローし、使用可能なバイト数を知らせます。
+<li>ストリームのオブジェクトが null なら、null を返します。
+<li>ストリームのオブジェクトが前のオブジェクトに対するハンドルなら、そのオブジェクトを返します。
+<li>ストリームのオブジェクトが文字列なら、UTF コード化を読み、それとそのハンドルを、認識されているオブジェクト・セットに追加し、その文字列を返します。
+<li>ストリームのオブジェクトがクラスなら、その ObjectStreamClass 記述子を読み、それとそのハンドルを、認識されているオブジェクト・セットに追加し、対応するクラスオブジェクトを返します。
+<li>ストリームのオブジェクトが ObjectStreamClass なら、その名前と serialVersionUID とフィールドを読み、それとそのハンドルを、認識されているオブジェクト・セットに追加します。このストリームに対し resolveClass メソッドを呼び出して、この記述子のローカルクラスを入手します。そのクラスが見つからないときは例外をスローします。ObjectStreamClass オブジェクトを返します。
+<li>ストリームのオブジェクトが配列なら、その ObjectStreamClass と配列の長さを読みます。その配列を割り当て、それとそのハンドルを、認識されているオブジェクト・セットに追加します。各要素をその型に適したメソッドを使って読み込み、それを配列に代入し、その配列を返します。
+<li>その他のオブジェクトの場合は、そのオブジェクトの ObjectStreamClass がストリームから読み込まれます。その ObjectStreamClass のローカルクラスが取り出されます。このクラスは、直列化可能か外部化可能でなければなりません。
+<li>そのクラスのインスタンスが割り当てられます。そのインスタンスとそのハンドルが、認識されているオブジェクト・セットに追加されます。内容が適切に復元されます。
+<ul>
+<li>Serializable オブジェクトの場合、直列化不能なスーパー型の引数無しの構築子が実行されてから、各クラスのフィールドが復元されます。このために、クラス固有の <code>readObject</code> メソッドか、これらが定義されていなければ、<code>defaultReadObject</code> メソッドが呼び出されます。通常なら、このストリームを書き込んだクラスのバージョンは、このストリームを読み込むクラスと同じです。この場合、ストリームのオブジェクトのすべてのスーパー型は、現在ロードされているクラスのスーパー型と一致します。このストリームを書き込んだクラスのバージョンのスーパー型が、ロードされているクラスのスーパー型と異なる場合は、ObjectInputStream で異なるクラスの状態を復元したり、初期化したりする際、いっそうの注意が必要です。この場合には、すべてのクラスを調べて、ストリームにあるデータと、復元するオブジェクトのクラスとを比較する必要があります。ストリームにはあるがオブジェクトにはないクラスのデータは破棄されます。オブジェクトにはあるがストリームにはないクラスの場合には、そのクラスのフィールドが、デフォルトの直列化によってデフォルト値に設定されます。
+<li>外部化オブジェクトの場合、そのクラスの引数無しの構築子が実行されてから <code>readExternal</code>メソッドが呼び出され、そのオブジェクトの内容が復元されます。
+</ul>
+<li><code>enableResolveObject</code> によってオンにされていれば、<code>resolveObject</code> メソッドが、このオブジェクトが返されるすぐ前に呼び出されます。これによって、必要ならサブクラスがそれを置き換えることができます。<code>resolveObject</code> の呼び出しの値は、<code>readObject</code> から返されます。
+</ol>
+プリミティブ型を読むためのすべてのメソッドは、ストリームのブロックデータレコードからバイトだけを使用します。ストリームの次のアイテムがオブジェクトのときにプリミティブデータの読み込みが行われると、読み込みメソッドは -1 か EOFException のうち、適切なものを返します。 プリミティブ型の値は、DataInputStream によってブロックデータレコードから読み込まれます。
+<p>スローされた例外は、そのトラバースの間に起きたエラーか、基本のストリームで起きた例外を反映したものです。例外がスローされた場合、基本のストリームは不明で使用不能な状態のままです。
+<p>ストリームでリセットトークンが起こると、ストリームのすべての状態は破棄されます。認識されているオブジェクトセットはクリアされます。
+<p>ストリームで例外トークンが起こると、その例外が読み込まれ、新しい WriteAbortedException がスローされます。このとき、停止を引き起こした例外が引数として指定されます。ストリームコンテキストは前に述べたようにリセットされます。
+<p>ストリームからオブジェクトのフィールドを読み込むには、<code>defaultReadObject</code> メソッドを使用します。このメソッドは、ストリームのクラス記述子を使って、名前と型によってストリームからそれらのフィールドを読み込みます。それらの値は、名前によって現行クラスの対応するフィールドに代入されます。バージョン化メカニズムの詳細については、<a href="version.doc.html#6519">互換性のある Javaの型展開</a> を参照してください。ストリームにない、オブジェクトのフィールドは、そのデフォルト値に設定されます。ストリームにあるがオブジェクトにない値は破棄されます。このような状態は主に、クラスの後のバージョンで、前のバージョンにはなかったフィールドを追加で書き込んだ場合に起こります。このメソッドは、クラスのフィールドを復元している間に <code>readObject</code> メソッドからのみ呼び出すことができます。それ以外のときに呼び出すと、NotActiveException がスローされます。
+<p><code>registerValidation</code> メソッドを呼び出すと、オブジェクトが <code>readObject</code> の元の呼び出し側に返される前にグラフ全体が復元された際、コールバックを要求することができます。有効化コールバックの順序は、優先順次で制御することができます。高い値のコールバックは、低い値のものより前に呼び出されます。有効にされるオブジェクトは、<code>ObjectInputValidation</code> インタフェースをサポートし、<code>validateObject</code> メソッドを実装していなければなりません。有効化を登録するのは、クラスの <code>readObject</code> メソッドを呼び出す間でなければなりません。さもないと、NotActiveException がスローされます。registerValidation に指定されたコールバックオブジェクトが null の場合、InvalidObjectException がスローされます。
+<p><code>resolveClass</code> メソッドは、直列化復元されている間と、そのクラス記述子が読み込まれた後で呼び出されます。サブクラスは、このメソッドを拡張して、<code>ObjectOutputStream</code> の対応するサブクラスによって書き込まれたクラスの他の情報を読むことができます。このメソッドは、与えられた名前と serialVersionUID をもつクラスを見つけ、返さなければなりません。デフォルトの実装では、このクラスは、クラスローダーをもつ <code>readObject</code> の最も近い呼び出し側のクラスローダーを呼び出すことによって、見つけられます。このクラスが見つからないと、<code>ClassNotFoundException</code> が通常スローされます。
+<p><code>resolveObject</code>メソッドは、直列化復元の際に、あるオブジェクトを別のオブジェクトの代わりにモニターしたり、あるオブジェクトで別のオブジェクトを置換したりすることを可能にするために、信頼されたサブクラスによって使用されます。オブジェクトの解決は、解決する最初のオブジェクトに対して <code>readObject</code> を呼び出す前に、<code>enableResolveObject</code> を呼び出して明示的に使用可能にしなければなりません。これを使用可能にすると、<code>resolveObject</code> は、それぞれの直列化可能オブジェクトに対して、それが readObject から最初に返される直前に 1 度だけ呼び出されます。サブクラスの実装では、オリジナルの代わりに代入されたり返されたりする置換オブジェクトが、返されることがあります。返されるオブジェクトは、一貫性があり、元のオブジェクトへの参照に必ず代入できる型のものでなければなりません。さもないと、<code>ClassCastException</code> が返されます。すべての代入では型の検査が行われます。ストリームにおける元のオブジェクトへのすべての参照は、置換オブジェクトへの参照によって置き換えられます。
+<p><code>enableResolveObject</code> メソッドは、直列化復元の際に、あるオブジェクトを別のオブジェクトの代わりにモニターしたり、あるオブジェクトで別のオブジェクトを置換することを可能にするために、 ObjectOutputStream の信頼されたサブクラスによって使用されます。 オブジェクトの置換は、<code>enableResolveObject</code> が <code>true</code> 値で呼び出されるまでオフにされます。オブジェクトの置換は、その後で <code>false</code> を設定することによってオフにすることができます。前の設定が返されます。enableResolveObject メソッドは、置換を要求しているストリームが信頼できるかどうかを検査します。直列化復元されたオブジェクトへのすべての参照は、resolveObject メソッドへ返されます。オブジェクトの private 状態が意図せずに変更されることのないように、信頼されたストリームだけしか resolveObject を使用することはできません。信頼されたクラスとは、クラスローダーが null に等しいクラスのことです。
+<p><code>readStreamHeader</code> メソッドは、ストリームのマジック番号とバージョンを読み込み、検査します。それらが一致しないと、<code>StreamCorruptedMismatch</code> がスローされます。
+<p><h1><a name="3403">ObjectInputValidation インタフェース
+</a></h1>       このインタフェースを使うと、完全なグラフのオブジェクトが直列化復元されたとき、オブジェクトが呼び出されます。オブジェクトを有効にできない場合、このインタフェースは通常 <code>ObjectInvalidException</code> をスローします。validateObject の呼び出しで例外が起こると、有効化処理は停止され、InvalidObjectException がスローされます。
+<p><dl><pre>package java.io;
+
+public interface ObjectInputValidation
+{
+	public void validateObject()
+		throws InvalidObjectException;
+}
+</pre></dl><h1><a name="2971">readObject メソッド
+</a></h1>Serializable オブジェクトの場合、<code>readObject</code> メソッドによって、クラスがそれ独自のフィールドの直列化復元を制御することができます。次はそのシグネチャです。
+<p><dl><pre>	private void readObject(ObjectInputStream stream)
+		throws IOException;
+</pre></dl>
+Serializable オブジェクトの各サブクラスは、それ独自の readObject メソッドを定義することができます。このメソッドがクラスに実装されていない場合は、defaultReadObject によって与えられるデフォルトの直列化が使用されます。実装されている場合は、そのクラスは、そのスーパー型やサブ型のフィールドではなく、それ独自のフィールドだけを復元する責任があります。
+<p>クラスの readObject メソッドが実装されていれば、そのメソッドはそのクラスの状態を復元する責任があります。<code>defaultReadObject</code> は、対応する <code>writeObject</code> メソッドによって書き込まれた任意指定のデータを読み込む前に呼び出されなければなりません。このクラスに対するストリームの任意指定部分にある以上のデータを読み込もうとすると、ストリームは EOFException をスローします。任意指定データの形式、構造体、バージョン機能の責任は、完全にそのクラスにあります。
+<p>復元するクラスが、読み込まれているストリームにないと、そのフィールドは適切なデフォルト値に初期化されます。
+<p><h1><a name="4602">readExternal メソッド</a></h1><code>java.io.Externalizable</code> を実装するオブジェクトは、<code>readExternal</code> メソッドを実装して、そのオブジェクトの状態全体を復元しなければなりません。このオブジェクトは、そのスーパークラスと連携してそれらの状態を復元する必要があります。<code>ObjectInput</code> のすべてのメソッドが、そのオブジェクトのプリミティブ型のフィールドとオブジェクトフィールドを復元するために使用できます。
+<p><dl><pre>	public void readExternal(ObjectInput stream)
+		throws IOException;
+</pre></dl><em><code>readExternal</code>メソッドは publicであるため、クライアントがストリームの既存オブジェクトを上書きする危険があります。
+</em><p>
+<hr><br>
+ 
+<a href="serialTOC.doc.html">[目次]</a> <a href="output.doc.html">[前項目]</a> 
+<a href="class.doc.html">[次項目]</a>
+<hr><br>
+ 
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- このファイルは Quadralay WebWorks Publisher 3.0.4で作成されています。-->
+<!-- -->
+<!-- このドキュメントおよびこのサーバーの残りの部分がどのように作成されてい-->
+<!-- るかについては、email rmi-support@javasoft.comにお問い合わせください。-->
+<!-- -->
+<!-- Last updated: 02/04/97 16:45:55 -->
+
+</body>
+</html>

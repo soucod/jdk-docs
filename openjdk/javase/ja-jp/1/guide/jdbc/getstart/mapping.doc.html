@@ -1,0 +1,1755 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="callablestatement.doc.html">前項目</a>  | <a href="SimpleSelect.doc.html">次項目</a>
+</font></td><td align=right><i>JDBC<sup><font size=-2>TM</font></sup> ガイド: 「はじめましょう」</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+<a name="996857"></a>
+<h1>8  - SQL と Java の型のマッピング</h1>
+<a name="1006425"></a>
+この概要は、現在 JavaSoft で作成中の <em>JDBC<font size=-1><sup>TM</sup></font> Database Access from Java<font size=-1><sup>TM</sup></font>:  A Tutorial and Annotated Reference,</em> からの引用です。この本は JDBC の自習書であるとともに決定版リファレンスマニュアルで、1997 年春に Addison-Wesley Publishing Company から Java シリーズの一部として発行されています。
+<p>
+<a name="996858"></a>
+<h2>8.1	 &nbsp;&nbsp; 概要</h2>
+<a name="1006427"></a>
+SQL のデータ型は、Java のデータ型と同一ではないので、Java の型を使用するアプリケーションと SQL の方を使用するデータベースの間でデータを読み書きするためのなんらかのメカニズムが必要です。  
+<p><a name="1006428"></a>
+これを達成するために、JDBC は <code>getXXX</code> メソッドと <code>setXXX</code> メソッドのセット、メソッド <code>registerOutParameter</code>、およびクラス <code>Types</code>を用意しています。 
+<p>
+<a name="1006429"></a>
+この節では、さまざまなクラスやインタフェースに影響するデータ型についての情報をまとめ、SQL の型と Java の型の間のマッピングを示す一覧を参照しやすいように 1 ヵ所に置きました。<p>
+
+<a name="1008141"></a>
+<h2>8.2	 &nbsp;&nbsp; SQL のデータ型を Javaにマッピングする</h2>
+<a name="1008142"></a>
+残念ながら、異なるデータベース製品がサポートする SQL の型の間には相当な相違があります。異なるデータベースが同一の意味をもつ SQL の型をサポートしている場合でも、それらの型に異なる名前を与えていることもあります。たとえば、主要データベースのほとんどが大きなバイナリ値に対する SQL の型をサポートしていますが、Oracle ではこの型を <code>LONG RAW</code> 、 Sybase では <code>IMAGE</code>、 Informix では <code>BYTE</code>、 DB2 では <code>LONG VARCHAR FOR BIT DATA</code> とそれぞれ呼んでいます。 
+<p><a name="1008143"></a>
+幸いにも、JDBC プログラマは、普通の場合には、ターゲットのデータベースが使用している実際の SQL の型名に気を使う必要はありません。多くの場合、 JDBC プログラマは、既存のデータベースのテーブルに対してプログラミングをし、そうしたテーブルを作成した正確な SQL の型名に注意を払う必要はありません。
+
+<p>
+<a name="1008144"></a>
+JDBC は、クラス <code>java.sql.Types</code> で汎用的な SQL の型識別子のセットを定義しています。そのセットの型は、最も普通に使用される SQL の型を表すように設計されています。JDBC API によるプログラミングでは、プログラマは通常、ターゲットのデータベースが使用している正確な SQL の型名に注意することなく、そのセットの JDBC 型を使用して汎用的な SQL の型を参照することができます。それらの JDBC 型は、次節で十分に説明します。
+<p>
+<a name="1008145"></a>
+プログラマが SQL の型名を主に使用する必要のあるのは、新しいデータベースのテーブルを作成する場合の SQL <code>CREATE TABLE </code> 文の中です。この場合には、プログラマは、そのターゲットのデータベースがサポートしている SQL の型名を使用するように注意する必要があります。特定のデータベースでのさまざまな SQL の型の動作の正確な定義を必要とする場合には、そのデータベースのマニュアルを参照するように勧めます。
+
+<p>
+<a name="1008149"></a>
+広範囲に異なるデータベース上でテーブルを作成できる移植性の高い JDBC プログラムを作成したい場合には、2 つの主な選択肢があります。第一は、<code>INTEGER</code>、<code>NUMERIC</code>、または <code>VARCHAR</code> のようなすべてのデータベースに対して稼動する可能性の高い、非常に広範囲で受け入れられている SQL の型名だけを使用するように制約することが可能です。あるいは、第二の選択肢では、<code>java.sql.DatabaseMetaData.getTypeInfo</code> メソッドを使用して、どの SQL の型をそのデータベースが実際にサポートしているかを発見し、指定の JDBC 型に一致するデータベース固有の SQL の型名を選択することができます。 
+<p>
+<a name="1008156"></a>
+JDBC は、JDBC データベース型から Java への標準マッピングを定義します。たとえば、 JDBC <code>INTEGER</code> は通常、 Java <code>int</code> にマップされます。これは、JDBC 値を単純な Java 型として読み書きする単純なインタフェースをサポートします。
+<p>
+<a name="1008157"></a>
+Java の型は、SQL タイプと正確に同型である必要はありません。パラメータを正確に格納したり取り出したりし、SQL 文からの結果を復旧するのに十分な型の情報でそれらを表現できればよいだけです。たとえば、Java の <code>String</code> オブジェクトは、 JDBC <code>CHAR</code> 型のいずれにも厳密には一致しませんが、<code>CHAR</code>、<code>VARCHAR</code>、または <code>LONGVARCHAR</code> を正常に表現するのに十分な型情報を与えます。 
+<p>
+
+<a name="1008158"></a>
+<h2>8.3	 &nbsp;&nbsp; JDBC の型</h2>
+<a name="1008159"></a>
+この節では、異なる JDBC の型とそれらがどのように標準的な SQL の型と Java の型にマップされるかを説明します。
+<p>
+<a name="1008160"></a>
+<h3>8.3.1	 &nbsp; &nbsp; CHAR、VARCHAR、および LONGVARCHAR</h3>
+<a name="1008161"></a>
+JDBC の型 <code>CHAR</code>、<code>VARCHAR</code>、および <code>LONGVARCHAR</code> は密接に関連しています。<code>CHAR</code> は短い固定長の文字列を、<code>VARCHAR</code> は短い可変長の文字列を、<code>LONGVARCHAR</code> は長い可変長の文字列をそれぞれ表します。
+<p><a name="1008162"></a>
+JDBC <code>CHAR</code> に対応する SQL <code>CHAR</code> 型は SQL-92 で定義され、すべての主要なデータベースによってサポートされています。文字列の長さを指定するパラメータを取ります。したがって、 <code>CHAR(12)</code> は 12 文字長の文字列を定義します。すべての主要なデータベースは、<code>CHAR</code> 長を最高 254 文字までサポートしています。
+<p>
+<a name="1008163"></a>
+JDBC <code>VARCHAR</code> に対応する SQL <code>VARCHAR</code> 型は SQL-92 で定義され、すべての主要なデータベースによってサポートされています。文字列の最大長を指定するパラメータを取ります。したがって、 VARCHAR(12) はその長さが最高 12 文字長の文字列を定義します。すべての主要なデータベースは、<code>VARCHAR</code> の長さを最高 254 文字までサポートしています。 文字列値が <code>VARCHAR</code> 変数に割り当てられると、データベースは割り当てられた文字列の長さを記憶し、<code>それの SELECT </code> 時に正確に元の文字列を返します。
+<p>
+<a name="1008164"></a>
+残念ながら、 JDBC <code>LONGVARCHAR</code> 型には、一貫した SQL マッピングが存在しません。すべての主要なデータベースは、最低でも 1 ギガバイトまでをサポートするある種の非常に長い可変長の文字列をサポートしますが、SQL の型名は異なります。
+<p>
+<a name="1008168"></a>
+Java のプログラマは、<code>CHAR</code>、<code>VARCHAR</code>、および <code>LONGVARCHAR</code>の SQL 文字列の 3 つの型を区別する必要がありません。それぞれは Java の <code>String</code> として表現することができ、期待された正確なデータ型を知らなくても SQL 文を正しく読み書きすることができます。
+<p>
+<a name="1008169"></a>
+<code>CHAR</code>、<code>VARCHAR</code>、および <code>LONGVARCHAR</code> は、<code>String</code> または <code>char[]</code> のいずれにもマップすることができますが、<code>String</code> の方が通常の使用のためにはより適切です。また、<code>String</code> クラスにより、<code>String</code> と <code>char[]</code> の間の変換がより簡単になります。<code>String</code> オブジェクトを <code>char[]</code> に変換するメソッドがあり、また <code>char[]</code> を <code>String</code> オブジェクトに調整する構築子もあります。
+<p>
+<a name="1008170"></a>
+対処すべき問題の 1 つは、<code>CHAR(n)</code> 型の固定長 SQL 文字列をどのように処理するかです。答えは、JDBC drivers (または DBMS) が空白で適切なパディングを行うことです。したがって <code>CHAR(n)</code> フィールドがデータベースから取り出されたとき、ドライバがそれを長さが <code>n</code> の Java の <code>String</code> オブジェクトに変換しますが、これには末尾にパディングの空白がいくつか含まれている可能性があります。これとは逆に、<code>String</code> オブジェクトが <code>CHAR(n)</code> フィールドに送信されると、ドライバおよび / またはデータベースが必要なパディング用空白を文字列の末尾に追加し、その長さを <code>n</code> にします。
+<p>
+<a name="1008171"></a>
+メソッド <code>ResultSet.getString</code> は、新しい <code>String</code> オブジェクトを割り当てたり返したりしますが、データを <code>CHAR</code>、<code>VARCHAR</code>、および <code>LONGVARCHAR</code> フィールドから取り出すことを推奨します。これは通常のデータを取り出すには適切ですが、 JDBC の <code>LONGVARCHAR</code> 型を使用して何メガバイトかの文字列を格納する場合は扱いにくいことがあります。このようなケースを処理するために、<code>LONGVARCHAR</code> インタフェースの 2 つのメソッドにより、プログラマが <code>LONGVARCHAR</code> の値を任意のサイズの塊でシーケンシャルにデータを読み取れる Java 入力ストリームとして取り出すことができるようにしています。これらのメソッドは <code>getAsciiStream</code> と 
+<code>getUnicodeStream</code>で、<code>LONGVARCHAR</code> 列に格納されているデータを ASCII または Unicode 文字のストリームとして配信します。
+<p>
+
+<a name="1008189"></a>
+<h3>8.3.2	 &nbsp; &nbsp; BINARY、VARBINARY、および LONGVARBINARY</h3>
+<a name="1008190"></a>
+JDBC の型 <code>BINARY</code>、<code>VARBINARY</code>、および <code>LONGVARBINARY</code> は密接に関連しています。<code>BINARY</code>  は小さい固定長のバイナリ値を、<code>VARBINARY</code> は小さな可変長のバイナリ値を、<code>LONGVARBINARY</code> は大きな可変長のバイナリ値をそれぞれ表します。
+<p><a name="1008191"></a>
+残念ながら、以上の <code>BINARY</code> 型は標準化されていなく、サポートは主要なデータベース間で相当に変動します。
+<p>
+<a name="1008192"></a>
+JDBC <code>BINARY</code> に対応する SQL <code>BINARY</code> 型は、非標準の SQL の拡張で、一部のデータベースに実装されているにすぎません。バイナリ バイトの数を指定するパラメータを取ります。従って、<code>BINARY(12)</code> は 12 バイトのバイナリ型を定義します。 普通、 <code>BINARY </code> 値は 254 バイトに限定されています。
+<p>
+<a name="1008193"></a>
+JDBC <code>VARBINARY</code> に対応する SQL <code>VARBINARY</code> 型は、非標準の SQL の拡張で、一部のデータベースに実装されているにすぎません。バイナリ バイトの最大数を指定するパラメータを取ります。したがって、<code>VARBINARY(12)</code> はその長さの最大長が 12 バイトであるバイナリ型を定義します。普通、 <code>VARBINARY</code> 値は 254 バイトに限定されています。バイナリ値が <code>VARBINARY</code> 変数に割り当てられると、データベースは割り当てられた値の長さを記憶し、<code>それの </code><code>SELECT</code>時に、元の値を正確に返します。
+<p>
+<a name="1008194"></a>
+残念ながら、 JDBC <code>LONGVARBINARY</code> 型に対応する一貫した SQL の型は存在しません。すべての主要なデータベースは、最低でも 1 ギガバイトのデータをサポートする、ある種の非常に大きな可変長のバイナリ型をサポートしますが、 その SQL の型名は異なります。 
+<p>
+<a name="1008198"></a>
+<code>BINARY</code>、<code>VARBINARY</code>、および <code>LONGVARBINARY</code> は、 Java では<code>バイト</code>配列として、すべて同じように表現できます。要求されている <code>BINARY</code> データ型を正確に知らなくても、SQL 文を正しく読み書きできるため、Java プログラマがそれらの型を区別する必要はありません。
+<p>
+<a name="1008199"></a>
+<code>BINARY</code> や <code>VARBINARY</code> の値を取り出すために推奨されるメソッドは、<code>ResultSet.getBytes</code> です。 JDBC <code>LONGVARBINARY</code> 型の列が何メガバイト長のバイト配列を格納している場合には、<code>getBinaryStream</code> メソッドを推奨します。<code>LONGVARCHAR</code> の場合と同様に、このメソッドは Java プログラマが <code>LONGVARBINARY</code> 値を、後でより小さな塊で読むことができる Java 入力ストリームとして取り出すことを可能にします。
+<p>
+
+<a name="1008200"></a>
+<h3>8.3.3	 &nbsp; &nbsp;  BIT</h3>
+<a name="1008201"></a>
+JDBC 型 の <code>BIT</code> は、0 か 1 を取り得る単一のビット値を表します。
+<p><a name="1008202"></a>
+SQL-92 は、SQL <code>BIT</code> 型を定義します。しかし、 JDBC <code>BIT</code> 型とは異なり、この SQL-92 BIT 型は、固定長のバイナリ列を定義するパラメータ化した型として使用することができます。幸いにも、 SQL-92 は、単一のビットを表すのに単純な非パラメータ化 <code>BIT</code> 型の使用も許しています。この使用は、 JDBC <code>BIT</code> 型に対応しています。残念ながら、 SQL-92 BIT 型は、「完全な」 SQL-92 においてだけ要求され、現在、主要なデータベースの一部にしかサポートされていません。したがって、移植性を望むコードでは、広くサポートされている JDBC <code>SMALLINT</code> 型の方を使用することを勧めます。.
+<p>
+<a name="1008203"></a>
+JDBC <code>BIT</code> 型に対して推奨される Java マッピングは、Java の boolean 型とするものです。
+<p>
+
+<a name="1008204"></a>
+<h3>8.3.4	 &nbsp; &nbsp; TINYINT</h3>
+<a name="1008205"></a>
+JDBC 型の <code>TINYINT</code> は、0 から 255 までの 8 ビットの符号なし整数値を表します。
+<p><a name="1008206"></a>
+対応する SQL の型の <code>TINYINT</code> は現在、主要なデータベースの一部しかサポートしていません。したがって、移植性を望むコードでは、広くサポートされている JDBC <code>SMALLINT</code> 型の方を使用することを勧めます。
+<p>
+<a name="1008207"></a>
+JDBC <code>TINYINT</code> 型に対して推奨されている Java マッピングは、 Java <code>byte</code> か Java <code>short</code> のいずれかです。8 ビットの Java <code>byte</code> 型は -128 から 127 までの符号付きの値を表すので、より大きな <code>TINYINT</code> 値に対して常に適切になるとは限りません。ただし、16 ビットのJava <code>short</code> は常にすべての <code>TINYINT</code> 値を保持することができます。
+<p>
+
+<a name="1008208"></a>
+<h3>8.3.5	 &nbsp; &nbsp; SMALLINT</h3>
+<a name="1008209"></a>
+JDBC 型の <code>SMALLINT</code> は、-32768 から 32767 までの 16 ビットの符号付き整数値を表します。
+<p><a name="1008210"></a>
+対応する SQL の型の <code>SMALLINT</code> は SQL-92 で定義され、すべての主要がデータベースによってサポートされています。SQL-92 標準では、<code>SMALLINT</code> の精度を実装に任せていますが、実際には、すべての主要なデータベースは少なくとも 16 ビットをサポートしています。 
+<p>
+<a name="1008211"></a>
+JDBC <code>SMALLINT</code> 型に対して推奨される Java マッピングは、 Java 
+<code>short</code>とするものです。 
+<p>
+
+<a name="1008212"></a>
+<h3>8.3.6	 &nbsp; &nbsp; INTEGER</h3>
+<a name="1008213"></a>
+JDBC 型の <code>INTEGER</code> は、-2147483648 から 2147483647 までの 32 ビットの符号付き整数値を表します。
+<p><a name="1008214"></a>
+対応する SQL の型の <code>INTEGER </code> は SQL-92 で定義され、すべての主要なデータベースによって広くサポートされています。SQL-92 標準では、
+<code>INTEGER</code> の精度を実装に任せていますが、実際には、すべての主要なデータベースは少なくとも 32 ビットをサポートしています。
+<p>
+<a name="1008215"></a>
+JDBC <code>INTEGER</code> 型に対して推奨される Java マッピングは、 Java <code>int</code>とするものです。
+<p>
+
+<a name="1008216"></a>
+<h3>8.3.7	 &nbsp; &nbsp; BIGINT</h3>
+<a name="1008217"></a>
+JDBC 型の <code>BIGINT</code> は、-9223372036854775808 から 9223372036854775807 までの 64 ビットの符号付き整数値を表します。
+<p><a name="1008218"></a>
+対応する SQL の型の <code>BIGINT</code> は、SQL の 非標準の拡張です。実際、 SQL <code>BIGINT</code> 型は、主要なデータベースのいずれにも現在実装されていません。したがって、移植性を期待されるコードでは、その使用を避けるように勧めます。
+<p>
+<a name="1008219"></a>
+JDBC <code>BIGINT</code> 型に対して推奨される Java マッピングは、 Java long とするものです。
+<p>
+
+<a name="1008220"></a>
+<h3>8.3.8	 &nbsp; &nbsp; REAL</h3>
+<a name="1008221"></a>
+JDBC 型の <code>REAL</code> は、7 桁の仮数部をサポートする「単精度」の浮動小数点数です。
+<p><a name="1008222"></a>
+対応する SQL の型の <code>REAL</code> は SQL-92 で定義され、すべての主要なデータベースによって、一般的ではありませんが、広くサポートされています。SQL-92 標準では、<code>REAL</code> の精度を実装に任せていますが、実際には、すべての主要なデータベースは少なくとも 7 桁の仮数精度をサポートしています。
+<p>
+<a name="1008223"></a>
+JDBC <code>REAL</code> 型に対して推奨される Java マッピングは、Java <code>float</code> とするものです。
+<p>
+
+<a name="1008224"></a>
+<h3>8.3.9	 &nbsp; &nbsp; DOUBLE</h3>
+<a name="1008225"></a>
+JDBC 型の <code> DOUBLE </code> は、15 桁の仮数部をサポートする「倍精度」の浮動小数点数です。
+
+<p><a name="1008226"></a>
+対応する SQL の型は、 <code>DOUBLE</code> <code>PRECISION</code> であり SQL-92 で定義され、すべての主要なデータベースによって、広くサポートされています。SQL-92 標準では、<code>DOUBLE</code> <code>PRECISION</code> の精度を実装に任せていますが、実際には、すべての主要なデータベースは少なくとも 15 桁の仮数精度をサポートしています。
+<p>
+<a name="1008227"></a>
+JDBC <code>DOUBLE</code> 型に対して推奨される Java マッピングは、Java <code> double </code> とするものです。
+<p>
+
+<a name="1008228"></a>
+<h3>8.3.10	 &nbsp; &nbsp; FLOAT</h3>
+<a name="1008229"></a>
+JDBC 型の <code>FLOAT</code> は、基本的には JDBC 型の <code>DOUBLE</code> と等価です。<code>FLOAT</code> と <code>DOUBLE</code> の両方を提供したのは、以前のデータベースの API との一貫性を維持しようとしたためですが、混乱を起こす危険性が考えられます。<code>FLOAT</code> は、15 桁の仮数部をサポートする「倍精度」浮動小数点数です。
+<p><a name="1008230"></a>
+対応する SQL の型の <code>FLOAT</code> は SQL-92 で定義されています。 <code> </code>SQL-92 標準では、<code>FLOAT</code> の精度を実装に任せていますが、実際には、 <code>FLOAT</code> をサポートするすべての主要なデータベースは少なくとも 15 桁の仮数精度をサポートしています。
+<p>
+<a name="1008231"></a>
+この <code>FLOAT</code>  型に対して推奨される Java マッピングは、Java <code> double </code> とするものです。ただし、倍精度の SQL <code>FLOAT</code> と単精度の Java <code>float</code> との間の混乱が予想されるため、JDBC プログラマは、普通の場合には、<code>FLOAT</code> よりも JDBC <code>DOUBLE</code> 型を使用するように勧めます。
+<p>
+
+<a name="1008232"></a>
+<h3>8.3.11	 &nbsp; &nbsp; DECIMAL と NUMERIC</h3>
+<a name="1008233"></a>
+JDBC 型の <code>DECIMAL</code> と <code>NUMERIC</code> は非常に似ています。両方とも、固定精度の 10 進数を表します。
+<p>
+<a name="1008234"></a>
+対応する SQL の型の <code>DECIMAL</code> と <code>NUMERIC</code> はSQL-92 で定義され、非常に広範囲に実装されています。この 2 つの SQL の型は、精度とスケールのパラメータを取ります。精度は、サポートされている 10 進数の総桁数で、スケールは、小数点以下の桁数です。スケールは常に、精度以下になることが必要です。したがって、たとえば、"12.345" の精度は 5 であり、スケールは 3 となります。".11" の精度は 2 であり、スケールは 2 となります。 JDBC は、すべての <code>DECIMAL</code> と <code>NUMERIC</code> の両方の型が、少なくとも 15 の精度とスケールをサポートすることを要求します。
+<p>
+<a name="1008235"></a>
+<code>DECIMAL</code> と <code>NUMERIC</code> の唯一の相違は、 SQL-92 仕様が、<code>NUMERIC</code> 型が正確に指定の精度で表現されることを要求する一方で、<code>DECIMAL</code> 型では、型の生成時に指定された精度を超えた精度を追加することを実装に許している点にあります。したがって、型の <code>NUMERIC(12,4)</code> で作成された列は、常に正確に 12 桁で表され、型の <code>DECIMAL(12,4)</code> で作成された列は、より大きな桁数で表されることもあります。
+<p>
+<a name="1008236"></a>
+<code>DECIMAL</code> と <code>NUMERIC</code> の型に対して推奨される Java マッピングは、やはり絶対精度をもつ固定小数点数で表される Java 型の <code>java.math.BigDecimal</code> です。<code>java.math.BigDecimal</code> 型は、数学演算を可能として、<code>BigDecimal</code> 型を他の <code>BigDecimal</code> 型、整数型、および浮動少数点型と加減乗除することができます。
+<p>
+<a name="1008237"></a>
+<code>DECIMAL</code> と <code>NUMERIC</code> の値を取り出すために推奨されるメソッドは、<code>ResultSet.getBigDecimal</code> です。 JDBC はまた、単純な <code>Strings</code> または <code>char</code> の配列としてこれらの SQL の型へのアクセスを可能にします。したがって、Java プログラマは、<code>getString</code> を使用して <code>NUMERIC</code> または <code>DECIMAL</code> の結果を受け取ることができます。ただし、これにより、アプリケーションの作成者が文字列上で算術計算をすることが必要になるので、<code>DECIMAL</code> または<code>NUMERIC</code> を通貨の値として使用する一般的な場合が、むしろ扱いにくくなります。これらの SQL の型を Java の数値型のいずれかとして取り出すことも可能です。
+<p>
+
+<a name="1008238"></a>
+<h3>8.3.12	 &nbsp; &nbsp;  DATE、TIME、および TIMESTAMP</h3>
+<a name="1008239"></a>
+時間に関連する JDBC の型には以下の 3 つがあります。
+<p>
+<ul><a name="1008240"></a>
+<li> JDBC  <code>DATE</code> 型は日付、月、および年で構成される。対応する SQL <code>DATE </code> 型は SQL-92 で定義されているが、主要なデータベースの一部しかサポートしていない。データベースの中には、同じような意味をもつ代替えの SQL の型を提供するものもある。
+<br><br>
+<a name="1008241"></a>
+<li> JDBC <code>TIME</code> 型は、時刻、分、秒で構成される。 対応する SQL <code>TIME </code> 型は SQL-92 で定義されているが、主要なデータベースの一部しかサポートしていない。 <code>DATE</code> の場合のように、データベースの中には、同じような意味をもつ代替えの SQL の型を提供するものもある。
+<br><br>
+<a name="1008242"></a>
+<li> JDBC <code>TIMESTAMP</code> 型は <code>DATE</code> と <code>TIME</code> とナノ秒フィールドを表す。対応する SQL <code>TIME </code> 型は SQL-92 で定義されているが、非常に少数のデータベースが実装するだけである。
+<br><br>
+</ul><a name="1008243"></a>
+標準の Java クラス <code>java.util.Date</code> は、これら 3 つの JDBCの date と time の型に正確には一致しないので (標準の Java クラスは <code>DATE</code> と <code>TIME</code> の情報はありますが、ナノ秒がありません)、JDBC は <code>java.util.Date</code> の 3 つのサブクラスを定義して、SQL の型に対応しています。これらは以下のとおりです。
+<p>
+
+<ul><a name="1008244"></a>
+<li>SQL <code>DATE</code> 情報のための <code>java.sql.Date</code>。 <code>java.util.Date</code> ベースクラスの時刻、分、秒、およびミリ秒フィールドにはゼロが設定される。
+<br><br>
+<a name="1008245"></a>
+<li>SQL <code>TIME</code> 情報のための <code>java.sql.Time</code>。<code>java.util.Date</code> ベースクラスの年、月、日フィールドは、1970 年 1 月 1 日に設定される。これは Java エポックにおける「ゼロ」日である。
+<br><br>
+<a name="1008246"></a>
+<li>SQL <code>TIMESTAMP</code> 情報のための <code>java.sql.Timestamp</code>。このクラスは、ナノ秒フィールドを追加することによって、<code>java.util.Date</code> を拡張している。.
+<br><br>
+</ul><a name="1008247"></a>
+JDBC の 3 つの時間関連のクラスはすべて <code>java.util.Date</code> のサブクラスなので、<code>java.util.Date</code> が期待されている場所で使用することができます。たとえば、国際化メソッドは <code>java.util.Date</code> オブジェクトを引数として取るので、JDBC 時間関連クラスのいずれかのインスタンスとして渡すことができます。
+<p>
+<a name="1008248"></a>
+JDBC <code>Timestamp</code> オブジェクトには、その親の日付と時間の構成要素と、それとは別にナノ秒の構成要素もあります。<code>java.util.Date</code> オブジェクトが期待されている箇所で、<code>java.sql.Timestamp</code> オブジェクトを使用すると、ナノ秒の構成要素は失われます。ただし、<code>java.util.Date</code> オブジェクトが 1 ミリ秒の精度で格納されているので、321
+<code>java.sql.Timestamp</code> オブジェクトを <code>java.util.Date</code> オブジェクトに変換したときにこの程度の精度を保つことは可能です。これは、ナノ秒構成要素の中のナノ秒を (ナノ秒の数値を 1,000,000 で割ることにより ) まったくのミリ秒に変換してから、結果を <code>java.util.Date</code> オブジェクトに加算します。999,999 ナノ秒まではこの変換によって失われますが、結果として生じる <code>java.util.Date</code> オブジェクトは 1 ミリ秒以内の誤差の精度を持ちます。
+<p>
+<a name="1008249"></a>
+以下の部分的なコードは、1 ミリ秒以内の精度を持つ <code>java.util.Date</code> オブジェクト に <code>java.sql.Timestamp</code> オブジェクトを変換する例です。
+<p>
+<pre><a name="1008250"></a>    Timestamp t = new Timestamp(100, 0, 1, 15, 45, 29, 987245732);
+<a name="1008251"></a>    java.util.Date d;
+<a name="1008252"></a>    d = new java.util.Date(t.getTime() + (t.getNanos() / 1000000));
+</pre>
+<a name="1006473"></a>
+<h2>8.4	 &nbsp;&nbsp; マッピングの例</h2>
+<a name="1006759"></a>
+Java プログラムがデータをデータベースから取り出すという状況では、必ず何らかの形でマッピングとデータ変換が必要です。ほとんどの場合、JDBC プログラマは、自分が対象としているデータベースの仕組みについての知識を持っています。たとえば、データベースにどのようなテーブルがあり、それらのテーブルの各列のデータ型が何かを知っています。したがって、<code>ResultSet</code>、<code>PreparedStatement</code>、および <code>CallableStatement</code> のインタフェースで固定的に入力したアクセスメソッドを使用することができます。この節では、3 つの異なるシナリオを示すと共に、それぞれで必要なデータのマッピングと変換について説明します。
+<p>
+<a name="1006476"></a>
+<h3>8.4.1	 &nbsp;&nbsp; 簡単な SQL 文</h3>
+<a name="1006762"></a>
+最も一般的なケースでは、ユーザが簡単な SQL 文を実行して、結果を持つ 
+<code>ResultSet</code> オブジェクトを受け取ります。データベースが返し、<code>ResultSet</code> 列に格納される値は、 JDBC のデータ型を持っています。<code>ResultSet.getXXX</code> メソッドへの呼び出しは、その値を Java のデータ型として取り出します。たとえば、<code>ResultSet</code> 列に JDBC の <code>FLOAT</code> 値が入っている場合、メソッド <code>getDouble</code> はその値を Java の <code>double</code> として取り出します。
+<a href="mapping.doc.html#1006739">8.6.6</a> 節の一覧は、どの <code>getXXX</code> メソッドがどの JDBC の型を取り出すために使用されるかを示します (
+<code>ResultSet</code> 列の型がわからないユーザは、メソッド <code>ResultSet.getMetaData </code> を呼び出してから、 <code>ResultSetMetaData</code> メソッド <code>getColumnType</code> または  <code>getColumnTypeName</code> を起動することにより、その情報を取得することができます)。以下のコードの一部分は、結果セットの列の列タイプ名の取得方法を示します。
+<p><pre><a name="1006766"></a>    String query = "select * from Table1";
+<a name="1006767"></a>    ResultSet rs = stmt.executeQuery(query);
+<a name="1006768"></a>    ResultSetMetaData rsmd = rs.getMetaData();
+<a name="1006769"></a>    int columnCount = rsmd.getColumnCount();
+<a name="1006770"></a>    for (int i = 1; i &lt;= columnCount; i++)  {
+<a name="1006771"></a>      String s = rsmd.getColumnTypeName(i);
+<a name="1006776"></a>      System.out.println ("Column " + i + " is type " + s);
+<a name="1006777"></a>    }
+</pre>
+<a name="1008288"></a>
+<h3>8.4.2	 &nbsp;&nbsp; IN パラメータの付いた SQL 文</h3>
+<a name="1008289"></a>
+もう 1 つの可能なシナリオでは、ユーザが入力パラメータを取る SQL 文を送信します。この場合、ユーザは <code>PreparedStatement.setXXX</code> メソッドを呼び出して、各入力パラメータに値を割り当てます。たとえば、<code>PreparedStatement.setLong(1, 2345678)</code> は、最初のパラメータに <code>2345678</code> という値を Java の 
+<code>long</code> として割り当てます。ドライバは、データベースに送信するために、<code>2345678</code> を JDBC の <code>BIGINT</code> に変換します。ドライバがデータベースにどの JDBC の型を送信するかは、Java の型から JDBC の型への標準マッピングによって決定されます。この標準マッピングは、<a href="mapping.doc.html#1004752">8.6.2</a> 節の一覧に示されています。
+<p>
+<a name="1006486"></a>
+<h3>8.4.3	 &nbsp;&nbsp; INOUT パラメータの付いた SQL 文</h3>
+<a name="1006487"></a>
+さらにもう 1 つのシナリオでは、ユーザがストアードプロシージャを呼び出し、値をその INOUT パラメータに割り当て、結果から値を取り出し、パラメータから値を取り出します。このケースはあまり一般的ではなく、通常の場合より複雑ですが、マッピングとデータ変換の好例となるでしょう。
+<p>
+<a name="1006488"></a>
+このシナリオではまず、<code>PreparedStatement.setXXX</code> メソッドを使用して、INOUT パラメータに値を割り当てます。加えて、パラメータも出力に使用されるので、プログラマは各パラメータをデータベースが返す値の JDBC 型で登録する必要があります。これは、クラス <code>Types</code>に定義された JDBC の型の 1 つを取るメソッド <code>CallableStatement.registerOutParameter</code>を使って行います。プログラマは、<code>ResultSet.getXXX</code> を使用して、<code>ResultSet</code> オブジェクトに返された結果を取り出し、 <code>CallableStatement.getXXX</code> メソッドを使用して出力パラメータに格納された値を取り出します。
+<p>
+<a name="1006489"></a>
+<code>ResultSet</code>.<code>getXXX</code> で使用される <code>XXX</code> 型は、場合によってはかなり柔軟です。<a href="mapping.doc.html#1006739">8.6.6</a> 節の一覧は、どの JDBC タイプを取り出すのに、どの <code>ResultSet</code>.<code>getXXX</code> メソッドを使用できるかを示します。
+
+<p>
+<a name="1006493"></a>
+<code>CallableStatement</code>.<code>getXXX</code> で使用される <code>XXX</code> 型は、そのパラメータに登録された JDBC の型にマップする必要があります。たとえば、データベースが、<code> JDBC </code> <code>REAL</code> というタイプの出力値を返すと期待されている場合、パラメータは<code>java.sql.Types.REAL</code> として登録されていることが必要です。次に <code> JDBC </code> <code>REAL</code> 値を取り出すためには、メソッド<code>CallableStatement.getFloat</code> を呼び出す必要があります (JDBC の型から Java の型へのマッピングは、 <a href="mapping.doc.html#1004864">8.6.1</a> 節の一覧に示されています)。
+メソッド  <code>getFloat</code> は、出力パラメータに格納されている値を JDBC <code>REAL</code> から Java <code>float</code> に変換してから返します。多様なデータベースに対応し、アプリケーションの移植性を高めるために、値を出力パラメータから取り出す前に、値を <code>ResultSet</code> オブジェクトから取り出すことをお勧めします。
+<p>
+<a name="1006497"></a>
+以下のコードは、ともに INOUT パラメータが 2 つ付いた <code>getTestData</code> という名前のストアードプロシージャを呼び出す方法を示します。まず、<code>Connection</code> オブジェクト <code>con</code> が、<code>CallableStatement</code> オブジェクト <code>cstmt</code> を作成します。次に、メソッド <code>setByte</code> が最初のパラメータに Java <code>byte</code> で <code>25</code> を設定します。ドライバは、<code>25</code> を JDBC <code>TINYINT</code> に変換し、データベースに送信します。メソッド <code>setBigDecimal</code> が、2 番目のパラメータを <code>83.75</code> という入力値に設定します。ドライバは、この <code>java.math.BigDecimal</code> オブジェクトを JDBC <code>NUMERIC</code> の値に変換します。次に、2 つのパラメータが OUT パラメータとして登録され、最初のパラメータが JDBC <code>TINYINT</code>、2 番目のパラメータが小数点第 2 位までを持つ JDBC <code>DECIMAL</code> になります。<code>cstmt</code> が実行されると、 <code>ResultSet.getXXX</code> を使用して値が <code>ResultSet</code> オブジェクトから取り出されます。メソッド <code>getString</code> は最初の列の値を Java <code>String</code> オブジェクトとして取得し、<code>getInt</code> は 2 番目の列の値を Java <code>int</code> として取得し、<code>getInt</code> は 3 番目の列の値を Java <code>int</code> として取得します。
+<p>
+<a name="1006498"></a>
+次に、<code>CallableStatement.getXXX</code> メソッドが、出力パラメータに格納された値を取り出します。メソッド <code>getByte</code> が <code> JDBC </code> <code>TINYINT</code> を Java <code>byte</code> として取り出し、<code>getBigDecimal</code> が小数点第 2 位までを持つ <code> JDBC </code> <code>DECIMAL</code> を、 <code>java.math.BigDecimal</code> オブジェクトとして取り出します。パラメータが入出力パラメータの場合、<code>setXXX</code> メソッドは<code>getXXX</code> と同じ Java 型のものを使用します (<code>setByte</code> および <code>getByte</code> と同様です)。<code>registerOutParameter</code> メソッドは、それを Java の型からマップされる JDBC の型に登録します (<code>byte</code> は、<a href="mapping.doc.html#1004752">8.6.2</a> 節の一覧で示されるように、 JDBC <code>TINYINT</code>にマップされます)。
+<p>
+<pre><a name="1006502"></a>    CallableStatement cstmt = con.prepareCall(
+<a name="1006503"></a>          "{call getTestData(?, ?)}");
+<a name="1006504"></a>    cstmt.setByte(1, 25);
+<a name="1006505"></a>    cstmt.setBigDecimal(2, 83.75);
+<a name="1006506"></a>    // register the first parameter as a JDBC TINYINT and the second
+<a name="1006507"></a>    //parameter as a JDBC DECIMAL with two digits after the decimal point
+<a name="1006508"></a>    cstmt.registerOutParameter(1, java.sql.Types.TINYINT);
+<a name="1006509"></a>    cstmt.registerOutParameter(2, java.sql.Types.DECIMAL, 2);
+<a name="1006510"></a>    ResultSet rs = cstmt.executeUpdate();
+<a name="1006511"></a>    // retrieve and print values in result set
+<a name="1006512"></a>    while(rs.next()) {   
+<a name="1006513"></a>      String name = rs.getString(1);
+<a name="1006514"></a>      int score = rs.getInt(2);
+<a name="1006515"></a>      int percentile = rs.getInt(3);
+<a name="1006516"></a>      System.out.print("name = " + name + ", score = " + score + ", "
+<a name="1006517"></a>      System.out.println("percentile = " + percentile);          
+<a name="1006518"></a>    // retrieve values in output parameters  
+<a name="1006519"></a>    byte x = cstmt.getByte(1); 
+<a name="1006520"></a>    java.math.BigDecimal n = cstmt.getBigDecimal(2, 2); 
+</pre><a name="1006521"></a>
+一般化すると、<code>CallableStatement.getXXX</code> の <code>XXX</code> と <code>PreparedStatement.setXXX</code> メソッドは Java の型です。<code>setXXX</code> メソッドについては、データベースに送信する前に、（ <a href="mapping.doc.html#1004752">8.6.2</a> 節の一覧中の標準マッピングを使用して）ドライバが Java の型を JDBC の型に変換します。 <code>getXXX</code> メソッドについては、<code>getXXX</code> メソッドに返される前に、データベースによって返された SQL の型をドライバが（ <a href="mapping.doc.html#1004864">8.6.1</a> 節の一覧中の標準マッピングを使用して）Java の型に変換します。
+<p>
+<a name="1006528"></a>
+メソッド <code>registerOutParameter</code> は常に、 JDBC の型を引数として取り、メソッド <code>setObject</code> は JDBC の型を引数として取ります。
+<p>
+<a name="1006529"></a>
+オプションの 3 番目の引数に、 JDBC の型が供給される場合、メソッド  <code>setObject</code> により、パラメータの値が Java の型から指定された JDBC の型に明示的に変換されることに注意してください。変換後の JDBC の型が <code>setObject</code> に供給されていない場合は、パラメータ値は Java の型からの標準マッピングの JDBC の型に変換されます（ <a href="mapping.doc.html#1004752">8.6.2</a> 節の一覧を参照）。ドライバは、パラメータをデータベースに送信する前に明示的または暗黙的な変換を行います。 
+<p>
+
+<a name="1008372"></a>
+<h2>8.5	 &nbsp;&nbsp; ダイナミック データ アクセス</h2>
+<a name="1008373"></a>
+ユーザがアクセスしたいのは、コンパイル時にそのデータ型が分かっている結果またはパラメータである場合がほとんどです。ただし、汎用的なブラウザまたはクエリツールなどのアプリケーションは、アクセスするデータベーススキーマを知らない状態でコンパイルされます。このため、JDBC では静的データアクセスに加えて、完全に動的なデータアクセスもサポートしています。
+<p><a name="1008374"></a>
+3 つのメソッドと 1 つの定数が、コンパイル時に不明であるデータ型の値にアクセスするのを支援します。
+<p>
+
+<ul><a name="1008375"></a>
+<li> <code>ResultSet.getObject
+</code><br><br>
+<a name="1008376"></a>
+<li> <code>PreparedStatement.setObject
+</code><br><br>
+<a name="1008377"></a>
+<li> <code>CallableStatement.getObject
+</code><br><br>
+<a name="1008378"></a>
+<li><code>java.sql.Types.OTHER </code>(<code>CallableStatement.registerOutParameter</code>に対する引数として使用)
+<br><br>
+</ul><a name="1008379"></a>
+たとえば、アプリケーションが、さまざまな型を <code>ResultSet</code> オブジェクトの中で結果として受け付けることを可能にしたい場合には、<code>ResultSet.getObject</code> を使用することができます。
+<p>
+<a name="1008380"></a>
+<code>ResultSet.getObject</code> と <code>CallableStatement.getObject</code> の両メソッドは Java  <code>Object</code> として値を取り出します。<code>Object</code> は、すべての Java オブジェクトに対する基礎クラスであるので、任意の Java クラスのインスタンスは <code>Object</code> のインスタンスとして取り出すことが可能です。
+ただし、 Java の型 <code>boolean</code>、<code>char</code>、<code>byte</code>、<code>short</code>、<code>int</code>、<code>long</code>、<code>float</code>、および <code>double</code> は、組込み型の「プリミティブ」型であるので、<code>Object</code> クラスのインスタンスにはなりません。 結果として、以上の型は、<code>getObject</code> メソッドでは取り出すことができません。ただし、それらのプリミティブ型には、ラッパとして稼動する、それぞれに対応するクラスがあります。それらのクラスのインスタンスはオブジェクトであり、すなわち、 <code>ResultSet.getObject</code> と <code>CallableStatement.getObject</code> の両メソッドによって取り出すことが可能になります。<a href="mapping.doc.html#1004791">67 ページの一覧&nbsp;8.6.3 </a> は、JDBC 型から Java <code>Object</code> 型へのマッピングを示します。この一覧は、 JDBC 型から Java 型への標準マッピングとは異なり、各プリミティブの Java 型はそのラッパクラスが取って代わります。ただし、 JDBC <code>TINYINT</code> とJDBC <code>SMALLINT</code> は、 Java クラスの <code>Integer</code> にマッピングされます。
+<p>
+<a name="1008384"></a>
+メソッド <code>getObject</code> は、ユーザ定義の Java の型を取り出すのにも使用できます。アブストラクトデータ型 (ADT)、 または一部のデータベース システムのその他のユーザ定義の型の出現によって、一部のベンダがこれらの型を取り出すときに <code>getObject</code> を使用する方が便利であると見なす場合もあります。
+<p>
+
+<a name="999058"></a>
+<h2>8.6	 &nbsp;&nbsp; データ型のマッピング一覧</h2>
+<a name="1005553"></a>
+この節には、 JDBC と Java のデータの型に関連する以下の一覧を記載します。
+<p><a name="1005569"></a>
+
+<p>
+<a name="1005564"></a>
+<a href="mapping.doc.html#1004864">8.6.1</a> 節 - Java の型にマッピングされる JDBC の型
+<p>
+<a name="1005565"></a>
+
+<p>
+<a name="1005566"></a>
+<a href="mapping.doc.html#1004752">8.6.2</a> 節 - JDBC の型にマッピングされる Java の型 
+<p>
+<a name="1005570"></a>
+
+<p>
+<a name="1005571"></a>
+<a href="mapping.doc.html#1004791">8.6.3</a> 節 - Java の<code>オブジェクト</code> 型にマッピングされる JDBC の型
+<p>
+<a name="1005572"></a>
+
+<p>
+<a name="1005573"></a>
+<a href="mapping.doc.html#1004830">8.6.4</a> 節 - JDBC の型にマッピングされる Java の<code>オブジェクト</code>型 
+<p>
+<a name="1005574"></a>
+
+<p>
+<a name="1005575"></a>
+<a href="mapping.doc.html#1004845">8.6.5</a> 節 -<code>setObject</code> による変換
+<p>
+<a name="1005576"></a>
+
+<p>
+<a name="1005577"></a>
+<a href="mapping.doc.html#1006739">8.6.6</a>節 <code>- ResultSet.getXXX</code> メソッドにより取り出される JDBC の型 
+<p>
+<a name="1005567"></a>
+
+<p>
+<a name="1005568"></a>
+ 
+<p>
+
+<a name="1004864"></a>
+<h3>8.6.1	 &nbsp;&nbsp; Java の型にマッピングされる JDBC の型</h3>
+<a name="1005039"></a>
+<p>
+<Table Border="3">
+<strong></strong>
+<tr><th valign=top><strong>JDBC の型
+</strong><th valign=top><strong>Java の型
+</strong>
+<tr><td><code>CHAR
+</code><td><code>String
+</code>
+<tr><td><code>VARCHAR
+</code><td><code>String 
+</code>
+<tr><td><code>LONGVARCHAR
+</code><td><code>String
+</code>
+<tr><td><code>NUMERIC
+</code><td><code>java.math.BigDecimal
+</code>
+<tr><td><code>DECIMAL
+</code><td><code>java.math.BigDecimal
+</code>
+<tr><td><code>BIT
+</code><td><code>boolean
+</code>
+<tr><td><code>TINYINT
+</code><td><code>byte
+</code>
+<tr><td><code>SMALLINT
+</code><td><code>short
+</code>
+<tr><td><code>INTEGER
+</code><td><code>int
+</code>
+<tr><td><code>BIGINT
+</code><td><code>long
+</code>
+<tr><td><code>REAL
+</code><td><code>float
+</code>
+<tr><td><code>FLOAT
+</code><td><code>double
+</code>
+<tr><td><code>DOUBLE
+</code><td><code>double
+</code>
+<tr><td><code>BINARY
+</code><td><code>byte[]
+</code>
+<tr><td><code>VARBINARY
+</code><td><code>byte[]
+</code>
+<tr><td><code>LONGVARBINARY
+</code><td><code>byte[]
+</code>
+<tr><td><code>DATE
+</code><td><code>java.sql.Date
+</code>
+<tr><td><code>TIME
+</code><td><code>java.sql.Time
+</code>
+<tr><td><code>TIMESTAMP
+</code><td><code>java.sql.Timestamp
+</code>
+
+</Table>
+
+<Table>
+<tr><td>
+</Table>
+
+<p><a name="1004951"></a>
+
+<p>
+<a name="1004745"></a>
+
+<p>
+<a name="1004746"></a>
+
+<p>
+<a name="1004747"></a>
+
+<p>
+<a name="1004748"></a>
+
+<p>
+<a name="1004749"></a>
+
+<p>
+<a name="1004750"></a>
+
+<p>
+<a name="1004751"></a>
+
+<p>
+<a name="1005667"></a>
+
+<p>
+<a name="1005668"></a>
+
+<p>
+
+<a name="1004752"></a>
+<h3>8.6.2	 &nbsp;&nbsp; JDBC の型にマッピングされる Java の型</h3>
+<a name="1004753"></a>
+以下の一覧は、一覧 <a href="mapping.doc.html#1004864">8.6.1</a> とは逆に、Java の型から JDBC の型へのマッピングを示します。<p>
+<Table Border="3">
+<strong></strong>
+<tr><th valign=top><strong>Java の型
+</strong><th valign=top><strong>JDBC の型
+</strong>
+<tr><td><code>String 
+</code><td><code>VARCHAR または LONGVARCHAR
+</code>
+<tr><td><code>java.math.BigDecimal
+</code><td><code>NUMERIC
+</code>
+<tr><td><code>boolean
+</code><td><code>BIT
+</code>
+<tr><td><code>byte
+</code><td><code>TINYINT
+</code>
+<tr><td><code>short
+</code><td><code>SMALLINT
+</code>
+<tr><td><code>int
+</code><td><code>INTEGER
+</code>
+<tr><td><code>long
+</code><td><code>BIGINT
+</code>
+<tr><td><code>float
+</code><td><code>REAL
+</code>
+<tr><td><code>double
+</code><td><code>DOUBLE
+</code>
+<tr><td><code>byte[]
+</code><td><code>VARBINARY または LONGVARBINARY
+</code>
+<tr><td><code>java.sql.Date
+</code><td><code>DATE
+</code>
+<tr><td><code>java.sql.Time
+</code><td><code>TIME
+</code>
+<tr><td><code>java.sql.Timestamp
+</code><td><code>TIMESTAMP
+</code>
+
+</Table>
+
+<Table>
+<tr><td>
+</Table>
+
+<p>
+<a name="1000207"></a>
+文字列のマッピングは通常 <code>VARCHAR</code> ですが、値が <code>VARCHAR</code>の値に対するドライバの限界を超えている場合は、<code>LONGVARCHAR</code> になります。<code>byte[]</code>、<code>VARBINARY</code>、および <code>LONGVARBINARY</code> の値についても同様です。
+<p>
+<a name="1004670"></a>
+
+<p>
+<a name="1004671"></a>
+
+<p>
+<a name="1004672"></a>
+
+<p>
+<a name="1004673"></a>
+
+<p>
+<a name="1004789"></a>
+
+<p>
+<a name="1004790"></a>
+
+<p>
+<a name="1005669"></a>
+
+<p>
+<a name="1005670"></a>
+
+<p>
+<a name="1006746"></a>
+
+<p>
+
+<a name="1004791"></a>
+<h3>8.6.3	 &nbsp;&nbsp; Java の<code>オブジェクト</code> 型にマッピングされる JDBC の型</h3>
+<a name="1005149"></a>
+<code>boolean</code> や <code>int</code> のような Java の組込み型は 
+<code>Object</code> のサブタイプでないため、 <code>getObject</code>/<code>setObject</code> メソッドについての JDBC の型から Java のオブジェクト型へのマッピングには、相違点が少しあります。このマッピングは以下の一覧に示します。
+<p>
+<a name="1005239"></a>
+<p>
+<Table Border="3">
+<strong></strong>
+<tr><th valign=top><strong>JDBC の型
+</strong><th valign=top><strong>Java のオブジェクト型
+</strong>
+<tr><td><code>CHAR
+</code><td><code>String
+</code>
+<tr><td><code>VARCHAR
+</code><td><code>String 
+</code>
+<tr><td><code>LONGVARCHAR
+</code><td><code>String
+</code>
+<tr><td><code>NUMERIC
+</code><td><code>java.math.BigDecimal
+</code>
+<tr><td><code>DECIMAL
+</code><td><code>java.math.BigDecimal
+</code>
+<tr><td><code>BIT
+</code><td><code>Boolean
+</code>
+<tr><td><code>TINYINT
+</code><td><code>Integer
+</code>
+<tr><td><code>SMALLINT
+</code><td><code>Integer
+</code>
+<tr><td><code>INTEGER
+</code><td><code>Integer
+</code>
+<tr><td><code>BIGINT
+</code><td><code>Long
+</code>
+<tr><td><code>REAL
+</code><td><code>Float
+</code>
+<tr><td><code>FLOAT
+</code><td><code>Double
+</code>
+<tr><td><code>DOUBLE
+</code><td><code>Double
+</code>
+<tr><td><code>BINARY
+</code><td><code>byte[]
+</code>
+<tr><td><code>VARBINARY
+</code><td><code>byte[]
+</code>
+<tr><td><code>LONGVARBINARY
+</code><td><code>byte[]
+</code>
+<tr><td><code>DATE
+</code><td><code>java.sql.Date
+</code>
+<tr><td><code>TIME
+</code><td><code>java.sql.Time
+</code>
+<tr><td><code>TIMESTAMP
+</code><td><code>java.sql.Timestamp
+</code>
+
+</Table>
+
+<Table>
+<tr><td>
+</Table>
+
+<p>
+<a name="1004792"></a>
+
+<p>
+<a name="1005250"></a>
+
+<p>
+<a name="1005251"></a>
+
+<p>
+<a name="1005671"></a>
+
+<p>
+<a name="1005672"></a>
+
+<p>
+
+<a name="1004830"></a>
+<h3>8.6.4	 &nbsp;&nbsp; JDBC の型にマッピングされる Java のオブジェクト型 </h3>
+<a name="1006554"></a>
+<p>
+<Table Border="3">
+<strong></strong>
+<tr><th valign=top><strong>Java のオブジェクト型 
+</strong><th valign=top><strong>JDBC の型
+</strong>
+<tr><td><code>String 
+</code><td><code>VARCHAR または LONGVARCHAR
+</code>
+<tr><td><code>java.math.BigDecimal
+</code><td><code>NUMERIC
+</code>
+<tr><td><code>Boolean
+</code><td><code>BIT
+</code>
+<tr><td><code>Integer
+</code><td><code>INTEGER
+</code>
+<tr><td><code>Long
+</code><td><code>BIGINT
+</code>
+<tr><td><code>Float
+</code><td><code>REAL
+</code>
+<tr><td><code>Double
+</code><td><code>DOUBLE
+</code>
+<tr><td><code>byte[]
+</code><td><code>VARBINARY または LONGVARBINARY
+</code>
+<tr><td><code>java.sql.Date
+</code><td><code>DATE
+</code>
+<tr><td><code>java.sql.Time
+</code><td><code>TIME
+</code>
+<tr><td><code>java.sql.Timestamp
+</code><td><code>TIMESTAMP
+</code>
+
+</Table>
+
+<Table>
+<tr><td>
+</Table>
+
+<p><a name="1003159"></a>
+<code>String</code> に対するマッピングは通常 <code>VARCHAR</code> ですが、値が <code>VARCHAR</code> 値に対するドライバの限界を超えている場合は、
+<code>LONGVARCHAR</code> になることに注意してください。<code>byte[]</code>、<code>VARBINARY</code>、および <code>LONGVARBINARY</code> の値についても同様です。
+<p>
+<a name="1001468"></a>
+<p>
+<a name="1002566"></a>
+
+<p>
+<a name="1004835"></a>
+
+<p>
+<a name="1004836"></a>
+
+<p>
+<a name="1004837"></a>
+
+<p>
+<a name="1004838"></a>
+
+<p>
+<a name="1004839"></a>
+
+<p>
+<a name="1004840"></a>
+
+<p>
+<a name="1004841"></a>
+
+<p>
+<a name="1004842"></a>
+
+<p>
+<a name="1004843"></a>
+
+<p>
+<a name="1005673"></a>
+
+<p>
+<a name="1006742"></a>
+
+<p>
+
+<a name="1004845"></a>
+<h3>8.6.5	 &nbsp;&nbsp; <code>setObject</code> による変換</h3>
+<a name="1006792"></a>
+メソッド <code>setObject</code> は Java オブジェクトの型を JDBC の型に変換します。
+<p><a name="1006556"></a>
+  <p>
+<Table Border="3">
+<strong></strong>
+<tr><th valign=top>&nbsp;
+<th valign=top><font size=-1>T<br>
+I<br>
+N<br>
+Y<br>
+I<br>
+N<br>
+T
+</font>
+<th valign=top><font size=-1>S<br>
+M<br>
+A<br>
+L<br>
+L<br>
+I<br>
+N<br>
+T
+</font>
+<th valign=top><font size=-1>I<br>
+N<br>
+T<br>
+E<br>
+G<br>
+E<br>
+R
+</font>
+<th valign=top><font size=-1>B<br>
+I<br>
+G<br>
+I<br>
+N<br>
+T
+</font>
+<th valign=top><font size=-1>R<br>
+E<br>
+A<br>
+L
+</font>
+<th valign=top><font size=-1>F<br>
+L<br>
+O<br>
+A<br>
+T
+</font>
+<th valign=top><font size=-1>D<br>
+O<br>
+U<br>
+B<br>
+L<br>
+E
+</font>
+<th valign=top><font size=-1>D<br>
+E<br>
+C<br>
+I<br>
+M<br>
+A<br>
+L
+</font>
+<th valign=top><font size=-1>N<br>
+U<br>
+M<br>
+E<br>
+R<br>
+I<br>
+C<br>
+
+</font>
+<th valign=top><font size=-1>B<br>
+I<br>
+T<br>
+
+</font>
+<th valign=top><font size=-1>C<br>
+H<br>
+A<br>
+R
+</font>
+<th valign=top><font size=-1>V<br>
+A<br>
+R<br>
+C<br>
+H<br>
+A<br>
+R<br>
+
+</font>
+<th valign=top><font size=-1>L<br>
+O<br>
+N<br>
+G<br>
+V<br>
+A<br>
+R<br>
+C<br>
+H<br>
+A<br>
+R
+</font>
+<th valign=top><font size=-1>B<br>
+I<br>
+N<br>
+A<br>
+R<br>
+Y
+</font>
+<th valign=top><font size=-1>V<br>
+A<br>
+R<br>
+B<br>
+I<br>
+N<br>
+A<br>
+R<br>
+Y
+</font>
+<th valign=top><font size=-1>L<br>
+O<br>
+N<br>
+G<br>
+V<br>
+A<br>
+R<br>
+B<br>
+I<br>
+N<br>
+A<br>
+R<br>
+Y
+</font>
+<th valign=top><font size=-1>D<br>
+A<br>
+T<br>
+E
+</font>
+<th valign=top><font size=-1>T<br>
+I<br>
+M<br>
+E
+</font>
+<th valign=top><font size=-1>T<br>
+I<br>
+M<br>
+E<br>
+S<br>
+T<br>
+A<br>
+M<br>
+P
+</font>
+
+<tr><td>String
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+
+<tr><td>java.math.BigDecimal
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>Boolean
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>Integer
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>Long
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>Float
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>Double
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>byte[]
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>java.sql.Date
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>&nbsp;
+<td>x
+
+<tr><td>java.sql.Time
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>&nbsp;
+
+<tr><td>java.sql.Time-
+stamp
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td>x
+
+
+</Table>
+
+<Table>
+<tr><td>
+</Table>
+
+<p><a name="1005606"></a>
+Java のオブジェクト型から JDBC の型への変換
+<p>
+<a name="1006749"></a>
+
+<p>
+<a name="1006750"></a>
+
+<p>
+<a name="1006751"></a>
+
+<p>
+<a name="1006788"></a>
+
+<p>
+
+<a name="1006739"></a>
+<h3>8.6.6	 &nbsp; &nbsp; ResultSet.getXXX メソッドにより取り出される JDBC の型</h3>
+<a name="1006752"></a>
+"x" は、メソッドが SQL の型を取り出すことが<em>可能であること</em>を意味します。"X" はそのメソッドが SQL の型として<em>推奨されていること</em>を意味します。
+<p><a name="1006555"></a>
+ <p>
+<Table Border="3">
+<strong></strong>
+<tr><th valign=top>&nbsp;
+<th valign=top><font size=-1>T<br>
+I<br>
+N<br>
+Y<br>
+I<br>
+N<br>
+T
+</font>
+<th valign=top><font size=-1>S<br>
+M<br>
+A<br>
+L<br>
+L<br>
+I<br>
+N<br>
+T
+</font>
+<th valign=top><font size=-1>I<br>
+N<br>
+T<br>
+E<br>
+G<br>
+E<br>
+R
+</font>
+<th valign=top><font size=-1>B<br>
+I<br>
+G<br>
+I<br>
+N<br>
+T
+</font>
+<th valign=top><font size=-1>R<br>
+E<br>
+A<br>
+L
+</font>
+<th valign=top><font size=-1>F<br>
+L<br>
+O<br>
+A<br>
+T
+</font>
+<th valign=top><font size=-1>D<br>
+O<br>
+U<br>
+B<br>
+L<br>
+E
+</font>
+<th valign=top><font size=-1>D<br>
+E<br>
+C<br>
+I<br>
+M<br>
+A<br>
+L
+</font>
+<th valign=top><font size=-1>N<br>
+U<br>
+M<br>
+E<br>
+R<br>
+I<br>
+C
+</font>
+<th valign=top><font size=-1>B<br>
+I<br>
+T
+</font>
+<th valign=top><font size=-1>C<br>
+H<br>
+A<br>
+R
+</font>
+<th valign=top><font size=-1>V<br>
+A<br>
+R<br>
+C<br>
+H<br>
+A<br>
+R
+</font>
+<th valign=top><font size=-1>L<br>
+O<br>
+N<br>
+G<br>
+V<br>
+A<br>
+R<br>
+C<br>
+H<br>
+A<br>
+R
+</font>
+<th valign=top><font size=-1>B<br>
+I<br>
+N<br>
+A<br>
+R<br>
+Y
+</font>
+<th valign=top><font size=-1>V<br>
+A<br>
+R<br>
+B<br>
+I<br>
+N<br>
+A<br>
+R<br>
+Y
+</font>
+<th valign=top><font size=-1>L<br>
+O<br>
+N<br>
+G<br>
+V<br>
+A<br>
+R<br>
+B<br>
+I<br>
+N<br>
+A<br>
+R<br>
+Y
+</font>
+<th valign=top><font size=-1>D<br>
+A<br>
+T<br>
+E
+</font>
+<th valign=top><font size=-1>T<br>
+I<br>
+M<br>
+E
+</font>
+<th valign=top><font size=-1>T<br>
+I<br>
+M<br>
+E<br>
+S<br>
+T<br>
+A<br>
+M<br>
+P
+</font>
+
+<tr><td>getByte
+<td><strong>X
+</strong><td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getShort
+<td>x
+<td><strong>X
+</strong><td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getInt
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getLong
+<td>x
+<td>x
+<td>x
+<td><strong>X
+</strong><td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getFloat
+<td>x
+<td>x
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getDouble
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td><strong>X</strong>
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getBigDecimal
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td><strong>X</strong>
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getBoolean
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getString
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td><strong>X</strong>
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+
+<tr><td>getBytes
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td><strong>X</strong>
+<td><strong>X</strong>
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getDate
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td><strong>X</strong>
+<td>&nbsp;
+<td>x
+
+<tr><td>getTime
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td><strong>X</strong>
+<td>x
+
+<tr><td>getTimestamp
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>&nbsp;
+<td><strong>X</strong>
+
+<tr><td>getAsciiStream
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getUnicodeStream
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>x
+<td>x
+<td>x
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getBinaryStream
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+<td>x
+<td>x
+<td><strong>X</strong>
+<td>&nbsp;
+<td>&nbsp;
+<td>&nbsp;
+
+<tr><td>getObject
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+<td>x
+
+
+</Table>
+
+<Table>
+<tr><td>
+</Table>
+
+<p><a name="998993"></a>
+
+<p>
+
+
+<br>
+<hr>
+<font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="callablestatement.doc.html">前項目</a>  | <a href="SimpleSelect.doc.html">次項目</a>
+</font>
+<hr>
+
+
+<address>
+<a href="mailto:jdbc@wombat.eng.sun.com">jdbc@wombat.eng.sun.com</a>
+または
+<a href="mailto:jdbc-odbc@wombat.eng.sun.com">jdbc-odbc@wombat.eng.sun.com</a>
+</address>
+
+<a href="copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>
+

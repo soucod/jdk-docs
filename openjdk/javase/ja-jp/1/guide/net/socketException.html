@@ -1,0 +1,82 @@
+<HTML><HEAD><TITLE>
+JDK1.1 の新しい SocketExceptions
+</TITLE></HEAD>
+<!-- Changed by: David Brown, 21-Aug-1996 -->
+<BODY>
+<H2>
+<IMG SRC="images/duke4.gif" ALIGN=CENTER WIDTH=55 HEIGHT=68>
+JDK1.1 の新しい SocketException
+</H2>
+<P>
+以前は、java のすべてのネットワークエラーは <B>SocketException</B> を発生させ、どこが悪かったのかを判読する充分な情報を提供しませんでした。たとえば、リモートコンピュータが接続を拒否したのか (そのポートをなにも受信していない)? またはホストに到達できなかったのか (接続の試みがタイムアウト)? といった原因を特定できませんでした。JDK 1.1 は洗練されたエラーレポートを提供する 3 つの新しいクラスを追加します:
+<UL>
+<LI> <H3>java.net.BindException</H3> 
+ローカルポートが使用中、または要求バインドアドレスがローカルに割り当てできない。<PRE>
+ 	public class BindException extends SocketException {
+	...
+	}
+</PRE>
+
+<LI> <H3>java.net.ConnectException</H3> 
+接続がリモートホストで拒否されたとき、例外が発生する (すなわち、そのポートをどのプロセスもリッスンしていない)。
+
+<PRE>
+ 	public class ConnectException extends SocketException {
+	...
+	}
+</PRE>
+
+<LI> <H3>java.net.NoRouteToHostException</H3> 
+接続の試みがタイムアウトした、そうでなければリモートホストが到達不可能。
+
+<PRE>
+ 	public class NoRouteToHostException extends SocketException {
+	...
+	}
+</PRE>
+</UL>
+<P>
+<H2>簡単な使用例:</H2>
+<UL>
+<LI>クライアント側:
+<PRE>
+import java.net.*;
+	...
+	Socket s = null;
+	try {
+	   s = new Socket("foo.org", 80);
+	} catch (UnknownHostException e) {
+	   // check spelling of hostname
+	} catch (ConnectException e) {
+	   // connection refused - is server down? Try another port.
+	} catch (NoRouteToHostException e) {
+	   // The connect attempt timed out.  Try connecting through a proxy
+	} catch (IOException e) {
+	   // another error occurred
+	}
+</PRE>
+<LI>サーバ側:
+<PRE>
+import java.net.*;
+ 	...
+	ServerSocket ss = null;
+	try {
+	    /* try to bind to local address 129.144.175.156 */
+	    InetAddress in = InetAddress.getByName("129.144.175.156");
+	    int port = 8000;
+	    int backlog = 5;
+	    ss = new ServerSocket(port, backlog, in);
+	} catch (BindException e) {	   	
+	    // port 8000 in use, or can't bind to 129.144.175.156 as a local address
+	} catch (SocketException e) {
+	    // another error occurred
+	}
+</PRE>
+<P>
+<HR>
+<ADDRESS>
+<A HREF="mailto:brown@eng.sun.com">David Brown</A>
+</ADDRESS>
+</BODY>
+</HTML>
+

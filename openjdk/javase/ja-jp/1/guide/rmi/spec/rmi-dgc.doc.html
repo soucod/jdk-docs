@@ -1,0 +1,190 @@
+<html><head><title>Garbage Collector Interfaces
+</title></head>
+<body bgcolor=#ffffff>
+ 
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-stubs.doc.html">前項目</a> <a href="rmi-protocol.doc.html">次項目</a>
+<hr><br>
+ 
+<a name="60">
+<h1>ガベージコレクタインタフェース
+</h1>
+</a>
+<hr><p><a name="64">
+
+<p>
+</a>この章で説明するインタフェースとクラスは RMI の分散ガベージコレクタ (DGC) により使用されます。
+<p><h3><a name="3210">
+トピックス:
+</a></h3><ul><li><a href="rmi-dgc.doc.html#6449">インタフェース DGC</a>
+<li><a href="rmi-dgc.doc.html#6770">Lease クラス</a>
+<li><a href="rmi-dgc.doc.html#7144">ObjID クラス</a>
+<li><a href="rmi-dgc.doc.html#6758">UID クラス</a>
+<li><a href="rmi-dgc.doc.html#6613">VMID クラス</a>
+</ul><h1><a name="6449">
+インタフェース DGC
+</a></h1>DGC を抽象化したものがサーバ側での分散ガベージコレクタアルゴリズムとして使われます。 このインタフェースは <code>dirty</code> と <code>clean</code> という2つのメソッドを持っています。
+ <code>dirty</code> コールはリモート参照がクライアントにより整理されていないときに発生します。（クライアントは <code>VMID</code> により示されます）。
+対応する clean コールはクライアント側にそれ以上のリモート参照が存在しなくなったときに発生します。
+dirty コールが失敗した場合には、強い clean コールをスケジューリングしてコールの順序番号を保持し、将来分散ガベージコレクタが番号の食い違った命令を受けてもそれを検出できるようにしなければなりません。
+<p>リモートオブジェクトへの参照はしばらくの間、参照を保持しているクライアントによって <em>lease</em> されます。
+lease される期間は dirty コールが受け付けられた時点をスタートとします。自分が保持するリモート参照の lease 期間が切れないように追加の <code>dirty</code> コールを発行して lease を更新するのはクライアント側の責任です。
+もしクライアントが lease が切れる前に更新するのを怠ると、分配ガベージコレクタは、そのリモートオブジェクトはもはやクライアントから参照されていないと判断します。
+<p><dl><a name="6480"><pre>package java.rmi.dgc;
+import java.rmi.server.ObjID;
+
+public interface DGC extends java.rmi.Remote {
+
+	Lease dirty(ObjID[] ids, long sequenceNum, Lease lease)
+		throws java.rmi.RemoteException;
+	
+	void clean(ObjID[] ids, long seqNum, VMID vmid, boolean strong)
+		throws java.rmi.RemoteException;
+}
+</pre></a></dl><code>dirty</code>メソッドは、配列引数 ids に含まれるオブジェクト識別子に関連付けられたリモートオブジェクト参照の lease を要求します。
+Lease はクライアントの一意の仮想マシン識別子 (VMID) と要求された lease 期間を持っています。ローカルな仮想マシンでエクスポートされるそれぞれのリモートオブジェクトについて、ガベージコレクタは<em>参照リスト (reference list) </em>（ガベージコレクタへの参照をもつクライアントのリスト）を保持しています。
+もし lease が許可されるとガベージコレクタはクライアントの VMID をそれぞれの識別子で表されるリモートオブジェクトの参照リストに追加します。
+sequenceNum パラメーターはガベージコレクタへの遅れたコールを検出して除外するために使用するシーケンス番号です。 
+シーケンス番号はガベージコレクタへのコールが発生するたびに常に増加してゆきます。
+<p>クライアントの中には一意の VMID を作れないものもあります。
+この理由は VMID が <em>true</em> ホストアドレスを含んでいる場合にのみ全体を通して一意な値を取り得るのにたいして、クライアントの中にはセキュリティ上の制限によりアドレスを取得できないことがあるからです。
+この場合クライアントは VMID として <code>null</code> を使うことができ、分散ガベージコレクタはそのクライアントに対して VMID を割り付けます。
+<p><code>dirty</code> コールは <code>Lease</code> オブジェクトを返し、そのオブジェクトには使用されている VMID と、そのリモート参照に許可されている lease 期間が含まれています（サーバはクライアントが要求するよりも短い lease 期間を許可する権限があります）。
+クライアントは、自分がリモートオブジェクト参照を取り下げたときに対応する <code>clean</code> コールが実行されるために、ガベージコレクタが使用する VMID を使わなければなりません。
+<p>クライアントの仮想マシンはそのマシン内で参照されている各リモート参照に対して最初に一回だけ <code>dirty</code> を行う必要があります（たとえ同一のリモートオブジェクトに対して複数の参照がなされていたとしても一回だけです）。
+クライアントはまた、リモート参照への lease 期間が消滅する前に、lease 更新のために <code>dirty</code> コールを実行する必要があります。
+クライアントがもはや特定のリモートオブジェクトへの参照を持たない状態になると、その参照に関連したオブジェクト ID のための <code>clean</code> コールをスケジューリングしなければなりません。 
+<p><code>clean</code> コールは各リモートオブジェクトの参照リストから id で識別される VMID を削除します。
+シーケンス番号により遅れた clean コールを検出することができます。引数 strong が true の場合はその clean コールは失敗した <code>dirty</code> コールの結果生じたものです。したがってこの場合にはクライアントの vmid に対応するシーケンス番号は記憶しておかなければなりません。
+<p><h1><a name="6770">
+Lease クラス
+</a></h1>Lease は一意の仮想マシン識別子と lease 期間を持っています。
+ <code>Lease</code> オブジェクトはリモートオブジェクト参照への lease 要求と許可を与えるために使われます。
+<p><dl><a name="6934"><pre>package java.rmi.dgc;
+
+public final class Lease implements java.io.Serializable {
+
+	public Lease(VMID id, long duration);
+
+	public VMID getVMID();
+
+	public long getValue();
+}
+</pre></a></dl><code>Lease</code> コンストラクタは特定の VMID の lease期間で lease を生成します。
+VMID は <code>null</code> である場合もあります。
+<p><code>getVMID</code> メソッドはその lease に関係付けられたクライアントの VMID を返します。
+<p><code>getValue</code> メソッドは lease 期間を返します。
+<p><h1><a name="7144">
+ObjID クラス
+</a></h1><code>ObjID</code> クラスは時間が経過したとしても仮想マシン内でリモートオブジェクトを一意に同定するために使われます。
+それぞれの識別子にはオブジェクト番号と特定のホストで一意に決まるアドレス空間識別子が書かれています。
+リモートオブジェクトにはそれがエクスポートされたときにオブジェクト識別子が割り付けられます。
+<p><code>ObjID</code> はオブジェクト番号 (<code>long</code>) とアドレス空間への一意の識別子 (<code>UID</code>) から構成されます。
+<p><dl><a name="6752"><pre>package java.rmi.server;
+
+public final class ObjID implements java.io.Serializable {
+
+	public ObjID ();
+
+	public ObjID (int num);
+
+	public void write(ObjectOutput out) throws java.io.IOException;
+
+	public static ObjID read(ObjectInput in)
+		throws java.io.IOException;
+
+	public int hashCode() 
+
+	public boolean equals(Object obj) 
+
+	public String toString()
+}
+</pre></a></dl><code>ObjID</code> コンストラクタの最初の形式は一意のオブジェクト識別子を作成します。 
+コンストラクタの2つ目の形式は（レジストリや分散ガベージコレクタが使用する）<em>well-known</em> オブジェクト識別子を作成して well-known オブジェクト番号を引数とします。
+第二のコンストラクタで作成された well-known オブジェクト ID が他のデフォルトコンストラクタで作成された ID と衝突することは許されません。これを確実に行うために、 <code>ObjID</code> のオブジェクト番号はコンストラクタが提供する "well-known" 番号を使用して、全ての<code>UID</code> フィールドはゼロに設定されます
+<p><code>write</code> メソッドはオブジェクト ID の表現を一体化して出力ストリームに乗せます。
+<p><code>read</code> メソッドは特定の入力ストリームから得られた内容からオブジェクト ID を構築します。
+<p><code>hashCode</code>メソッドはオブジェクト番号を hashcode として返します。
+<p><code>equals</code> メソッドはもし obj が同じ内容の <code>ObjID</code> であったときに true を返します。
+<p><code>toString</code> メソッドはオブジェクト ID の表現を含んだ文字列を返します。文字列表現の中にアドレス空間識別子が含まれるのはオブジェクト ID が非ローカルアドレス空間から来たものであるときだけです。 
+<p><h1><a name="6758">
+UID クラス
+</a></h1><code>UID</code> クラスはそれが生成されるホスト上で一意に定まる識別子を作成するための抽象化です。
+<code>UID</code> は <code>ObjID</code> にアドレス空間識別子として含まれます。 
+ UID はホスト上で一意の数 (<code>int</code>)、時間(<code>long</code>)、そしてカウント (a <code>short</code>) から構成されます。
+<p><dl><a name="6760"><pre>package java.rmi.server;
+
+public final class UID implements java.io.Serializable {
+
+    public UID();
+
+    public UID(short num); 
+
+    public int hashCode();
+
+    public boolean equals(Object obj);
+
+    public String toString();
+
+    public void write(DataOutput out) throws java.io.IOException;
+
+    public static UID read(DataInput in) throws java.io.IOException;
+}
+</pre></a></dl>第一のコンストラクタはそれが生成されたホスト上で一意に定まる純粋識別子を作成します。
+この <code>UID</code> は次の条件下で一意に定まります： a) マシンはリブートするのに一秒以上を要する、そして b) マシンのクロックが決して時間をさかのぼって再設定されない。 グローバルに一意的な <code>UID</code> を作り出すには、単に <code>UID</code> と  <code>InetAddress</code> を組み合わせます。
+<p>第二の形式のコンストラクタは <em>well-known</em> <code>UID</code> を作り出します。 全部で 216 -1 通りの well-known ID を作ることができます。 このコンストラクタが作る ID は他のデフォルト <code>UID</code> コンストラクタが作るホスト上で真に単一の識別子と衝突することが許されません。
+<p><code>hashCode</code> メソッド、<code>equals</code> メソッド、そして <code>toString</code> メソッドが UID のために定義されています。
+2つの UID は内容が完全に一致するとき等しいといわれます。
+<p><code>write</code> メソッドは UID を出力ストリームに書きます。
+<p><code>read</code> メソッドは特定の入力ストリームから読み込まれた内容から UID を作ります。 
+<p><h1><a name="6613">
+VMID クラス
+</a></h1><code>VMID</code> クラスは全ての Java 仮想マシン上で唯一無二の識別子を与えます。
+<code>VMID</code> は <code>UID</code> とホストアドレスを含みます。
+<code>VMID</code> はクライアントの仮想マシンを識別するために使います。
+<p><dl><a name="6617"><pre>package java.rmi.dgc;
+
+public final class VMID implements java.io.Serializable {
+
+	public VMID();
+
+	public static boolean isUnique();
+
+	public int hashCode();
+
+	public boolean equals(Object obj);
+	
+	public String toString();
+}
+</pre></a></dl><code>VMID</code> のデフォルトコンストラクタは次の条件下で、全ての Java 仮想マシン上でグローバルに一意な識別子を作成します。
+<p><ul><li><code>java.rmi.server.UID</code> クラスのオブジェクトに関する一意性の条件を満たしていること、および <li><code>UID</code> オブジェクトの生存期間中一意で一定のホストアドレスが得られること。
+</ul> <code>VMID</code> は自分がその上で生成されたマシンのホストアドレスを保持しています。
+セキュリティ上の制限により、真のホストアドレスを得られない場合があり得ます（例えばループバックホストはセキュリティ上制限された使い方をされます）。
+<code>isUnique</code> メソッドは、この仮想マシン上で作成された VMID が実際すべてのマシン中で一意であることをチェックするときに呼び出されます。
+<code>isUnique</code> メソッドは有効なホスト名（ループバックホスト以外で）を決定できるときに true を返し、そうでないときは false を返します。
+<p><code>hashCode</code> メソッド、 <code>equals</code> メソッド、そして <code>toString</code> メソッドは <code>VMID</code> のために定義されます。 
+2つの VMID は内容が一致するときに等しいと呼ばれます。
+<p><dl><a name="6727"><pre>
+</pre></a></dl>
+<hr><br>
+ 
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-stubs.doc.html">前項目</a> <a href="rmi-protocol.doc.html">次項目</a>
+<hr><br>
+ 
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.4 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email  -->
+<!-- -->
+<!-- Last updated: 03/18/97 13:00:06 -->
+
+</body>
+</html>

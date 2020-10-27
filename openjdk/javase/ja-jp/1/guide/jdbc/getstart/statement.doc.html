@@ -1,0 +1,302 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="drivermanager.doc.html">前項目</a>  | <a href="resultset.doc.html">次項目</a>
+</font></td><td align=right><i>JDBC<sup><font size=-2>TM</font></sup> ガイド: 「はじめましょう」</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+<a name="999752"></a>
+<h1>4  - 文</h1>
+<a name="999971"></a>
+この概要は、JavaSoftで現在進行中の<em>JDBC<font size=-1><sup>TM</sup></font> Database Access from Java<font size=-1><sup>TM</sup></font>:  A Tutorial and Annotated Reference</em>からの抜粋です。本書は、JDBC対応の自習用および最終レファレンス・マニュアルで、Javaシリーズの一部として1997年春にAddison-Wesley Publishing Companyから出版されています。
+<p>
+<a name="1000008"></a>
+<h2>4.1	&nbsp;&nbsp; 概要</h2>
+<a name="999768"></a>
+<code> Statement </code>オブジェクトは、SQL 文をデータベースへ送る場合に使用します。実際には <code>Statement</code>、<code>PreparedStatement</code>、および <code>CallableStatement</code> の 3 種類の<code> Statement </code>オブジェクト (Statement、 PreparedStatement、 CallableStatement) があり、このすべてのオブジェクトが指定の接続で SQL 文の実行のためのコンテナの役目をします。<code>PreparedStatement</code> は <code>Statement</code> から継承し、<code>CallableStatement</code> は <code>PreparedStatement</code> から継承しています。これらは次のような特定の型の SQL 文の送付専用に使われます。 
+<code>Statement</code> オブジェクトは、パラメータをもたない単純な SQL 文の実行に使用されます。 
+<code>PreparedStatement</code> オブジェクトは、IN パラメータの有無に関係なくプリコンパイル済み SQL 文の実行に使用されます。また、<code>CallableStatement</code> オブジェクトは、データベースに格納されたプロシージャの呼び出しの実行に使用されます。  
+<p><a name="999769"></a>
+<code>Statement</code> インタフェースは、文の実行および結果の取り出しのための基本メソッドを提供します。<code>PreparedStatement</code> インタフェースは、IN パラメータの処理のためのメソッドを追加します。<code>CallableStatement</code> は、 OUT パラメータの処理のためのメソッドを追加します。
+<p>
+
+<a name="999770"></a>
+<h3>4.1.1	 &nbsp;&nbsp; Statement オブジェクトの作成</h3>
+<a name="999771"></a>
+特定のデータベースと接続が設定されていれば、その接続を SQL 文の送付に使用できます。<code>Statement</code> オブジェクトは、次のコード断片にあるような <code>Connection</code> 
+メソッド <code>createStatement</code> を用いて作成されます。
+<p><pre><a name="999772"></a>    Connection con = DriverManager.getConnection(<code>url</code>, "sunny", "");
+<a name="999773"></a>    Statement stmt = con.createStatement();
+</pre><a name="999774"></a>
+データベースに送付される SQL 文は、<code>Statement</code> オブジェクトを実行するためのメソッドの 1 つに引数として提供されます。
+<p>
+<pre><a name="999775"></a>    ResultSet rs = stmt.executeQuery("SELECT a, b, c FROM Table2);
+</pre>
+<a name="1000107"></a>
+<h3>4.1.2	 &nbsp;&nbsp; Statement オブジェクトを使用した文の実行</h3>
+<a name="1000108"></a>
+<code>Statement</code> インタフェースは、SQL 文の実行に <code>executeQuery</code>、<code>executeUpdate</code>、および <code>execute</code> の 3 つの異なるメソッドを提供します。使用するメソッドは、SQL 文がなにを作成するかによって決まります。
+<p><a name="1000109"></a>
+メソッド <code>executeQuery</code> は、<code>SELECT</code> 文などの単一の結果のセットを作成する文用に設計されています。
+<p>
+<a name="1000110"></a>
+メソッド <code>executeUpdate</code> は、<code>INSERT</code>、<code>UPDATE</code>、または <code>DELETE</code> の各文、および <code>CREATE</code>、
+<code>TABLE</code>、<code>DROP</code> <code>TABLE.</code> のような SQL DDL (データ定義言語) 文を実行するために使用します。<code>INSERT</code>、<code>UPDATE</code>、または <code>DELETE</code> 文の結果は、テーブルの中の 0 行以上の行中の 1 列以上の列の修正です。 <code>executeUpdate</code> の返却値は、影響を受ける行の数を示す整数 (更新カウントという) となります。<code>CREATE</code> <code>TABLE</code> または
+<code>DROP</code> <code>TABLE</code> のような文では、列に対して動作しないため、 <code>executeUpdate</code> の返却値は常に、0 になります。
+<p>
+<a name="1000111"></a>
+メソッド <code>execute</code> は、複数の結果セット、複数の更新カウント、あるいはその 2 つの組み合わせを返す文を実行するのに使用します。そのメソッドは高度な機能であり、通常の場合、プログラマが必要とすることはまず考えられないので、この概要ではそのメソッドの節で説明します。
+<p>
+<a name="1000112"></a>
+文を実行するすべてのメソッドは、開いている呼び出し <code>Statement</code> オブジェクトの現在の結果のセットが開いていればこれを閉じます。このことは、<code> Statement </code>オブジェクトを再実行する前に、現在の <code>ResultSet</code> オブジェクトの処理をすべて完了する必要があることを意味します。 
+<p>
+<a name="1000113"></a>
+<code>Statement</code> インタフェースの中のすべてのメソッドを継承している <code>PreparedStatement</code> インタフェースは、メソッド <code>executeQuery</code>、<code>executeUpdate</code>、および <code>execute</code> の独自のバージョンをもっていることに注意してください。<code> Statement </code>オブジェクト自体は SQL 文を含んでいません。したがって、SQL 文を引数として
+<code>Statement.execute</code> メソッドに指定する必要があります。上記のメソッドは、<code>PreparedStatement</code> オブジェクトは、 これらのメソッドにはすでにプリコンパイル済み SQL 文を含んでいるため、SQL 文を引数として与えません。<code>CallableStatement</code> は、これらのメソッドの <code>PreparedStatement</code> 形式を継承しています。<code>PreparedStatement</code> または
+<code>CallableStatement</code> バージョンのこれらのメソッドに対してパラメータとしてクエリーを与えると、これらのメソッドには、<code>SQLException</code> 例外がスローされます。
+<p>
+
+<a name="1000044"></a>
+<h3>4.1.3	 &nbsp;&nbsp; 文の完了</h3>
+<a name="1000045"></a>
+接続が自動コミットモードにある場合には、そのモードでの実行中の文は、完了時にコミットされるか、あるいはロールバックされるかのどちらかになります。文は、その実行が終了し、かつその結果がすべて返されたときに完了したものと見なされます。<code>executeQuery</code> メソッドに対しては 1 つの結果セットを返すので、文は、<code>ResultSet</code> オブジェクトのすべての列の取り出しが終了したときに完了します。<code>executeUpdate</code> メソッドに対しては、文は、その実行が終了したときに完了します。ただし、<code>execute</code> メソッドが呼ばれるようなまれな場合には、それが生成したすべての結果セットまたは更新カウントの取り出しが終了するまでは、文は完了しません。 
+<p><a name="1000046"></a>
+DBMS の中には、ストアードプロシージャ中の各文を別個の文として取り扱うものもあります。また、全体のプロシージャを 1 つの複合文と取り扱うものもあります。この相違は、<code>commit</code> メソッドが呼ばれるタイミングに影響するため、自動コミットが使用可能になっている場合に重要になります。前者の場合には、各文は、個別にコミットされます。後者の場合には、すべてが一緒にコミットされます。
+<p>
+
+<a name="1000047"></a>
+<h3>4.1.4	 &nbsp;&nbsp; Statement オブジェクトを閉じる</h3>
+<a name="1000048"></a>
+<code>Statement</code> オブジェクトは自動的に、Java ガベージコレクタが閉じます。ただし、Statement オブジェクトが最早必要なくなった場合には、明示的に閉じるようにするように、適切なプログラミング習慣として勧めます。Statement オブジェクトを閉じると直ちに、 DBMS のリソースが解放され、メモリ問題の危険性を避けるのに役立ちます。
+<p>
+<a name="999828"></a>
+<h3>4.1.5	 &nbsp;&nbsp; Statement オブジェクト内の SQL エスケープ構文 </h3>
+<a name="999829"></a>
+<code>Statement</code> オブジェクトは SQL エスケープ構文を使用する SQL 文を含むことができます。
+エスケープ構文は、この中のコードを違うように処理する信号をドライバに送ります。ドライバはエスケープ構文がないかスキャンし、それを特定のデータベースが理解するコードに変換します。このため、エスケープ構文は DBMS から独立しており、プログラマは他では使用できないような機能を使用できるようになります。  
+<p><a name="999830"></a>
+エスケープ句は、大括弧とキーワードによって区分けされます。
+<p>
+<pre><a name="999831"></a>      {keyword . . . parameters . . . }
+</pre><a name="999832"></a>
+キーワードは、下記のように、エスケープ句の種類を示します。 
+<p>
+<a name="999833"></a>
+
+<p>
+
+<ul><a name="999834"></a>
+<li><code>LIKE</code> エスケープ文字のための <code>escape</code>
+<br><br>
+</ul><blockquote><a name="999835"></a>
+
+<p>
+<a name="999836"></a>
+"%" と "_" の文字は SQL <code>LIKE</code> 句ではワイルドカードのように機能する ("%" はゼロ個以上の文字に一致し、"_" は 1 文字だけに一致する)。これらを文字どおりに解釈するには、文字列の特殊なエスケープ文字であるバックスラッシュ ("\") が直前になければならない。照会の終りに次の構文を組込むと、どの文字をエスケープ文字として使用すべきかを指定することができる。
+<p>
+</blockquote><pre><a name="999837"></a>    <code>  {escape 'escape-character'}
+</code></pre><blockquote><a name="999838"></a>
+たとえば、バックスラッシュ文字をエスケープ文字として使用している次の照会では、アンダーバーで始まる識別名を検索する。 
+<p>
+</blockquote><pre><a name="999839"></a>    stmt.executeQuery("SELECT name FROM Identifiers 
+<a name="999840"></a>           WHERE Id LIKE `\_%' {escape `\'};
+</pre><blockquote><a name="999841"></a>
+
+<p>
+</blockquote>
+<ul><a name="999842"></a>
+<li>スカラ関数のための <code>fn</code>
+<br><br>
+</ul><blockquote><a name="999843"></a>
+
+<p>
+<a name="999844"></a>
+ほとんどすべての DBMS は、スカラ値に数字、文字列、時刻、日付、システム、および変換の関数をもっている。希望の関数の名前およびその引数の後に続くキーワード <code>fn</code> を用いて、これらの関数の 1 つをエスケープ構文の中に入れると、その関数を使用することができる。たとえば、次のコードは、連結する 2 つの引数をもつ関数 <code>concat</code> を呼び出す。
+<p>
+</blockquote><pre><a name="999845"></a>      {fn concat("Hot", "Java")};
+</pre><blockquote><a name="999846"></a>
+次の構文で現在のデータベースのユーザ名を取得することができる。
+<p>
+</blockquote><pre><a name="999847"></a>      {fn user()};
+</pre><blockquote><a name="999848"></a>
+スカラ関数は、多少構文を変えることで異なるデータベースによってもサポートできるが、すべてのドライバがサポートすることはできない。さまざまの <code>DatabaseMetaData</code> メソッドで、サポートされている関数のリストを取得できる。たとえば、メソッド <code>getNumericFunctions</code> は数字関数の名前のカンマで区切ったリストを返し、メソッド <code>getStringFunctions</code> は文字列関数を返すなどである。
+<p>
+<a name="999849"></a>
+ドライバは、エスケープされた関数呼び出しを適切な構文にマッピングするか、あるいはその関数をそれ自体に実装する。
+<p>
+</blockquote><a name="999850"></a>
+
+<p>
+
+<ul><a name="999851"></a>
+
+<li>日付および時刻リテラルのための <code>d</code>、<code>t</code>、および <code>ts</code>
+<br><br>
+</ul><blockquote><a name="999852"></a>
+
+<p>
+<a name="999853"></a>
+DBMS では、日付、時刻、およびタイムスタンプのリテラルに使用する構文に違いがある。JDBC は、ドライバが DBMS 表現に変換しなければならないエスケープ句を使用して、これらのリテラルの構文の ISO 標準フォーマットをサポートしている。
+
+<p>
+<a name="999854"></a>
+たとえば、日付は次の構文を用いた JDBC SQL 文で指定される。
+
+<p>
+</blockquote><pre><a name="999855"></a>    <code>  {d 'yyyy-mm-dd'}
+</code></pre><blockquote><a name="999856"></a>
+この構文では、<code>yyyy</code> は年、<code>mm</code> は月、そして <code>dd</code> は日である。ドライバはエスケープ句を等価の DBMS 固有の表現と置換する。たとえば、ドライバは <code>{d '1999-02-28'}</code> の基礎データベースの適切なフォーマットが <code>'28-FEB-99'</code> であればこれに置換する。
+
+<p>
+<a name="999857"></a>
+<code>TIME</code> および <code>TIMESTAMP</code> には、次のような類似のエスケープ句がある。
+<p>
+</blockquote><pre><a name="999858"></a>        {t 'hh:mm:ss'}
+<a name="999859"></a>        {ts 'yyyy-mm-dd hh:mm:ss.f . . .'}
+</pre><blockquote><a name="999860"></a>
+<code>TIMESTAMP</code> の小数秒 (<code>.f . . .</code>) 部分は省略することもできる。
+<p>
+</blockquote><a name="999861"></a>
+
+<p>
+
+<ul><a name="999862"></a>
+<li>ストアードプロシージャのための <code>call</code> または <code>? = call</code>
+<br><br>
+</ul><a name="999863"></a>
+
+<p>
+<blockquote><a name="999864"></a>
+データベースがストアードプロシージャをサポートする場合、次のような構文でこれらを JDBC から呼び出すことができる。
+<p>
+</blockquote><pre><a name="999865"></a>      {call procedure_name[(?, ?, . . .)]}
+</pre><blockquote><a name="999866"></a>
+また、プロシージャが結果のパラメータを返す場合は次のような構文になる。
+<p>
+</blockquote><pre><a name="999867"></a>      {? = call procedure_name[(?, ?, . . .)]}
+</pre><blockquote><a name="999868"></a>
+角括弧は、これらに囲まれたものがオプショナルであることを指し示す。これらは構文の一部ではない。 
+<p>
+<a name="999996"></a>
+入力引数はリテラルまたはパラメータのどちらかになる。詳細については本 <em>JDBCガイド</em> の<a href="callablestatement.doc.html#998919"> 7 </a>、"CallableStatement" の節を参照のこと。
+<p>
+<a name="999869"></a>
+メソッド <code>DatabaseMetaData.supportsStoredProcedures</code> を呼び出すことにより、データベースが格納された プロシージャをサポートするかどうかを調べることができる。
+<p>
+</blockquote><pre><a name="999870"></a>    
+</pre>
+<ul><a name="999871"></a>
+<li>外部ジョインのための <code>oj</code> 
+<br><br>
+</ul><a name="999872"></a>
+
+<p>
+<blockquote><a name="999873"></a>
+外部ジョインの構文は次のとおりである。 
+<p>
+</blockquote><pre><a name="999874"></a>      {oj outer-join}
+</pre><blockquote><a name="999875"></a>
+この場合<code>outer-join</code> は次の形式である。 
+<p>
+</blockquote><pre><a name="999876"></a>      table LEFT OUTER JOIN {table | outer-join} ON search-condition
+</pre><blockquote><a name="999877"></a>
+外部ジョインは高度機能であり、そして外部ジョインを指定するために記述する SQL 文法を検査することができる。JDBC は、ドライバがサポートする外部ジョインの種類の決定のために、次の 3 つの <code>DatabaseMetaData</code> メソッド、すなわち <code>supportsOuterJoins</code>、<code>supportsFullOuterJoins</code>、および <code>supportsLimitedOuterJoins</code> を提供している。
+<p>
+</blockquote><a name="999878"></a>
+
+<p>
+<blockquote><a name="999879"></a>
+メソッド <code>Statement.setEscapeProcessing</code> は、エスケープ処理をオンまたはオフに切り替える。省略時設定ではオンである。パフォーマンスを最高にし、処理時間を短縮するには、プログラマがこれをオフにする場合もあるが、エスケープ処理は、通常オンにされる。<code>setEscapeProcessing</code> は <code>PreparedStatement</code> オブジェクトに対しては稼動しないことに注意すること。この文を呼び出す前にこれがすでにデータベースへ送付されていることがあるためである。プリコンパイルについては、<code>PreparedStatement</code> を参照のこと。
+<p>
+</blockquote>
+<a name="1000061"></a>
+<h3>4.1.6	 &nbsp;&nbsp; execute メソッドの使用</h3>
+<a name="1000062"></a>
+<code>execute</code> メソッドは、文が複数の <code>ResultSet</code> オブジェクト、複数の更新カウント、または <code>ResultSet</code> オブジェクトと更新カウントの組み合せを返す可能性がある場合だけに使用してください。この結果が複数になる可能性が、まれにですが、一部のストアードプロシージャを実行するとき、または（コンパイル時にアプリケーションプログラマに知られていない）未知の SQL 文字列 を動的に実行するときに起きることがあります。たとえば、ユーザがストアードプロシージャを実行することがあり (<code>CallableStatement</code> オブジェクトを使用します - 本<em>JDBC ガイド</em>の <a href="callablestatement.doc.html">135 ページの "CallableStatement"</a> を参照してください) 、ストアードプロシージャが更新、続いて選択、さらに更新、続いて選択と次々に実行することがあるかもしれません。ストアードプロシージャを使用する場合には、それがなにを返すか分からないのが普通です。
+<p><a name="1000066"></a>
+メソッド <code>execute</code> は、通常でないケースを処理するので、その結果の取り出しに特殊な処理を必要とする場合があるのが普通です。たとえば、プロシージャが 2 つの結果のセットを返すことがわかっていると仮定してください。メソッド <code>execute</code> を使用してそのプロシージャを実行した後、メソッド <code>getResultSet</code> を呼び出して最初の結果のセットを取得し、さらに適切な <code>getXXX</code> メソッドでそのセットから値を取り出す必要があります。2 番目の結果のセットを取得するには、<code>getMoreResults</code> の呼び出しに続いて <code>getResultSet</code> を再度呼び出す必要があります。プロシージャが 2 つの更新カウントを返すことがわかっている場合には、メソッド <code>getUpdateCount</code> を最初に呼び出し、その後に
+<code>getMoreResults</code> を呼び出し、さらに再度 <code>getUpdateCount</code> を呼び出します。
+
+<p>
+<a name="1000067"></a>
+なにが返されるかわからないケースはもっと複雑になります。メソッド <code>execute</code> は、結果が <code>ResultSet</code> オブジェクトである場合には <code>true</code> を返し、結果が Java <code>int</code> である場合には <code>false</code> を返します。メソッドが <code>int</code> を返す場合は、結果が更新カウントであるかまたは実行された文が DDL コマンドであったかのどちらかであることを意味します。メソッド <code>execute</code> を呼び出した後最初にすべきことは、
+<code>getResultSet</code> または <code>getUpdateCount</code> のどちらかを呼び出すことです。メソッド <code>getResultSet</code> は、2 個以上の <code>ResultSet</code> オブジェクトの最初のものを取得する場合に呼び出します。メソッド <code>getUpdateCount</code> は、2 個以上の更新カウントの最初の可能性があるものを取得する場合に呼び出します。
+<p>
+<a name="1000068"></a>
+SQL文の結果が結果セットでないときは、メソッド <code>getResultSet</code> は <code>null</code> を返します。これは、結果が更新カウントであるか、または結果がもうないことを意味することになります。この場合に <code>null</code> が実際なにを意味するかを調べる唯一の方法は、メソッド <code>getUpdateCount</code> を呼び出すことです。これは整数を返します。この整数は、呼び出し文の影響を受ける行の数か、または結果が結果セットであるか、または結果がないかのどちらであることを示す <code>-1</code> になります。メソッド<code>getResultSet</code> が、<code>ResultSet</code> オブジェクトが結果でないことを意味する <code>null</code> をすでに返している場合は、<code>-1</code> の返却値はもう結果がないことを意味するだけになります。すなわち、以下が真であるときは結果がない (またはもう結果がそれ以上はない) ことを意味します。
+<p>
+<pre><a name="1000069"></a>    ((stmt.getResultSet() == null) && (stmt.getUpdateCount() == -1))
+</pre><a name="1000070"></a>
+メソッド <code>getResultSet</code> を呼び出し、それが返した <code>ResultSet</code> オブジェクトも処理した場合は、メソッド <code>getMoreResults</code> を呼び出して別の結果セットまたは更新カウントがないか調べる必要があります。<code>getMoreResults</code> が <code>true</code> を返した場合は、再び <code>getResultSet</code> を呼び出して、実際に次の結果セットを取り出す必要があります。前述したように、<code>getResultSet</code> が <code>null</code> を返した場合は、<code>getUpdateCount</code> を呼び出して、<code>null</code> が、結果が更新カウントであるか、またはもう結果がないことのどちらを意味するかを調べなければなりません。 
+<p>
+<a name="1000071"></a>
+<code>getMoreResults</code> が <code>false</code> を返した場合には、SQL 文が更新カウントを返したか、またはもう結果がないことを意味します。したがって、メソッド <code>getUpdateCount</code> を呼び出して、どちらの場合であるか調べる必要があります。この状況で、以下が true であるときはもう結果がありません。 
+<p>
+<pre><a name="1000072"></a>    ((stmt.getMoreResults() == false) && (stmt.getUpdateCount() == -1))
+</pre><a name="1000073"></a>
+以下のコードは、<code>execute</code> メソッドの呼び出しが生成する結果セットと更新結果のすべてにアクセスしたことを確実に知るための一方法を示します。
+<p>
+<pre><a name="1000074"></a>    
+<a name="1000075"></a>    stmt.execute(<code>queryStringWithUnknownResults</code>);
+<a name="1000076"></a>    while (true)  {
+<a name="1000077"></a>      int rowCount = stmt.getUpdateCount();
+<a name="1000078"></a>      if (rowCount &gt; 0) {    //  this is an update count
+<a name="1000079"></a>        System.out.println("Rows changed = " + count);
+<a name="1000080"></a>        stmt.getMoreResults();
+<a name="1000081"></a>        continue;
+<a name="1000082"></a>      }
+<a name="1000083"></a>      if (rowCount == 0) {    // DDL command or 0 updates
+<a name="1000084"></a>        System.out.println(" No rows changed or statement was DDL
+<a name="1000085"></a>                                    command");
+<a name="1000086"></a>        stmt.getMoreResults();
+<a name="1000087"></a>        continue;
+<a name="1000088"></a>      }
+<a name="1000089"></a>    
+<a name="1000090"></a>    // if we have gotten this far, we have either a result set 
+<a name="1000091"></a>    // or no more results
+<a name="1000092"></a>    
+<a name="1000093"></a>      ResultSet rs = stmt.getResultSet; 
+<a name="1000094"></a>      if (rs != null) {
+<a name="1000095"></a>        . . .  // use metadata to get info about result set columns
+<a name="1000096"></a>        while (rs.next())  {
+<a name="1000097"></a>        . . .  // process results
+<a name="1000098"></a>        stmt.getMoreResults();
+<a name="1000099"></a>        continue;
+<a name="1000100"></a>      }
+<a name="1000101"></a>      break;      // there are no more results
+</pre><blockquote><a name="1000058"></a>
+
+<p>
+</blockquote>
+
+<br>
+<hr>
+<font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="drivermanager.doc.html">前項目</a>  | <a href="resultset.doc.html">次項目</a>
+</font>
+<hr>
+
+
+<address>
+<a href="mailto:jdbc@wombat.eng.sun.com">jdbc@wombat.eng.sun.com</a>
+または
+<a href="mailto:jdbc-odbc@wombat.eng.sun.com">jdbc-odbc@wombat.eng.sun.com</a>
+</address>
+
+<a href="copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>
+

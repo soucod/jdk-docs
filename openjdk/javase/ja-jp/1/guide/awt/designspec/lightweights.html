@@ -1,0 +1,216 @@
+<html><head><title>Java AWT: 軽量 UI フレームワーク</title></head>
+<BODY BGCOLOR="#FFFFFF">
+ 
+<a name="919682">
+<h1><img align=middle src="images/flip_trans.sm.gif"> Java AWT: 軽量 UI フレームワーク</h1>
+
+</a>
+<hr><p><a name="919687">
+<address>
+最終更新: 1997 年 1 月 31 日
+</address>
+<h2>問題</h2>
+</a>
+1.0 AWTに関する問題の 1 つは、新しいコンポーネントを作成するには java.awt.Canvas または java.awt.Panel のサブクラスを作成する必要があるということで、これは、新しいコンポーネントがそれぞれ自分の不透明なネイティブウィンドウを所有することを意味します。このコンポーネントとネイティブウィンドウ間の 1 対 1 対応から、結果として次の 3 つの問題が生じます:
+<ol>
+<li>ネイティブウィンドウが重量化し、あまり多くのウィンドウを持つことが好ましくない。
+<li>ネイティブウィンドウが不透明で、透明なリージョンを実装するために使用できない。
+<li>ネイティブウィンドウはプラットフォームによって処理が異なり、AWT がこれら異なるプラットフォームで一貫したビューを維持することは、かなり困難である。
+</ol>
+JDK1.1 のベータ 3 バージョンでは、「軽量」UI コンポーネントの作成を可能にするフッ
+クを実装しました; これらのフックは「軽量 UI フレームワーク」と呼ばれます。
+<h2>軽量UI フレームワーク</h2>
+軽量UI フレームワークは非常に単純です。これは要するに、関連したネイティブ不透明ウィンドウを持たないコンポーネントを作成するために、 <a href="../../../api/java.awt.Component.html">java.awt.Component</a> および <a href="../../../api/java.awt.Container.html">java.awt.Container</a> クラスを直接拡張する機能といえます。これらの軽量コンポーネントとコンテナは、ペインティング、レイアウト、イベントなどの既存の AWT モデルとうまく適合し、そのため特別な処理や API の追加を必要としません。Canvas や Panel の既存のサブクラスは、そのスーパークラスを適切に変更するだけで、軽量バージョンに簡単に移行できます。
+<p>
+軽量コンポーネントを作成する利点は、次のとおりです:
+<ul>
+<li>「軽量」コンポーネントは、paint() メソッドでこれらの領域にレンダリングしないだけで、現在透明な領域を持つことができる（ただしJava2D の全面的なサポートを得るまでは、境界ボックスは矩形のままである）。
+<li>「軽量」コンポーネントは、ネイティブデータ構造またはピアクラスを必要としないという点で、「軽い」。
+<li>軽量コンポーネントネイティブコードは必要なく、その処理は一般的な Java コードに 100% 実装され、プラットフォームに依存しない。
+</ul>
+<p>
+次のツールキットのバージョン（1.1 以上）でこのフレームワークを使用し、基本 UI コントロール (Button、List など) の純粋な Java バージョンを実装しようとしています。このコントロールはプラットフォームを超えて、共通の外観と感触を実装します（そしてネイティブピアを使用しません）。将来の作業については、<a href="nextAWT.html"> AWT: 次世代</a> の概要を参照してください。
+
+<h3>軽量と重量コンポーネントの混在</h3> 
+軽量コンポーネントは、既存の重量コンポーネントと自由に混在できます。このことは、軽量コンポーネントを重量コンテナの直接の子にし、重量コンポーネントを軽量コンテナの直接の子にし、そして重量と軽量をコンテナ内に混在させることができるということです (指定した z 順序に関わらず、軽量と重複する場合、重量のものが常に「上部」にするということに注意してください)。
+
+<h3>既存のパネルへの軽量コンポーネントの配置</h3>
+軽量コンポーネントのペインティングとイベント配布機構は、Container クラスによって処理されます。これは、軽量コンポーネントのペインティングが Container の paint() メソッド内からトリガーされることを意味します。そのため、軽量コンポーネントの paint メソッドがオーバーライドされるが、 super.paint() を呼び出さないインスタンスの内部に置かれた場合、軽量コンポーネントの paint() メソッドは決して呼び出されません。境界または斜面のペインティングを実装するために Panel を拡張するが、"super.paint()" を呼び出さない既存のクラスを使用する場合、これは一般的に起こり得ます（ 1.0.2 に関する問題ではないためです）。軽量コンポーネントが表示されない場合、最初にこれをチェックします!
+
+<h3>ダブルバッファリング</h3>
+軽量コンポーネントは Java に全体的にレンダされるため、 Container 内でのダブルバッファリングの使用は、ちらつきを避け、レンダリングを非常に円滑にできます。デフォルトでは、Container クラスはダブルバッファリングを実装しませんが、極めて簡単に実装できます! 内部に置かれた軽量コンポーネントすべてに滑らかなレンダリングを実装するダブルバッファの Panel の例を次に示します:
+
+<pre><code>
+public class DoubleBufferPanel extends Panel {    
+  Image offscreen;
+
+  /**
+   * null out the offscreen buffer as part of invalidation
+   */
+  public void invalidate() {
+      super.invalidate();
+      offscreen = null;
+  }
+
+  /**
+   * override update to *not* erase the background before painting
+   */
+  public void update(Graphics g) {
+      paint(g);
+  }
+
+  /**
+   * paint children into an offscreen buffer, then blast entire image
+   * at once.
+   */
+  public void paint(Graphics g) {
+      if(offscreen == null) {
+         offscreen = createImage(getSize().width, getSize().height);
+      }
+      Graphics og = offscreen.getGraphics();
+      og.setClip(0,0,getSize().width, getSize().height);
+      super.paint(og);
+      g.drawImage(offscreen, 0, 0, null);
+      og.dispose();
+  }
+}
+</code></pre>
+<hr>
+
+<h2>サンプルコード</h2>
+
+軽量の円形ボタンクラスの作成を示すサンプルコードを次に示します。これは、軽量コンポーネントの透明な様相を引き立たせます。詳細と補足例については、（この RoundButton の例の完全に機能するバージョンを含めた、）<a href="../../../../../demo/awt-1.1/lightweight/index.html">JDK1.1: 軽量コンポーネントの作成方法</a> のページを参照してください。
+
+<pre><code>
+import java.lang.*;
+import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+
+/**
+ * RoundButton - a class that produces a lightweight button.
+ */
+public class RoundButton <b>extends Component</b> {
+
+  String label;                      // The Button's text
+  protected boolean pressed = false; // true if the button is detented.
+  
+  /**
+   * Constructs a RoundButton with the specified label.
+   * @param label the label of the button
+   */
+  public RoundButton(String label) {
+      this.label = label;
+      enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+  }
+  
+  /**
+   * paints the RoundButton
+   */
+  public void paint(Graphics g) {
+      int s = Math.min(getSize().width - 1, getSize().height - 1);
+      
+      // paint the interior of the button
+      if(pressed) {
+          g.setColor(getBackground().darker().darker());
+      } else {
+          g.setColor(getBackground());
+      }
+      g.fillArc(0, 0, s, s, 0, 360);
+      
+      // draw the perimeter of the button
+      g.setColor(getBackground().darker().darker().darker());
+      g.drawArc(0, 0, s, s, 0, 360);
+      
+      // draw the label centered in the button
+      Font f = getFont();
+      if(f != null) {
+          FontMetrics fm = getFontMetrics(getFont());
+          g.setColor(getForeground());
+          g.drawString(label,
+                       s/2 - fm.stringWidth(label)/2,
+                       s/2 + fm.getMaxDescent());
+      }
+  }
+  
+  /**
+   * The preferred size of the button. 
+   */
+  public Dimension getPreferredSize() {
+      Font f = getFont();
+      if(f != null) {
+          FontMetrics fm = getFontMetrics(getFont());
+          int max = Math.max(fm.stringWidth(label) + 40, fm.getHeight() + 40);
+          return new Dimension(max, max);
+      } else {
+          return new Dimension(100, 100);
+      }
+  }
+  
+  /**
+   * The minimum size of the button. 
+   */
+  public Dimension getMinimumSize() {
+      return new Dimension(100, 100);
+  }
+   
+   /**
+    * Paints the button and distribute an action event to all listeners.
+    */
+   public void processMouseEvent(MouseEvent e) {
+       Graphics g;
+       switch(e.getID()) {
+          case MouseEvent.MOUSE_PRESSED:
+            // render myself inverted....
+            pressed = true;
+
+            // Repaint might flicker a bit. To avoid this, you can use
+            // double buffering (see the Gauge example).
+            repaint(); 
+            break;
+          case MouseEvent.MOUSE_RELEASED:
+            // render myself normal again
+            if(pressed == true) {
+                pressed = false;
+                // Repaint might flicker a bit. To avoid this, you can use
+                // double buffering (see the Gauge example).
+                repaint();
+            }
+            break;
+          case MouseEvent.MOUSE_ENTERED:
+            break;
+          case MouseEvent.MOUSE_EXITED:
+            if(pressed == true) {
+                // Cancel! Don't send action event.
+                pressed = false;
+
+                // Repaint might flicker a bit. To avoid this, you can use
+                // double buffering (see the DoubleBufferPanel example above).
+                repaint();
+
+                // Note: for a more complete button implementation,
+                // you wouldn't want to cancel at this point, but
+                // rather detect when the mouse re-entered, and
+                // re-highlight the button. There are a few state
+                // issues that that you need to handle, which we leave
+                // this an an excercise for the reader (I always
+                // wanted to say that!)
+            }
+            break;
+       }
+       super.processMouseEvent(e);
+   }   
+}
+</code></pre>
+
+<hr><br>
+<address>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</address>
+
+<i>Copyright (C) 1997, Sun Microsystems, Inc.   All rights
+reserved.</i>
+
+
+</body>
+</html>

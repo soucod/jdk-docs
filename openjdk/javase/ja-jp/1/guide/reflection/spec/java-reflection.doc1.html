@@ -1,0 +1,341 @@
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection.doc.html">前項目</a>  | <a href="java-reflection.doc2.html">次項目</a>
+</font></td><td align=right><i>Java コアリフレクション</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+
+<a name="1776"></a>
+<h1>クラス java.lang.Class </h1><pre>    <a name="5736"></a><code>package  java.lang;
+</code>
+    <a name="1779"></a><code>import java.lang.reflect.Field;
+</code>
+    <a name="1780"></a><code>import java.lang.reflect.Method;
+</code>
+    <a name="1781"></a><code>import java.lang.reflect.Constructor;
+</code>
+    <a name="1782"></a>public final class Class extends Object
+
+</pre><a name="1783"></a>
+クラス <code>Class</code> のインスタンスは、実行中の Java プログラムが操作できる形で Java 型を表現します。すべての配列も、同じ要素型および大きさを持つ配列が共有する <code>Class</code> オブジェクトとして、反射されるクラスに属します。また、8 つのプリミティブ Java 型および <code>void</code> も、固有の <code>Class</code> オブジェクトで表示されます。<p><a name="1784"></a>
+クラス <code>Class</code> には public 構築子はありません。Java 仮想マシンは、新規クラスのロード時に <code>Class</code> オブジェクトを自動構築します。このオブジェクトは、ユーザプログラムで生成することはできません。<p><a name="1785"></a>
+クラス <code>Class</code> は <code>java.lang.reflect</code> パッケージに属しますが、下方互換性のために <code>java.lang</code> 内にも残されています。<p>
+<hr>
+<a name="1786"></a>
+<h2>		 メソッド</h2>
+<a name="1787"></a>
+クラス <code>Class</code> に新メソッドが加わり、以下を実行できるようになりました:<p>
+<ul><a name="1788"></a>
+<li><code>Class</code> オブジェクトが配列型を表すかどうかの判別<br><br>
+<a name="1789"></a>
+<li><code>Class</code> オブジェクトがプリミティブ型を表すかどうかの判別<br><br>
+<a name="1790"></a>
+<li>表現されたクラス型の Java 言語修飾子の判別<br><br>
+<a name="1791"></a>
+<li>表現された型のメンバおよび構築子の反射<br><br>
+<a name="1792"></a>
+<li>オブジェクトが表現されたクラスのインスタンスであるか、あるいは表現されたインタフェースを実装するかの判別<br><br>
+<a name="1793"></a>
+<li>クラス/インタフェースが、クラス/インタフェースのスーパークラス/スーパーインタフェースかどうかの判別<br><br>
+<a name="1794"></a>
+<li>表現された配列型のコンポーネント型の獲得<br><br>
+</ul><a name="1795"></a>
+以下は、クラス <code>Class</code> の既存および新規メソッドの説明です。<p>
+<a name="1796"></a>
+<h3>		 toString</h3>
+<pre>    <a name="1797"></a><code>public String toString()
+</code>
+</pre><a name="3033"></a>
+この <code>Class</code> オブジェクトがクラス (宣言クラスまたは配列クラス) を表す場合は、単語 <code>class</code>、スペース、およびクラスの完全修飾名から成る <code>String</code> を返します。この <code>Class</code> オブジェクトがインタフェースを表す場合は、このメソッドは単語 <code>interface</code>、スペース、クラスの完全修飾名から成る <code>String</code> を返します。この <code>Class</code> オブジェクトがプリミティブ型を表す場合は、プリミティブ型の名前を返します。この <code>Class</code> オブジェクトが <code>void</code> を表す場合は、String <code>"void"</code> を返します。<p><a name="4800"></a>
+このメソッドは、クラス <code>Object</code> の <code>toString</code> メソッドをオーバーライドします。<p>
+<a name="1800"></a>
+<h3>		 forName</h3>
+<pre>    <a name="1801"></a><code>public static Class forName(String className) 
+</code>
+    <a name="1802"></a><code>    throws ClassNotFoundException
+</code>
+</pre><a name="1803"></a>
+クラスの完全修飾名を指定すると、このメソッドは指定クラスの検索、ロード、リンクを試みます。この処理が正常に終了すると、クラスを表す <code>Class</code> オブジェクトを返します。失敗した場合は、<code>ClassNotFoundException</code> をスローします。<p><a name="4804"></a>
+配列の <code>Class</code> オブジェクトは、このメソッドを使って獲得できます。これらの Class オブジェクトは、Java 仮想マシンが自動構築します。<p><a name="1804"></a>
+プリミティブ Java 型または <code>void</code> を表す <code>Class</code> オブジェクトは、このメソッドを使って獲得することはできません。<p>
+<a name="1805"></a>
+<h3>		 newInstance</h3>
+<pre>    <a name="1806"></a><code>public Object newInstance()
+</code>
+    <a name="1807"></a><code>    throws InstantiationException, IllegalAccessException
+</code>
+</pre><a name="1808"></a>
+この <code>Class</code> オブジェクトがインスタンス化可能なクラスを表す場合、このオブジェクトが表すクラスの新規インスタンスの生成および初期化を行います。これは、空の引数リストを使うインスタンス生成式と全く同じ方法で実行します。インスタンス生成式の評価が異常終了すると、同じ理由で <code>newInstance</code> の呼出しも異常終了します。正常終了の場合は、新しく生成、初期化されたインスタンスが返ります。<p><a name="1809"></a>
+クラスまたは初期化子が呼出しクラスにアクセスできないと、メソッドは <code>IllegalAccessException</code> をスローします。このメソッドが abstract クラスやインタフェースの初期化を試みる場合、あるいはプリミティブ型または <code>void</code> を表す <code>Class</code> オブジェクトに関して呼び出された場合、メソッドは <code>InstantiationException</code> をスローします。<p>
+<a name="4835"></a>
+<h3>		 isInstance</h3>
+<pre>    <a name="4836"></a><code>public boolean isInstance(Object obj)
+</code>
+</pre><a name="4837"></a>
+このメソッドは、Java 言語 <code>instanceof</code> 演算子と同等です。指定の <code>Object</code> 引数が非 <code>null</code> で、<code>ClassCastException</code> を出さずにこの <code>Class</code> オブジェクトが表す参照型にキャストできる場合、このメソッドは <code>true</code> を返します。それ以外の場合は、<code>false</code> を返します。<p><a name="5719"></a>
+この <code>Class</code> オブジェクトが、プリミティブ型または <code>void</code> を表す場合は、<code>false</code> を返します。<p><a name="5722"></a>
+<em>Java 言語仕様</em>のセクション 15.19.2 を参照してください。<p>
+<a name="4839"></a>
+<h3>		 isAssignableFrom</h3>
+<pre>    <a name="4840"></a><code>public boolean isAssignableFrom(Class fromClass)
+</code>
+</pre><a name="5692"></a>
+このメソッドは、指定の <code>Class</code> パラメータが表す型を、識別変換または拡張参照変換を使って、この <code>Class</code> オブジェクトが表す型に変換できるかどうかをテストします。変換できる場合は <code>true</code> を返し、できない場合は <code>false</code> を返します。<p><a name="4841"></a>
+この <code>Class</code> オブジェクトがプリミティブ型を表す場合、指定の <code>Class</code> パラメータとこの <code>Class</code> オブジェクトが一致するときは <code>true</code> を、一致しないときは <code>false</code> を返します。<p><a name="4842"></a>
+指定の <code>Class</code> パラメータが <code>null</code> のときは、このメソッドは <code>NullPointerException</code> を返します。<p><a name="5700"></a>
+<em>Java 言語仕様</em>のセクション 5.1.1、5.1.4 および 5.2 を参照してください。<p><a name="4844"></a>
+<h3>		 isInterface</h3>
+<pre>    <a name="4845"></a><code>public boolean isInterface()
+</code>
+</pre><a name="4846"></a>
+この <code>Class</code> オブジェクトがインタフェース型を表すときは、<code>true</code> を返し、それ以外の場合は <code>false</code> を返します。<p>
+<a name="4847"></a>
+<h3>		 isArray</h3>
+<pre>    <a name="4848"></a><code>public boolean isArray()
+</code>
+</pre><a name="4849"></a>
+この <code>Class</code> オブジェクトが配列型を表すときは <code>true</code>を、それ以外の場合は <code>false</code> を返します。<p>
+<a name="4850"></a>
+<h3>		 isPrimitive</h3>
+<pre>    <a name="4851"></a><code>public boolean isPrimitive()
+</code>
+</pre><a name="4852"></a>
+この <code>Class</code> オブジェクトがプリミティブ Java 型を表す場合は <code>true</code> を、それ以外の場合は <code>false</code> を返します。<p><a name="4853"></a>
+プリミティブ java 型と <code>void</code> を表す、9 つの事前定義 <code>Class</code> オブジェクトがあります。これらは Java 仮想マシンが生成し、それぞれが表すプリミティブ型と同じ名前を持ちます。これらのオブジェクトには、以下の <code>public</code> <code>static</code> <code>final</code> 変数を使ってアクセスできます:<p><pre>    <a name="4854"></a>
+
+    <a name="4855"></a>    java.lang.Boolean.TYPE
+
+    <a name="4856"></a>    java.lang.Character.TYPE
+
+    <a name="4857"></a>    java.lang.Byte.TYPE
+
+    <a name="4858"></a>    java.lang.Short.TYPE
+
+    <a name="4859"></a>    java.lang.Integer.TYPE
+
+    <a name="4860"></a>    java.lang.Long.TYPE
+
+    <a name="4861"></a>    java.lang.Float.TYPE
+
+    <a name="4862"></a>    java.lang.Double.TYPE
+
+    <a name="4863"></a>    java.lang.Void.TYPE
+
+</pre><a name="4864"></a>
+このメソッドが <code>true</code> を返すのは、上記の 9 つの <code>Class</code> オブジェクトに対してだけです。<p>
+<a name="4865"></a>
+<h3>		 getName</h3>
+<pre>    <a name="4866"></a><code>public String getName()
+</code>
+</pre><a name="4867"></a>
+このクラス <code>Class</code> オブジェクトが表すクラス (宣言または配列)、インタフェース、プリミティブ型、または <code>void</code> の完全修飾名を、<code>String</code> として返します。<p>
+<a name="4868"></a>
+<h3>		 getModifiers</h3>
+<pre>    <a name="4869"></a><code>public int getModifiers()
+</code>
+</pre><a name="4870"></a>
+このクラスまたはインタフェースの Java 言語修飾子を整数型にコード化して返します。修飾子は、Java 仮想マシンの定数 <code>public</code>, <code>protected</code>, <code>private</code>, <code>final</code>, および <code>interface</code> から成ります。修飾子はクラス <code>Modifier</code> のメソッドを使って解読します。<p><a name="4871"></a>
+修飾子のコード化は、<em>Java 仮想マシン仕様</em>の表 4.1 で定義しています。<p>
+<a name="4872"></a>
+<h3>		 getClassLoader</h3>
+<pre>    <a name="4873"></a><code>public ClassLoader getClassLoader()
+</code>
+</pre><a name="4874"></a>
+この <code>Class</code> をロードしたクラスローダオブジェクトを返します。クラスローダを使ってこの <code>Class</code> をロードしなかった場合は、<code>null</code> を返します。<p>
+<a name="4875"></a>
+<h3>		 getSuperclass</h3>
+<pre>    <a name="4876"></a><code>public Class getSuperclass()
+</code>
+</pre><a name="4877"></a>
+この <code>Class</code> オブジェクトが <code>Object</code> 以外のクラスを表す場合は、クラスのスーパークラスを表す <code>Class</code> を返します。この  <code>Class</code> がクラス <code>Object</code>、あるいはインタフェース型またはプリミティブ型を表す場合は、<code>null</code> を返します。<p>
+<a name="4878"></a>
+<h3>		 getInterfaces</h3>
+<pre>    <a name="4879"></a><code>public Class[] getInterfaces()
+</code>
+</pre><a name="4880"></a>
+この <code>Class</code> オブジェクトが表すインタフェースまたはクラスの、インタフェースを表す <code>Class</code> オブジェクトの配列を返します。この <code>Class</code> オブジェクトがクラスを表す場合は、クラスが直接実装するインタフェースを表すオブジェクトを含む配列を返します。この <code>Class</code> オブジェクトがインタフェースを表す場合は、インタフェースの直接スーパーインタフェースを表すオブジェクトを含む配列を返します。この <code>Class</code> がインタフェースを実装しない場合、あるいはプリミティブ型を表す場合は、長さが <code>0</code> の配列を返します。<p>
+<a name="4881"></a>
+<h3>		 getComponentType</h3>
+<pre>    <a name="4882"></a><code>public Class getComponentType()
+</code>
+</pre><a name="4883"></a>
+この <code>Class</code> オブジェクトが配列型を表す場合は、配列のコンポーネント型を表す <code>Class</code> オブジェクトを返します。それ以外の場合は <code>null</code> を返します。<p>
+<a name="4884"></a>
+<h3>		 getDeclaringClass</h3>
+<pre>    <a name="4885"></a><code>public Class getDeclaringClass()
+</code>
+</pre><a name="4886"></a>
+このクラスまたはインタフェースが他のクラスのメンバになっている場合は、メンバとなっている先のクラス (その<em>宣言クラス</em>) を表す <code>Class</code> オブジェクトを返します。このクラスまたはインタフェースが他のクラスのメンバになっていない場合は、<code>null</code> を返します。<p>
+<a name="4887"></a>
+<h3>		 getClasses</h3>
+<pre>    <a name="4888"></a><code>public Class[] getClasses()
+</code>
+</pre><a name="4889"></a>
+この <code>Class</code> オブジェクトが表すクラスのメンバとなっている、すべての <code>public</code> クラスおよびインタフェースを表す <code>Class</code> オブジェクトを含む配列を返します。このクラスが宣言したスーパークラス、<code>public</code> クラス、およびインタフェースメンバから継承される <code>public</code> クラスとインタフェースメンバも含まれます。クラスに public メンバやインタフェースがない場合や、この <code>Class</code> オブジェクトがプリミティブ型を表す場合は、長さが <code>0</code> の配列を返します。<p>
+<a name="4890"></a>
+<h3>		 getFields</h3>
+<pre>    <a name="4891"></a><code>public Field[] getFields()
+</code>
+    <a name="4892"></a><code>    throws SecurityException
+</code>
+</pre><a name="4893"></a>
+この <code>Class</code> オブジェクトが表すクラスまたはインタフェースの、すべての <code>public</code> <em>アクセス可能</em>フィールドを反射する <code>Field</code> オブジェクトを含む配列を返します。クラスやインタフェースが宣言したフィールド、およびスーパークラスやスーパーインタフェースが宣言したフィールドもすべて含まれます。（従って、配列にはクラスの <code>public</code> <em>メンバ</em>フィールドだけでなく、<code>public</code> <em>隠し</em>フィールドも含まれます。）クラスやインタフェースに <code>public</code> アクセス可能フィールドがない場合は、長さが <code>0</code> の配列を返します。<p><a name="4894"></a>
+このメソッドでは、配列型の明確な<code>長さ</code>フィールドは返されません。配列を操作するには、クラス <code>Array</code> のメソッドをユーザコードで使います。<p><a name="4895"></a>
+この情報へのアクセスが拒否されると、このメソッドは <code>SecurityException</code> をスローします。<p><a name="4896"></a>
+<em>Java 言語仕様</em>のセクション 8.2 と 8.3 を参照してください。<p>
+<a name="4897"></a>
+<h3>		 getMethods</h3>
+<pre>    <a name="4898"></a><code>public Method[] getMethods()
+</code>
+    <a name="4899"></a><code>    throws SecurityException
+</code>
+</pre><a name="4900"></a>
+この <code>Class</code> オブジェクトが表すクラスまたはインタフェースの、すべての <code>public</code> <em>メンバ</em>メソッドを反射する <code>Method</code> オブジェクトを含む配列を返します。クラスやインタフェースが宣言したメソッドおよびスーパークラスやスーパーインタフェースから継承されるメソッドも含まれます。クラスまたはインタフェースが <code>public</code> メンバメソッドを持たない場合は、長さが <code>0</code> の配列を返します。<p><a name="4901"></a>
+この情報へのアクセスが拒否されると、メソッドは <code>SecurityException</code> をスローします。<p><a name="4902"></a>
+<em>Java 言語仕様</em>のセクション 8.2 と 8.4 を参照してください。<p>
+<a name="4903"></a>
+<h3>		 getConstructors</h3>
+<pre>    <a name="4904"></a><code>public Constructor[] getConstructors()
+</code>
+    <a name="4905"></a><code>    throws SecurityException
+</code>
+</pre><a name="4906"></a>
+この <code>Class</code> オブジェクトが表すクラスの、すべての <code>public</code> 構築子を反射する <code>Constructor</code> オブジェクトを含む配列を返します。クラスに <code>public</code> 構築子がない場合や、この <code>Class</code> オブジェクトがインタフェースまたはプリミティブ型を表す場合は、長さが <code>0</code> の配列を返します。<p><a name="4907"></a>
+この情報へのアクセスが拒否されると、メソッドは <code>SecurityException</code> をスローします。<p>
+<a name="4908"></a>
+<h3>		 getField</h3>
+<pre>    <a name="4909"></a><code>public Field getField(String name)
+</code>
+    <a name="4910"></a><code>    throws NoSuchFieldException, SecurityException
+</code>
+</pre><a name="4911"></a>
+この <code>Class</code> オブジェクトが表すクラスまたはインタフェースの、指定の <code>public</code> <em>アクセス可能</em>フィールドを反射する <code>Field</code> オブジェクトを返します。<code>name</code> パラメータは、要求フィールドの単純名を指定する <code>String</code> です。<p><a name="4912"></a>
+反射されるべきフィールドを見つけるには、この <code>Class</code> オブジェクトが表すクラスまたはインタフェースのすべてのアクセス可能フィールドについて、指定名を使って <code>public</code> フィールドを検索します。<p><a name="4913"></a>
+一致するフィールドが見つからない場合、メソッドは <code>NoSuchFieldException</code> をスローします。<p><a name="4914"></a>
+基本フィールドへのアクセスが拒否されると、メソッドは <code>SecurityException</code> をスローします。<p><a name="4915"></a>
+<em>Java 言語仕様</em>のセクション 8.2 と 8.3 を参照してください。<p>
+<a name="4916"></a>
+<h3>		 getMethod</h3>
+<pre>    <a name="4917"></a><code>public Method getMethod(String name, Class[] parameterTypes)
+</code>
+    <a name="4918"></a><code>    throws NoSuchMethodException, SecurityException
+</code>
+</pre><a name="4919"></a>
+この <code>Class</code> オブジェクトが表すクラスまたはインタフェースの、指定の public <em>メンバ</em> メソッドを反射する <code>Method</code> オブジェクトを返します。<code>name</code> パラメータは、必要なメソッドの単純名を指定する <code>String</code> です。<code>parameterTypes</code> パラメータは、メソッドの形式パラメータ型を宣言順に識別する <code>Class</code> オブジェクトの配列です。<p><a name="4920"></a>
+反射するメソッドを見つけるには、この <code>Class</code> オブジェクトが表すクラスまたはインタフェースのすべてのメンバメソッドについて、指定名およびまったく同じ形式パラメータ型を使って <code>public</code> メソッドを検索します。<p><a name="4921"></a>
+一致するメソッドが見つからないと、メソッドは <code>NoSuchMethodException</code> をスローします。<p><a name="4922"></a>
+基本メソッドへのアクセスが拒否されると、メソッドは <code>SecurityException</code> をスローします。<p><a name="4923"></a>
+<em>Java 言語仕様</em>のセクション 8.2 と 8.4 を参照してください。<p>
+<a name="4924"></a>
+<h3>		 getConstructor</h3>
+<pre>    <a name="4925"></a><code>public Constructor getConstructor(Class[] parameterTypes)
+</code>
+    <a name="4926"></a><code>    throws NoSuchMethodException, SecurityException
+</code>
+</pre><a name="4927"></a>
+この <code>Class</code> オブジェクトが表すクラスの、指定の <code>public</code> 構築子を反射する <code>Constructor</code> オブジェクトを返します。<code>parameterTypes</code> パラメータは、構築子の形式パラメータ型を宣言順に識別する <code>Class</code> オブジェクトの配列です。<p><a name="4928"></a>
+反射する構築子を見つけるには、この <code>Class</code> オブジェクトが表すクラスのすべての構築子について、まったく同じ形式パラメータ型を使って <code>public</code> 構築子を検索します。<p><a name="4929"></a>
+一致する構築子がないと、メソッドは <code>NoSuchMethodException</code> をスローします。<p><a name="4930"></a>
+基本構築子へのアクセスを拒否されると、メソッドは <code>SecurityException</code> をスローします。<p>
+<a name="4931"></a>
+<h3>		 getDeclaredClasses</h3>
+<pre>    <a name="4932"></a><code>public Class[] getDeclaredClasses()
+</code>
+    <a name="4933"></a><code>    throws SecurityException
+</code>
+</pre><a name="4934"></a>
+この <code>Class</code> オブジェクトが表すクラスのメンバとして宣言された、すべてのクラスおよびインタフェースを反射する <code>Class</code> オブジェクトの配列を返します。これには、クラスが宣言した <code>public</code>, <code>protected</code>, デフォルト (パッケージ) アクセス、<code>private</code> のクラスおよびインタフェースは含まれますが、継承クラスとインタフェースは含まれません。クラスがクラスまたはインタフェースをメンバとして宣言していない場合や、この <code>Class</code> オブジェクトがプリミティブ型を表す場合は、長さが <code>0</code> の配列を返します。<p><a name="4935"></a>
+この情報へのアクセスが拒否されると、メソッドは <code>SecurityException</code> をスローします。<p>
+<a name="4936"></a>
+<h3>		 getDeclaredFields</h3>
+<pre>    <a name="4937"></a><code>public Field[] getDeclaredFields()
+</code>
+    <a name="4938"></a><code>    throws SecurityException
+</code>
+</pre><a name="4939"></a>
+この <code>Class</code> オブジェクトが表すクラスまたはインタフェースが宣言した、すべてのフィールドを反射する <code>Field</code> オブジェクトの配列を返します。これには <code>public</code>, <code>protected</code>, デフォルト (パッケージ) アクセス, および <code>private</code> のフィールドは含まれますが、継承フィールドは含まれません。クラスやインタフェースがフィールドを宣言しない場合や、この <code>Class</code> オブジェクトがプリミティブ型を表す場合は、長さが <code>0</code> の配列を返します。<p><a name="4940"></a>
+この情報へのアクセスが拒否されると、メソッドは <code>SecurityException</code> をスローします。<p><a name="4941"></a>
+<em>Java 言語仕様</em>のセクション 8.2 と 8.3 を参照してください。<p>
+<a name="4942"></a>
+<h3>		 getDeclaredMethods</h3>
+<pre>    <a name="4943"></a><code>public Method[] getDeclaredMethods()
+</code>
+    <a name="4944"></a><code>    throws SecurityException
+</code>
+</pre><a name="4945"></a>
+この <code>Class</code> オブジェクトが表すクラスまたはインタフェースが宣言した、すべてのメソッドを反射する <code>Method</code> オブジェクトの配列を返します。これには、<code>public</code>, <code>protected</code>, デフォルト (パッケージ) アクセス, および <code>private</code> のメソッドは含まれますが、継承メソッドは含まれません。クラスまたはインタフェースがメソッドを宣言しない場合や、この <code>Class</code> オブジェクトがプリミティブ型を表す場合は、長さが <code>0</code> の配列を返します。<p><a name="4946"></a>
+この情報へのアクセスが拒否されると、メソッドは <code>SecurityException</code> をスローします。<p><a name="4947"></a>
+<em>Java 言語仕様</em>のセクション 8.2 と 8.4 を参照してください。<p>
+<a name="4948"></a>
+<h3>		 getDeclaredConstructors</h3>
+<pre>    <a name="4949"></a><code>public Constructor[] getDeclaredConstructors()
+</code>
+    <a name="4950"></a><code>    throws SecurityException
+</code>
+</pre><a name="4951"></a>
+この <code>Class</code> オブジェクトが表すクラスが宣言した、すべての構築子を反射する <code>Constructor</code> オブジェクトを返します。<code>public</code>, <code>protected</code>, デフォルト (パッケージ) アクセス, および <code>private</code> 構築子です。この <code>Class</code> オブジェクトがインタフェースやプリミティブ型を表す場合は、長さが <code>0</code> の配列を返します。<p><a name="4952"></a>
+この情報へのアクセスを拒否されると、メソッドは <code>SecurityException</code> をスローします。<p>
+<a name="4953"></a>
+<h3>		 getDeclaredField</h3>
+<pre>    <a name="4954"></a><code>public Field getDeclaredField(String name)
+</code>
+    <a name="4955"></a><code>    throws NoSuchFieldException, SecurityException
+</code>
+</pre><a name="4956"></a>
+この <code>Class</code> オブジェクトが表すクラスまたはインタフェースの、指定宣言フィールドを反射する <code>Field</code> オブジェクトを返します。<code>name</code> パラメータは、要求フィールドの単純名を指定する <code>String</code> です。<p><a name="4957"></a>
+指定名のフィールドが見つからないと、メソッドは <code>NoSuchFieldException</code> をスローします。<p><a name="4958"></a>
+基本フィールドへのアクセスを拒否されると、メソッドは <code>SecurityException</code> をスローします。<p><a name="4959"></a>
+<em>Java 言語仕様</em>のセクション 8.2 と 8.3 を参照してください。<p>
+<a name="4960"></a>
+<h3>		 getDeclaredMethod</h3>
+<pre>    <a name="4961"></a><code>public Method getDeclaredMethod(String name,
+</code>
+    <a name="4962"></a><code>                            Class[] parameterTypes)
+</code>
+    <a name="4963"></a><code>    throws NoSuchMethodException, SecurityException
+</code>
+</pre><a name="4964"></a>
+この <code>Class</code> オブジェクトが表すクラスまたはインタフェースの指定宣言メソッドを反射する、<code>Method</code> オブジェクトを返します。<code>name</code> パラメータは、要求メソッドの単純名を指定する <code>String</code> です。<code>parameterTypes</code> パラメータは、メソッドの形式パラメータ型を宣言順に識別する <code>Class</code> オブジェクトの配列です。<p><a name="4965"></a>
+一致するメソッドがないと、メソッドは <code>NoSuchMethodException</code> をスローします。<p><a name="4966"></a>
+基本メソッドへのアクセスを拒否されると、メソッドは <code>SecurityException</code> をスローします。<p><a name="4967"></a>
+<em>Java 言語仕様</em>のセクション 8.2 と 8.4 を参照してください。<p>
+<a name="4968"></a>
+<h3>		 getDeclaredConstructor</h3>
+<pre>    <a name="4969"></a><code>public Constructor getDeclaredConstructor(Class[] parameterTypes)
+</code>
+    <a name="4970"></a><code>    throws NoSuchMethodException, SecurityException
+</code>
+</pre><a name="4971"></a>
+この <code>Class</code> オブジェクトが表すクラスまたはインタフェースの指定構築子を反射する、<code>Constructor</code> オブジェクトを返します。<code>parameterTypes</code> パラメータは、構築子の形式パラメータ型を宣言順に識別する、<code>Class</code> オブジェクトの配列です。<p><a name="4972"></a>
+一致する構築子がないと、メソッドは <code>NoSuchMethodException</code> をスローします。<p><a name="4973"></a>
+基本構築子へのアクセスを拒否されると、メソッドは <code>SecurityException</code> をスローします。<p>
+
+<br>
+<hr> 
+<font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection.doc.html">前項目</a>  | <a href="java-reflection.doc2.html">次項目</a>
+</font>
+<hr>
+
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<a href="java-reflection-copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>

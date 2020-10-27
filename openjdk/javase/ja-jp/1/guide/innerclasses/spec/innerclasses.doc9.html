@@ -1,0 +1,116 @@
+<html>
+<head>
+<title> </title>
+</head>
+<body BGCOLOR=#eeeeff text=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+ 
+<table width=600><tr>
+<td><a href="innerclasses.doc.html">目次</a> | <a href="innerclasses.doc8.html">前項目</a> | <a href="innerclasses.doc10.html">次項目</a> 
+</td><td align=right><i>内部クラス仕様</i></td>
+</tr></table>
+
+<hr><br>
+ 
+<a name="20006"></a>
+<h1>Java 1.1 言語における他の変更点</h1>
+<a name="16013"></a>
+Java 1.1 言語には、4 つの追加の拡張が行われ、言語の小さなホールを埋め、ある種の API を簡単に使用できるようにしました。<p><a name="16014"></a>
+<h2>		 インスタンス初期化子</h2>
+<a name="16020"></a>
+static 初期化子構文は拡張され、次のようにインスタンスの初期化もまたサポートします:
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a name="16021"></a><var>ClassBodyDeclaration:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Block
+</var><br><br><a name="17853"></a>
+<code>static</code> キーワードなしに導入された初期化コードは、スーパークラス構築子がインスタンス変数初期化と共にテキスト順に呼び出された直後に、すべての構築子によって実行されます。<p><a name="16015"></a>
+インスタンス初期化子は、式を各構築子の <code>throws</code> 節で明示的に宣言して
+いない場合、確認済例外を返したり、スローしたりしません。 匿名クラスのインスタンス初期化子は、すべての例外をスローすることができます。<p><a name="16044"></a>
+インスタンス初期化子は、インスタンス変数（ブランク final を含む）をコードで初期化する必要があるとき有用です。このコードは例外をキャッチするか、または単一の初期化子式で表現できない他の種類の制御フローを実行する必要があります。インスタンス初期化子は、匿名クラスが自分自身を初期化する場合に必要になります。それは、匿名クラスが構築子をなに 1 つ定義できないからです。<p><a name="16067"></a>
+<h2>		 匿名配列式</h2>
+<a name="16065"></a>
+配列割当構文は拡張され、匿名配列の要素の初期化をサポートします。名前の付いた配列が要素式の中括弧で囲まれたリストによって初期化されるように、配列作成式は、現在中括弧で囲まれたリストが後に付きます。両方のケースで、配列型は次元の式を含むことが許されません; 次元は要素式の数を数えて計算されます。次に新しい構文を示します:
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a name="16169"></a><var>ArrayCreationExpression:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</var>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>new</code> <var>Type Dims ArrayInitializer
+</var><br><br><a name="16174"></a>
+次の2つの文に相当するもので新しい構文を例証します: 
+<Table Border="0">
+<caption></caption>
+<tr><td><br><pre>    <a name="16428"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T v[] = {a};
+    <a name="16429"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T v[] = new T[] {a}; 
+</pre>
+
+</Table>
+
+<!--
+<Table>
+<tr><td>
+</Table>
+--><p><a name="16198"></a>
+<h2>		 クラスリテラル</h2>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a name="16196"></a><var>PrimaryNoNewArray:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Type</var> <code>.</code> <code>class<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>void</code> <code>.</code> <code>class
+</code><br><br><a name="16205"></a>
+<em>クラスリテラル</em> はクラス名、インタフェース、配列または`<code>.</code>'とトークン <code>class</code> を後ろに付けたプリミティブ型から構成される式です。これは <code>Class</code> という型のオブジェクト、名前の付いた型（または void 用）のクラスオブジェクトを評価します。<p><a name="16206"></a>
+参照型については、クラスリテラルは適当な文字列の付いた <code>Class.forName</code> への呼び出しに相当します。ただし、これは確認済例外を発生させない点を除きます。（この効率性は、メソッド呼び出しよりもフィールドアクセスに匹敵するようです。) 参照型のクラスリテラルは、変数のクラスが使用可能でないときにクラス変数参照がエラーを発生させるのと同じように、<code>NoClassDefFoundError</code> を発生させることができます。<p><a name="16489"></a>
+プリミティブ型または void のクラスリテラルは、次の表によれば事前にインストールしたプリミティブ型記述子への static 変数参照に相当します: 
+<Table Border="0">
+<caption></caption>
+<tr><td><br><pre>    <a name="20373"></a>    boolean.class   ==   Boolean.TYPE
+    <a name="20374"></a>    char.class      ==   Character.TYPE
+    <a name="20375"></a>    byte.class      ==   Byte.TYPE
+    <a name="16495"></a>    short.class     ==   Short.TYPE
+    <a name="16496"></a>    int.class       ==   Integer.TYPE
+    <a name="16497"></a>    long.class      ==   Long.TYPE
+    <a name="20410"></a>    float.class     ==   Float.TYPE
+    <a name="20411"></a>    double.class    ==   Double.TYPE
+    <a name="20412"></a>    void.class      ==   Void.TYPE
+</pre>
+
+</Table>
+
+<!--
+<Table>
+<tr><td>
+</Table>
+--><p><a name="16520"></a>
+クラスオブジェクトをメソッド引数として必要とする Java API は、クラスリテラル構文が使用可能なときもっと簡単に使用できます。コンパイラはクラスリテラルの <var>TypeName</var> をプロセスするとき、親 <code>package</code> および <code>import</code> 文を考慮する責任があることに注意してください。<p><a name="16529"></a>
+<code>Class.forName</code> の古い使用法では、プログラマが希望するパッケージの前置を指摘し、それをクラス名文字列に書くことを要求しています。文字列を正しくスペルすることの難しさが、親クラスの存在で大きくなっています。それは、（<code>Class.forName</code> によってプロセスされるように、）これらの名前がドットの代わりに `<code>$</code>' 文字でエンコードされるからです。<p><a name="20025"></a>
+クラスリテラルは決して式を含まず、型名だけであることに注意してください。<p><a name="20017"></a>
+<h2>		 ブランク final および final 局所変数</h2>
+<a name="20172"></a>
+<em>ブランク final</em> は初期化子を欠いた <code>final</code> 変数宣言（すべての種類）です。ブランク final は、一度、初期値に代入する必要があります。<p><a name="20173"></a>
+明確な代入規則は拡張され、「明確に代入されていない」変数を記録し、ブランク final への代入は、その final が代入文の前に明確に代入されている場合禁じられます。続いて、これは明確に代入され、<code>final</code> であるために同じ実行パスに沿って再代入することはできません。<p><a name="20174"></a>
+明確な非代入規則はループの後方分岐を考慮し、ループ本体の変数発生は、ループが後方分岐を経由してその発生に到達できる代入を行う場合、明確に代入されます。明確な代入確認は、ループの最初の繰り返しが <code>if</code> 文の中に展開されたかの如くに機能します。<p><a name="20192"></a>
+ブランク final クラス変数は <code>static</code> 初期化子によって（同じクラスに）明確に代入される必要があります。これは、クラス変数が明確な代入に対して確認される唯一のコンテキストです。<p><a name="20175"></a>
+ブランク final インスタンス変数は、非 <code>static</code> 初期化子またはすべての構築子によって、明確に代入される必要があります。これらは、明確な代入確認がインスタンス変数上で行われるという唯一のコンテキストです。これらのコンテキスト内で、<code>this.</code><var>V</var> への代入が、明確な代入確認のために名前 <var>V</var> への代入を実行するものとして認識されます。
+<p><a name="20193"></a>
+すべての種類のローカル変数とパラメータは、現在 <code>final</code> と宣言することができます:
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a name="20042"></a><var>LocalVariableDeclaration:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Modifiers</var><sub><i>Opt</i></sub><var> Type VariableDeclarators
+</var><br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a name="20059"></a><var>FormalParameter:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Modifiers</var><sub><i>Opt</i></sub><var> Type VariableDeclaratorId
+</var><br><br><a name="20060"></a>
+このような変数は、ローカル変数を支配する通常の明確な代入規則に従います。さらに、これは初期化以外には代入できません。<p><a name="20074"></a>
+メソッドパラメータまたは catch formal パラメータは <code>final</code> と宣言されます。これはメソッドシグネチャまたはキャッチされた例外型に影響を与えません。メソッドまたはキャッチの本体内で、パラメータは代入されません。<p><a name="20079"></a>
+<code>final</code> 宣言修飾子を使用して、ローカル変数およびパラメータを親クラスが使用できるようにします。<p>
+
+<hr>
+<!-- This inserts footnotes--><p>
+<a href="innerclasses.doc.html">目次</a> | <a href="innerclasses.doc8.html">前項目</a> | <a href="innerclasses.doc10.html">次項目</a> 
+
+<p>
+<font size=-1>内部クラス仕様 (HTML generated by dkramer on March 15, 1997)<br>
+<i><a href="copyright.doc.html">Copyright (c) 1996, 1997 Sun Microsystems, Inc.</a>
+All rights reserved</i>
+<br>
+コメントや訂正は <a href="mailto:john.rose@eng.sun.com">john.rose@eng.sun.com</a> 宛てに送ってください。
+</font>
+</body></html>

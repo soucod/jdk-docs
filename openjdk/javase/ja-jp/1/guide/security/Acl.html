@@ -1,0 +1,299 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE> アクセスコントロールリスト
+
+</TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0Gold (Win95; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>JDK 1.1 のセキュリティ </H1>
+
+<H2 ALIGN=CENTER>アクセスコントロールの概要 </H2>
+
+<HR>
+
+<H1>java.security.acl </H1>
+
+<HR>
+
+<H2>はじめに </H2>
+
+<P>アクセスコントロールリスト（ACL）は、リソースへのアクセスを保護するデータ構造体です。 <I>java.security.acl </I> パッケージは、このようなデータ構造体へのインタフェースを提供し、<i>sun.security.acl</i> パッケージは <I>java.security.acl
+</I>パッケージで指定したインタフェースのデフォルトの実装を提供します。 
+
+<p>ACL は、複数の ACL 項目を持つデータ構造体だと考えることができます。それぞれの ACL 項目は、特定のプリンシパルに関連するパーミッションのセットを含んでいます。（プリンシパルは個別のユーザやグループなどのエンティティを表します）。さらに、各 ACL 項目は、正または負に指定されています。正の場合は、関連するプリンシパルにパーミッションが与えられます。負の場合、パーミッションは拒否されます。
+<p>
+
+<p>アクセスコントロールリストは、プリンシパルの妥当性の検査に使用する認証方式に依存しません。また、ネットワーク全体にデータを転送するために使用される暗号化方式にも依存しません。ACL は認証フェーズの後でコンサルトされます。プリンシパルがシステムで権限のあるユーザであると確認されると、プリンシパルはリソースにアクセスすることができます。リソースごとに、リソースを保護する ACL のプリンシパルに与えられたパーミッションに応じて、プリンシパルはアクセスを許可されたりされなかったりします。ACL それ自身は、保護するプリンシパルに依存しません。ACL にコンサルトして、特定のプリンシパルが持つパーミッションのリストを見つけたり、プリンシパルに特定のパーミッションが与えられているかどうかを調べたりすることができます。
+</P>
+
+<H2>ACL 構造体 </H2>
+
+<P>ACL は <i>java.security.acl.Acl</i> インタフェースを実装するオブジェクトです。各 <I>Acl </I> は <I>AclEntry </I> オブジェクトのリストです。
+各 <I>AclEntry
+</I><I>Principal</I> または <I>Group</I> オブジェクトを
+<I>Permission</I> オブジェクトに関連づけます。（注意：Group は Principal のサブクラスです）。
+各 <I>AclEntry </I> は、正のエントリまたは負のエントリとして作成することもできます。正のエントリはエントリのパーミッションのリストをプリンシパルやグループに与え、負のエントリはプリンシパルやグループへのパーミッションのリストを拒否します。
+</P>
+
+<H2>付与されたパーミッションの計算 </H2>
+
+<P>プリンシパルが付与されるネットパーミッションを計算するときは、次のルールを使用します。
+ </P>
+
+<OL>
+<LI>それぞれのプリンシパルやグループは、最大で 1 つの正の ACL エントリと 1 つの負のエントリを持つことができます。つまり、プリンシパルやグループに複数の正または負の ACL エントリを割り当てることはできません。
+</LI>
+
+<LI>特定のプリンシパルまたはグループにエントリがないときは、プリンシパルまたはグループは null のパーミッションセットを持っています。
+</LI>
+
+<LI>プリンシパルに対するネットグループの正のパーミッションセットは、そのプリンシパルが付属する各グループの正のパーミッションの共用体です。
+</LI>
+
+<LI>プリンシパルに対するネットグループの負のパーミッションセットは、そのプリンシパルが付属する各グループの負のパーミッションすべての共用体です。
+ </LI>
+
+<LI>プリンシパルまたはグループを特定に特定のパーミッションを付与する正のエントリ、およびプリンシパルまたはグループに同じパーミッションを拒否する負のエントリがある場合は、そのパーミッションが正のパーミッションセットと負のパーミッションセットの両方から削除されます。
+</LI>
+
+<LI>個々のパーミッション（特定のプリンシパルに付与または拒否されたパーミッション）は、常に Group パーミッションをオーバーライドします。特に、個々の負のパーミッション（パーミッションの特定拒否）は、グループの正のパーミッションをオーバーライドします。また、個々の正のパーミッションはグループの負のパーミッションをオーバーライドします。
+</LI>
+
+<LI>ここで、プリンシパルが所属するすべてのグループの正のパーミッションセットを g1、プリンシパルが所属するすべてのグループの負のパーミッションセットを g2 とします。さらに、プリンシパルに対する個々の負のパーミッションセットを p1、プリンシパルに対する個々の負のパーミッションセットを p2 とします。プリンシパルが付与されるパーミッションは (p1 + (g1 - p2)) - (p2 + (g2 - p1)) になります。
+</LI>
+</OL>
+
+<H2>パーミッション計算の例 </H2>
+
+<P>プリンシパル P がグループ G1 と G2 に所属するとします。以下に、G1、G2、P に与えられるパーミッションの例を使って 5 カラムの表を示しています。P に与えられるパーミッションは最後のカラムに表示されます。
+</P>
+
+<TABLE CELLSPACING=0 CELLPADDING=0 >
+<TR>
+<TH></TH>
+
+<TH>Group G1 Permissions</TH>
+
+<TH>Group G2 Permissions </TH>
+
+<TH>Union (G1, G2) perms</TH>
+
+<TH>Individual Permissions </TH>
+
+<TH>Resulting Permissions </TH>
+
+<TD></TD>
+</TR>
+
+<TR>
+<TH>Positive </TH>
+
+<TD align = center>A </TD>
+
+<TD align = center>B </TD>
+
+<TD align = center>A+B </TD>
+
+<TD align = center>C </TD>
+
+<TD align = center rowspan = 2>A+B+C </TD>
+</TR>
+
+<TR>
+<TH>Negative </TH>
+
+<TD align = center>null set </TD>
+
+<TD align = center>null set </TD>
+
+<TD align = center>null set </TD>
+
+<TD align = center>null set </TD>
+</TR>
+
+<TR>
+<TD><BR>
+</TD>
+</TR>
+
+<TR>
+<TH>Positive </TH>
+
+<TD align = center>A </TD>
+
+<TD align = center>B </TD>
+
+<TD align = center>B </TD>
+
+<TD align = center>C </TD>
+
+<TD align = center rowspan = 2>B+C </TD>
+</TR>
+
+<TR>
+<TH>Negative </TH>
+
+<TD align = center>-C </TD>
+
+<TD align = center>-A </TD>
+
+<TD align = center>-C </TD>
+
+<TD align = center>null set </TD>
+</TR>
+
+<TR>
+<TD><BR>
+</TD>
+</TR>
+
+<TR>
+<TH>Positive </TH>
+
+<TD align = center>A </TD>
+
+<TD align = center>B </TD>
+
+<TD align = center>A+B </TD>
+
+<TD align = center>C </TD>
+
+<TD align = center rowspan = 2>B+C </TD>
+</TR>
+
+<TR>
+<TH>Negative </TH>
+
+<TD align = center>null set </TD>
+
+<TD align = center>null set </TD>
+
+<TD align = center>null set </TD>
+
+<TD align = center>-A </TD>
+</TR>
+
+<TR>
+<TD><BR>
+</TD>
+</TR>
+
+<TR>
+<TH>Positive </TH>
+
+<TD align = center>A </TD>
+
+<TD align = center>C </TD>
+
+<TD align = center>A </TD>
+
+<TD align = center>B </TD>
+
+<TD align = center rowspan = 2>B </TD>
+</TR>
+
+<TR>
+<TH>Negative </TH>
+
+<TD align = center>-C </TD>
+
+<TD align = center>-B</TD>
+
+<TD align = center>-B</TD>
+
+<TD align = center>-A </TD>
+</TR>
+</TABLE>
+
+<P><BR>
+</P>
+
+<H2>使用例 </H2>
+
+<PRE>
+import java.security.acl.*; 
+import sun.security.acl.*; 
+
+public class Example { 
+    Principal p1 = new PrincipalImpl("user1"); 
+    Principal p2 = new PrincipalImpl("user2"); 
+    Principal owner = new PrincipalImpl("owner"); 
+ 
+    Permission read = new PermissionImpl("READ"); 
+    Permission write = new PermissionImpl("WRITE"); 
+ 
+    Group g = new GroupImpl("group1"); 
+    g.addMember(p1); 
+    g.addMember(p2); 
+ 
+    // 
+    // create a new acl with the name "exampleAcl" 
+    // 
+    Acl acl = new AclImpl(owner, "exampleAcl"); 
+ 
+    // 
+    // Allow group all permissions 
+    // 
+    AclEntry entry1 = new AclEntryImpl(g); 
+    entry1.addPermission(read); 
+    entry1.addPermission(write); 
+    acl.addEntry(owner, entry1); 
+ 
+    // 
+    // Take away WRITE permissions for  
+    // user1. All others in groups still have 
+    // WRITE privileges. 
+    // 
+    AclEntry entry2 = new AclEntryImpl(p1); 
+    entry2.addPermission(write); 
+    entry2.setNegativePermissions(); 
+    acl.addEntry(owner, entry2);         
+ 
+    // 
+    // This enumeration is an enumeration of  
+    // Permission interfaces. It should return 
+    // only "READ" permission. 
+    Enumeration e1 = acl.getPermissions(p1); 
+ 
+    // 
+    // This enumeration should have "READ" and"WRITE"  
+    // permissions. 
+    Enumeration e2 = acl.getPermissions(p2); 
+ 
+    // This should return false. 
+    boolean b1 = acl.checkPermission(p1, write); 
+     
+    // This should all return true; 
+    boolean b2 = acl.checkPermission(p1, read); 
+    boolean b3 = acl.checkPermission(p2, read); 
+    boolean b4 = acl.checkPermission(p2, write); 
+}
+</PRE>
+
+
+<p>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE>
+ 
+<IMG SRC="../../images/JAVA.85.GIF" ALIGN=RIGHT>
+ 
+<FONT SIZE=-2>
+<A HREF="../../relnotes/SMICopyright.html">Copyright (C)</A> 
+1996, 1997 Sun Microsystems, Inc., 2550 Garcia Ave., Mtn. View, CA 94043-1100 USA. All rights 
+reserved.
+</FONT>
+
+<br><br>
+<FONT SIZE=-1>
+ご意見は <a href="mailto:java-security@java.sun.com">
+java-security@java.sun.com</a> までお寄せください。
+</FONT>
+
+
+</BODY>
+</HTML>
+
+

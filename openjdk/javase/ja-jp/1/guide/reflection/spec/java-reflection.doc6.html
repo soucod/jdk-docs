@@ -1,0 +1,305 @@
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection.doc5.html">前項目</a>  | <a href="java-reflection.doc7.html">次項目</a>
+</font></td><td align=right><i>Java コアリフレクション</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+
+<a name="5273"></a>
+<h1>クラス java.lang.reflect.Array </h1><pre>    <a name="5275"></a><code>package java.lang.reflect;
+</code>
+    <a name="5276"></a><code>public final class Array extends Object
+</code>
+</pre><a name="5277"></a>
+<code>Array</code> クラスはインスタンス化できないクラスで、static メソッドをエクスポートしてプリミティブまたはコンポーネント型の Java 配列を生成し、配列コンポーネント値を獲得して設定します。<p>
+<hr>
+<a name="5278"></a>
+<h2>		 メソッド</h2>
+
+<a name="5279"></a>
+<h3>		 newInstance</h3>
+<pre>    <a name="5280"></a><code>public static Object newInstance(Class componentType, int length)
+</code>
+    <a name="5281"></a><code>    throws NullPointerException, NegativeArraySizeException
+</code>
+</pre><a name="5282"></a>
+指定のコンポーネント型および長さの新規配列を返します。配列は、等価な配列式のように生成されます。以下を参照してください:<p><pre>    <a name="5283"></a>
+
+    <a name="5284"></a>    new <i>componentType</i>[<code>length</code>]
+
+</pre><a name="5285"></a>
+指定の <code>componentType</code> 引数が <code>null</code> の場合、メソッドは <code>NullPointerException</code> をスローします。<p><a name="5286"></a>
+指定の <code>length</code> 引数が負の場合、メソッドは <code>NegativeArraySizeException</code> をスローします。<p>
+<a name="5287"></a>
+<h3>		 newInstance</h3>
+<pre>    <a name="5288"></a><code>public static Object newInstance(Class componentType,
+</code>
+    <a name="5289"></a><code>                             int[] dimensions)
+</code>
+    <a name="5290"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5291"></a><code>        NegativeArraySizeException
+</code>
+</pre><a name="5292"></a>
+指定のコンポーネント型および大きさの新規配列を返します。配列は、等価な配列式のように生成されます。以下を参照してください:<p><pre>    <a name="5293"></a>
+
+    <a name="5294"></a>    new <i>componentType</i>[<code>dimensions[0]][dimensions[1]</code>]...
+
+</pre><a name="5295"></a>
+<code>componentType</code> 引数または <code>dimensions</code> 引数のいずれかが <code>null</code> の場合、メソッドは <code>NullPointerException</code> をスローします。<p><a name="5296"></a>
+指定の <code>dimensions</code> 引数がゼロの大きさの配列の場合、または要求した大きさの数が実装がサポートする配列数の上限 (通常 <code>255</code>) を超える場合、メソッドは <code>IllegalArgumentException</code> をスローします。<p><a name="5297"></a>
+指定の <code>dimensions</code> 配列に負の要素があると、メソッドは <code>NegativeArraySizeException</code> をスローします。<p>
+<a name="5298"></a>
+<h3>		 getLength</h3>
+<pre>    <a name="5299"></a><code>public static int getLength(Object array)
+</code>
+    <a name="5300"></a><code>    throws NullPointerException, IllegalArgumentException
+</code>
+</pre><a name="5301"></a>
+指定した配列の長さを返します。<p><a name="5302"></a>
+指定のオブジェクト引数が <code>null</code> の場合は、 <code>NullPointerException</code> をスローします。<p><a name="5303"></a>
+指定のオブジェクト引数が配列でない場合は、 <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5304"></a>
+<h3>		 get</h3>
+<pre>    <a name="5305"></a><code>public static Object get(Object array, int index)
+</code>
+    <a name="5306"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5307"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5308"></a>
+指定した配列オブジェクトの添え字付きコンポーネントの値を返します。値がプリミティブ型を持つ場合は、自動的にオブジェクトにラップされます。<p><a name="5309"></a>
+処理手順は以下のとおりです:<p>
+<ul><a name="5310"></a>
+<li>指定のオブジェクトが <code>null</code> の場合、メソッドは <code>NullPointerException</code> をスローする。<br><br>
+<a name="5311"></a>
+<li>指定のオブジェクトが配列でない場合、メソッドは <code>IllegalArgumentException</code> をスローする。<br><br>
+<a name="5312"></a>
+<li>指定の <code>index</code> 引数が負でない場合、あるいは指定した配列の長さと同じかこれよりも大きい場合、メソッドは <code>ArrayIndexOutOfBoundsException</code> をスローする。<br><br>
+<a name="5313"></a>
+<li>添え字付きコンポーネントの値が取り出される。配列のコンポーネント型がプリミティブの場合、値はオブジェクトにラップされる。ラップ値が返される。<br><br>
+</ul><a name="5314"></a>
+より効率的な <code>Array.get</code> のプリミティブなものも提供されます。これらにはファイナルラッピング変換は不要です。これらについては、以下で説明します。<p>
+<a name="5315"></a>
+<h3>		 getBoolean</h3>
+<pre>    <a name="5316"></a><code>public static boolean getBoolean(Object array, int index)
+</code>
+    <a name="5317"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5318"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5319"></a>
+指定した配列オブジェクト内の添え字付き要素の値を、<code>boolean</code> として返します。手続きの詳細は、<code>Array.get</code> を参照してください。<p><a name="5320"></a>
+添え字付きの値が <code>boolean</code> 型でないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5321"></a>
+<h3>		 getByte</h3>
+<pre>    <a name="5322"></a><code>public static byte getByte(Object array, int index)
+</code>
+    <a name="5323"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5324"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5325"></a>
+指定した配列オブジェクト内の添え字付き要素の値を、<code>byte</code> として返します。手続きの詳細は、<code>Array.get</code> を参照してください。<p><a name="5326"></a>
+添え字付きの値が <code>byte</code> 型でないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5327"></a>
+<h3>		 getChar</h3>
+<pre>    <a name="5328"></a><code>public static char getChar(Object array, int index)
+</code>
+    <a name="5329"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5330"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5331"></a>
+指定した配列オブジェクト内の添え字付き要素の値を、<code>char</code> として返します。手続きの詳細は、<code>Array.get</code> を参照してください。<p><a name="5332"></a>
+添え字付きの値が <code>char</code> 型でないと、メソッドは<code>IllegalArgumentException</code> をスローします。<p>
+<a name="5333"></a>
+<h3>		 getShort</h3>
+<pre>    <a name="5334"></a><code>public static short getShort(Object array, int index)
+</code>
+    <a name="5335"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5336"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5337"></a>
+指定した配列オブジェクト内の添え字付き要素の値を、<code>short</code> として返します。手続きの詳細は、<code>Array.get</code> を参照してください。<p><a name="5338"></a>
+識別変換または拡張変換を使って、添え字付きの値を <code>short</code> に変換できないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5339"></a>
+<h3>		 getInt</h3>
+<pre>    <a name="5340"></a><code>public static int getInt(Object array, int index)
+</code>
+    <a name="5341"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5342"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5343"></a>
+指定した配列オブジェクト内の添え字付き要素の値を、<code>int</code> として返します。手続きの詳細は、<code>Array.get</code> を参照してください。<p><a name="5344"></a>
+識別変換または拡張変換を使って、添え字付きの値を <code>int</code> に変換できないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5345"></a>
+<h3>		 getLong</h3>
+<pre>    <a name="5346"></a><code>public static long getLong(Object array, int index)
+</code>
+    <a name="5347"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5348"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5349"></a>
+指定した配列オブジェクト内の添え字付き要素の値を、<code>long</code> として返します。手続きの詳細は、<code>Array.get</code> を参照してください。<p><a name="5350"></a>
+識別変換または拡張変換を使って、添え字付きの値を <code>long</code> に変換できないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5351"></a>
+<h3>		 getFloat</h3>
+<pre>    <a name="5352"></a><code>public static float getFloat(Object array, int index)
+</code>
+    <a name="5353"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5354"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5355"></a>
+指定した配列オブジェクト内の添え字付き要素の値を、<code>float</code> として返します。手続きの詳細は、<code>Array.get</code> を参照してください。<p><a name="5356"></a>
+識別変換または拡張変換を使って、添え字付きの値を <code>float</code> に変換できないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5357"></a>
+<h3>		 getDouble</h3>
+<pre>    <a name="5358"></a><code>public static double getDouble(Object array, int index)
+</code>
+    <a name="5359"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5360"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5361"></a>
+指定した配列オブジェクト内の添え字付き要素の値を、<code>double</code> として返します。手続きの詳細は、<code>Array.get</code> を参照してください。<p><a name="5362"></a>
+識別変換または拡張変換を使って、添え字付きの値を <code>double</code> に変換できないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5363"></a>
+<h3>		 set</h3>
+<pre>    <a name="5364"></a><code>public static void set(Object array, int index, Object value)
+</code>
+    <a name="5365"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5366"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5367"></a>
+指定した配列オブジェクトの添え字付きコンポーネントを、指定の新規値に設定します。配列がプリミティブ型を持つ場合、新規値はまず最初に自動的にアンラップされます。<p><a name="5368"></a>
+処理手順は以下のとおりです:<p>
+<ul><a name="5369"></a>
+<li>指定のオブジェクト引数が <code>null</code> の場合、メソッドは <code>NullPointerException</code> をスローする。<br><br>
+<a name="5370"></a>
+<li>指定のオブジェクト引数が配列でない場合、メソッドは <code>IllegalArgumentException</code> をスローする。<br><br>
+<a name="5371"></a>
+<li>指定の <code>index</code> 引数が負の場合、あるいは指定配列の長さと同じかこれよりも大きい場合、メソッドは <code>ArrayIndexOutOfBoundsException</code> をスローする。<br><br>
+<a name="5372"></a>
+<li>配列がプリミティブコンポーネント型を持つ場合、新規オブジェクト値をプリミティブ型の値に変換するためにアンラッピング変換が試される。オブジェクトのパラメータが <code>null</code> の場合、<code>NullPointerException</code> をスローして、変換が失敗する。オブジェクトパラメータが標準 Java ラッパークラスのインスタンスでない場合、<code>IllegalArgumentException</code> をスローして、変換が失敗する。<br><br>
+<a name="5373"></a>
+<li>アンラッピングのあとで、識別変換または拡張変換を使って、新規値を配列コンポーネント型の値に変換できない場合、メソッドは <code>IllegalArgumentException</code> をスローする。<br><br>
+<a name="5374"></a>
+<li>添え字付きの配列コンポーネントは、アンラップおよび拡張した新規値に設定される。<br><br>
+</ul><a name="5375"></a>
+より効率的な <code>Array.set</code> のプリミティブなものも提供されます。これらを使うと、ユーザコードで新規値をラップする必要がなくなります。これらの説明を以下に示します。<p>
+<a name="5376"></a>
+<h3>		 setBoolean</h3>
+<pre>    <a name="5377"></a><code>public static void setBoolean(Object array, int index, boolean z)
+</code>
+    <a name="5378"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5379"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5380"></a>
+指定した配列オブジェクトの添え字付き要素を、指定の <code>boolean</code> 値に設定します。手続きの詳細は、<code>Array.set</code> を参照してください。<p>
+<a name="5381"></a>
+<h3>		 setByte</h3>
+<pre>    <a name="5382"></a><code>public static void setByte(Object array, int index, byte b)
+</code>
+    <a name="5383"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5384"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5385"></a>
+指定した配列オブジェクトの添え字付き要素を、指定の <code>byte</code> 値に設定します。手続きの詳細は、<code>Array.set</code> を参照してください。<p>
+<a name="5386"></a>
+<h3>		 setChar</h3>
+<pre>    <a name="5387"></a><code>public static void setChar(Object array, int index, char c)
+</code>
+    <a name="5388"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5389"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5390"></a>
+指定した配列オブジェクトの添え字付き要素を、指定の <code>char</code> 値に設定します。手続きの詳細は、<code>Array.set</code> を参照してください。<p>
+<a name="5391"></a>
+<h3>		 setShort</h3>
+<pre>    <a name="5392"></a><code>public static void setShort(Object array, int index, short s)
+</code>
+    <a name="5393"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5394"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5395"></a>
+指定した配列オブジェクトの添え字付き要素を、指定の <code>short</code> 値に設定します。手続きの詳細は、<code>Array.set</code> を参照してください。<p>
+<a name="5396"></a>
+<h3>		 setInt</h3>
+<pre>    <a name="5397"></a><code>public static void setInt(Object array, int index, int i)
+</code>
+    <a name="5398"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5399"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5400"></a>
+指定した配列オブジェクトの添え字付き要素を、指定の <code>int</code> 値に設定します。手続きの詳細は、<code>Array.set</code> を参照してください。<p>
+<a name="5401"></a>
+<h3>		 setLong</h3>
+<pre>    <a name="5402"></a><code>public static void setLong(Object array, int index, long l)
+</code>
+    <a name="5403"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5404"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5405"></a>
+指定した配列オブジェクトの添え字付き要素を、指定の <code>long</code> 値に設定します。手続きの詳細は、<code>Array.set</code> を参照してください。<p>
+<a name="5406"></a>
+<h3>		 setFloat</h3>
+<pre>    <a name="5407"></a><code>public static void setFloat(Object array, int index, float f)
+</code>
+    <a name="5408"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5409"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5410"></a>
+指定した配列オブジェクトの添え字付き要素を、指定の <code>float</code> 値に設定します。手続きの詳細は、<code>Array.set</code> を参照してください。<p>
+<a name="5411"></a>
+<h3>		 setDouble</h3>
+<pre>    <a name="5412"></a><code>public static void setDouble(Object array, int index, double d)
+</code>
+    <a name="5413"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5414"></a><code>        ArrayIndexOutOfBoundsException
+</code>
+</pre><a name="5415"></a>
+指定した配列オブジェクトの添え字付き要素を、指定の <code>double</code> 値に設定します。手続きの詳細は、<code>Array.set</code> を参照してください。<p>
+
+<br>
+<hr> 
+<font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection.doc5.html">前項目</a>  | <a href="java-reflection.doc7.html">次項目</a>
+</font>
+<hr>
+
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<a href="java-reflection-copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>

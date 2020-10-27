@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="preparedstatement.doc.html">前項目</a>  | <a href="mapping.doc.html">次項目</a>
+</font></td><td align=right><i>JDBC<sup><font size=-2>TM</font></sup> ガイド: 「はじめましょう」</i></td>
+</tr></table>
+<hr>
+<br>
+
+<a name="998919"></a>
+<h1>7  - CallableStatement</h1>
+<a name="998945"></a>
+この概要は、現在 JavaSoft で作成中の <em>JDBC<font size=-1><sup>TM</sup></font> Database Access with Java<font size=-1><sup>TM</sup></font>:  A Tutorial and Annotated Reference,</em> からの引用です。この本は JDBC の自習書であるとともに決定版リファレンスマニュアルで、1997 年春に Addison-Wesley Publishing Company から Java シリーズの一部として発行されています。
+<p>
+<a name="997085"></a>
+<h2>7.1	 &nbsp;&nbsp; 概要</h2>
+<a name="998947"></a>
+<code>CallableStatement</code> オブジェクトは、すべての DBMS について標準的な方法でストアードプロシージャを呼び出す方法を提供します。ストアードプロシージャは、データベースに格納され、ストアードプロシージャへの呼び出しは、<code>CallableStatement</code> オブジェクトが保持します。この呼び出しは、結果パラメータを伴う形式と、伴わない形式の 2 つの形式のいずれかを取るエスケープ構文で書かれます (エスケープ構文についての詳細は、<a href="statement.doc.html#999752">5 節の</a>,「文」を参照してください）。結果パラメータは OUT パラメータの一種で、ストアードプロシージャの戻り値です。いずれの形式も、入力（IN パラメータ）、出力（OUT パラメータ）、またはその両方（INOUT パラメータ）として使用する変数を持つことができます。疑問符はパラメータのプレースホルダとして使用できます。 
+<p><a name="999016"></a>
+JDBC のストアードプロシージャの構文を以下に示します。角括弧は、それに囲まれた部分がオプションであることを示します。これらのかっこはそれ自体構文の一部ではありません。<p>
+<pre><a name="999017"></a>    {call procedure_name[(?, ?, ...)]}
+</pre><a name="999018"></a>
+
+以下は、結果パラメータを返すプロシージャの構文です。<p>
+<pre><a name="999019"></a>    {? = call procedure_name[(?, ?, ...)]}
+</pre><a name="999020"></a>
+パラメータが付かないストアードプロシージャの構文は、以下のようになります。
+<p>
+<pre><a name="999021"></a>    {call procedure_name}
+</pre><a name="999022"></a>
+通常、 <code>CallableStatement</code> オブジェクトの作成者は、使用されている DBMS がストアードプロシージャをサポートしていること、そしてそれらのプロシージャが何かということを知っています。しかし、確認が必要な場合は、さまざまな <code>DatabaseMetaData</code> メソッドがこのような情報を提供します。たとえば、メソッド <code>supportsStoredProcedures</code> は、DBMS がストアードプロシージャ呼び出しをサポートする場合、<code>true</code> を返し、メソッド <code>getProcedures</code> は、使用可能なストアードプロシージャの説明を返します。
+<p>
+<a name="999026"></a>
+<code>CallableStatement</code> は、SQL 文一般を処理する <code>Statement</code> のメソッドを継承し、また IN パラメータを処理する <code>PreparedStatement</code> のメソッドを継承します。<code>CallableStatement</code> に定義されているすべてのメソッドは、OUT パラメータまたは INOUT パラメータの OUT 部分の処理 (OUT パラメータの JDBC の型の登録、それらの値の取り出し、または戻り値が <code>JDBC</code> <code>NULL</code> であったかどうかの確認 )を行います。
+<p>
+
+<a name="998954"></a>
+<h3>7.1.1	 &nbsp; &nbsp; CallableStatement オブジェクトの作成</h3>
+<a name="998955"></a>
+<code>CallableStatement</code> オブジェクトは、<code>Connection</code> メソッドの <code>prepareCall</code> によって作成されます。以下の例では、2 つの引数を持ち、結果パラメータを持たないストアードプロシージャ <code>getTestData</code> への呼び出しが入っている <code>CallableStatement</code> のインスタンスを作成します。
+
+<p><pre><a name="998956"></a>    CallableStatement cstmt = con.prepareCall(
+<a name="998957"></a>                  "{call getTestData(?, ?)}");
+</pre><a name="998958"></a>
+<code>?</code> プレースホルダが IN、OUT、INOUT パラメータのいずれかは、ストアードプロシージャ <code>getTestData</code>に依存します。 <p>
+
+<a name="998959"></a>
+<h3>7.1.2	 &nbsp; &nbsp; IN パラメータと OUT パラメータ</h3>
+<a name="998960"></a>
+IN パラメータの値の <code>CallableStatement</code> オブジェクトへの引き渡しは、<code>PreparedStatement</code> から継承された <code>setXXX</code> メソッドを使用して行われます。渡される値の型は、どの <code>setXXX</code> (<code>float</code> の値を渡すためには <code>setFloat</code> など) を使用するかによって決定されます。
+<p><a name="998961"></a>
+ストアードプロシージャが OUT パラメータを返す場合、各 OUT パラメータの JDBC の型は <code>CallableStatement</code> を使用する前に登録する必要があります（DBMS の中には JDBC の型を要求するものがあるのでこれが必要です）。JDBC の型の登録は、メソッド <code>registerOutParameter</code> によって行います。文が実行されると、<code>CallableStatement</code> の <code>getXXX</code> メソッドがパラメータ値を取り出します。使用すべき正しい <code>getXXX</code> メソッドは、そのパラメータに登録された JDBC の型に対応する Java の型です (JDBC の型から Java の型への標準マッピングが、セクション <a href="mapping.doc.html#1004864">8.6.1</a> の一覧に示されています)。いいかえると、<code>registerOutParameter</code> は、(それがデータベースが返す JDBC の型に一致するように) JDBC の型を使用、<code>getXXX</code> がそれを Java の型にキャストします。<p>
+<a name="998965"></a>
+例を挙げて説明すると、以下のコードは OUT パラメータを登録し、 <code>cstmt</code>が呼び出すストアードプロシージャを実行してから、OUT パラメータに返された値を取り出します。メソッド <code>getByte</code> は、最初の OUT パラメータから Java バイトを取り出し、 <code>getBigDecimal</code> は、2 番目の OUTパラメータから <code>BigDecimal</code> オブジェクト(小数点以下第 3 位まで)を取り出します。
+<p>
+<pre><a name="998966"></a>    CallableStatement cstmt = con.prepareCall(
+<a name="998967"></a>                          "{call getTestData(?, ?)}");
+<a name="998968"></a>    cstmt.registerOutParameter(1, java.sql.Types.TINYINT);
+<a name="998969"></a>    cstmt.registerOutParameter(2, java.sql.Types.DECIMAL, 3);
+<a name="998970"></a>    cstmt.executeQuery();
+<a name="998971"></a>    byte x = cstmt.getByte(1);
+<a name="998972"></a>    java.math.BigDecimal n = cstmt.getBigDecimal(2, 3);
+</pre><a name="998973"></a>
+<p>
+
+<a name="998974"></a>
+<h3>7.1.3	 &nbsp; &nbsp; INOUT パラメータ</h3>
+<a name="998975"></a>
+入力を供給し、出力を受け取るパラメータは、メソッド <code>registerOutParameter</code> を呼び出す以外に、（<code>PreparedStatement</code>から継承された）適切な <code>setXXX</code>を呼び出す必要があります。<code>setXXX</code> メソッドは、パラメータの値を入力パラメータに設定し、メソッド <code>registerOutParameter</code> がその JDBC の型を出力パラメータとして登録します。<code>setXXX</code> メソッドは、ドライバがそれをデータベースに送信する前に JDBC の値に変換した Java の値を提供します。
+<p>
+<a name="999089"></a>
+この IN の値の JDBC の型と、メソッド <code>registerOutParameter</code> に供給される JDBC の型は同一でなければなりません。そして、出力値を取り出すために、対応する <code>getXXX</code> メソッドが使用されます。たとえば、その Java タイプが <code>byte</code> であるようなパラメータは、メソッド <code>setByte</code> を使用して入力値を指定し、JDBC の型として <code>TINYINT</code> を <code>registerOutParameter</code> に供給し、<code>getByte</code> を使用して出力値を取り出す必要があります （ <a href="mapping.doc.html#996857">8</a> 節の、「SQL とJava の型のマッピング」には、さらに詳細な情報と型のマッピングの一覧が記載されています）。
+<p>
+<a name="998976"></a>
+以下の例は、ストアードプロシージャ <code>reviseTotal </code>があり、そのパラメータが INOUT パラメータだけである場合を想定しています。メソッド <code>setByte</code> はこのパラメータを <code>25</code> に設定し、ドライバはこれを JDBC の <code>TINYINT</code> としてデータベースに送信します。次の <code>registerOutParameter</code> は、このパラメータを JDBC の <code>TINYINT</code>として登録します。ストアードプロシージャが実行されると、新しい JDBC <code>TINYINT</code> の値が返され、メソッド <code>getByte</code> がこの新しい値を Java の <code>byte</code> として取り出します。
+<p>
+<pre><a name="998977"></a>    CallableStatement cstmt = con.prepareCall(
+<a name="998978"></a>        "{call reviseTotal(?)}");
+<a name="998979"></a>    cstmt.setByte(1, 25);
+<a name="998980"></a>    cstmt.registerOutParameter(1, java.sql.Types.TINYINT);
+<a name="998981"></a>    cstmt.executeUpdate();
+<a name="998982"></a>    byte x = cstmt.getByte(1);
+</pre>
+<a name="998983"></a>
+<h3>7.1.4	 &nbsp; &nbsp; 結果の後 OUT パラメータを取り出す</h3>
+<a name="998984"></a>
+一部の DBMS に課された限界から、移植性を最大化するために、<code>CallableStatement.getXXX</code> メソッドを使用して OUT パラメータを取り出す前に、 <code>CallableStatement</code>  オブジェクトの実行によって生成された全ての結果を取り出すことをおすすめします。
+
+<p><a name="998985"></a>
+<code>CallableStatement</code> オブジェクトが (メソッド <code>execute</code> を使用して) 複数の <code>ResultSet</code> オブジェクトを返す場合、 OUT パラメータを取り出す前に、全ての結果セットにアクセスする必要があります。この場合、すべての結果に確実にアクセスするように、結果がなくなるまで <code>Statement</code> のメソッド <code>getResultSet</code>、<code>getUpdateCount</code>、および <code>getMoreResults</code> を呼び出す必要があります。<p>
+<a name="998986"></a>
+これが終わったら、<code>CallableStatement</code>.<code>getXXX</code> メソッドを使用して、OUT パラメータの値を取り出すことができます。
+<p>
+
+<a name="998987"></a>
+<h3>7.1.5	 &nbsp; &nbsp; NULL を OUT パラメータとして取り出す</h3>
+<a name="998988"></a>
+OUT パラメータに返される値は <code>JDBC</code> <code>NULL</code> である場合があります。<code>JDBC</code> <code>NULL</code> 値は、<code>getXXX</code> メソッドが返す値が <code>getXXX</code> メソッドの型によって <code>null</code>、<code>0</code>、<code>false</code> のいずれかになるように変換されます。 <code>ResultSet</code> オブジェクトについては、<code>0</code> または <code>false</code> の値が元々 <code> JDBC</code> <code>NULL</code> であったかどうかを知る方法は、メソッド <code>wasNull</code> を使用して確認する方法のみです。この場合、<code>getXXX</code> メソッドが読み取った最後の値が <code>JDBC</code> <code>NULL</code> の場合は <code>true</code> が返され、そうでない場合は <code>false</code> が返されます。詳細については、<a href="resultset.doc.html#1002724">5</a> 節の "ResultSet" を参照してください。
+<p><pre><a name="997998"></a>    
+</pre>
+
+<br>
+<hr>
+<font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="preparedstatement.doc.html">前項目</a>  | <a href="mapping.doc.html">次項目</a>
+</font>
+<hr>
+
+
+<address>
+<a href="mailto:jdbc@wombat.eng.sun.com">jdbc@wombat.eng.sun.com</a>
+または
+<a href="mailto:jdbc-odbc@wombat.eng.sun.com">jdbc-odbc@wombat.eng.sun.com</a>
+</address>
+
+<a href="copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>

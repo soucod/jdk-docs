@@ -1,0 +1,155 @@
+<html><head><title>Java AWT: マウスレス操作</title></head>
+<BODY BGCOLOR="#FFFFFF">
+ 
+ 
+<a name="920106">
+<h1><img align=middle src="images/hips.sm.gif"> Java AWT: マウスレス操作</h1>
+</a>
+<hr><p><a name="920108">
+<address>
+最終更新: 1997 年 2 月 3 日
+</address>
+
+<h2>目的</h2>
+</a>
+今日の典型的な GUI はマウスで操作するように設計されていますが、GUI でのマウスレ
+ス操作が、使用性から重要になる (時には欠かせない) 多くの状況があります。これらの状況には次のようなものがあります:<ul>
+<li>「パワー」ユーザに対する加速された操作
+
+<li>無効なアクセス
+
+<li>RSI (repetitive stress injury) の回避または治療
+</ul>
+<p>AWT1.0 は、ネイティブピアコンポーネントがデフォルトで提供する (すなわち、タブ
+フォーカス横断、スペースバーアクティブ化など) 以外には、マウスレス操作を Java プログラムに構築する明示的な機能をなにも提供しません。 JDK1.1 について AWT は、この問題に対して 100 % の解決を決して提供できるわけではないとしても、Javaプログラムのマウスレスモードをよりよく有効化するためのベースラインサポートを追加します。 このサポートは後続のバージョンで拡張されます。 1.1 にある 2 つの機能は次のとおりです:<ul>
+<li><a href="#focus">フォーカス横断</a>
+
+<li><a href="#shortcuts">メニューショートカット</a>
+</ul><a name="920121"></a>
+<hr>
+<h2><a name="focus">フォーカス横断</a></h2>
+
+フォーカス横断は、キーストローク (マウスでなく) を使用し、キーボードフォーカスを受け入れることができるコンポーネント間を横断する能力であると定義されます。これらのキーストロークは、前に移動するためには; &lt;Tab&gt および後ろへ移動するためには; &lt;Shift-Tab&gt と定義されます。一度コンポーネントがフォーカスを所有すると、そのコンポーネントをさらに定義したキーストロークで、アクティブ化/操縦することができるはずです (Button を押すために;&lt;space&gt など)。一度フォーカスを取得すると、適当なアクティブ化を実装するのは、コンポーネントの責任 (AWTでない) となります。 
+<p>このようにフォーカスを受け取ることができるコンポーネントは、フォーカスを取得
+したとき常にある形式のビジュアルフィードバックをレンダする必要があります。そうすれば、ユーザは Tab/Shift-Tab を使用しながら横断するとき、簡単にどのコンポーネントがフォーカスを持っているかが分かります。通常このフィードバックは、コンポーネントの周囲の色の付いた境界の箱の形を取ります。
+<p>各プラットフォームのネイティブツールキットは、デフォルトでフォーカス横断のサ
+ポートを、程度の違いはあれ提供します。しかし、この明示的なサポートは一般的な Java AWT コードで実装され、動作がプラットフォームをまたがってより一貫性のあるものになっています。<a name="920129">
+<p>
+<h3>フォーカス横断 API</h3>
+</a>
+この API は極めて単純です; これは java.awt.Component および java.awt.peer.ComponentPeer 上の新しいメソッドから構成されます:
+<pre><code>	<a href="../../../api/java.awt.Component.html#isFocusTraversable">public boolean isFocusTraversable()</a>
+</code></pre>
+
+<p>このメソッドは、コンポーネントがキーボードフォーカスを継承的に受け取ることができる型である場合は true を返し、そうでなければ falseを返します。
+<p>このメソッドがピアクラスのために存在する理由は、 AWT コンポーネントが作成するネイティブピアコンポーネントが、異なるプラットフォーム上で異なる横断規則を持っているからです。これによって、この属性を各プラットフォーム上で仕立て上げることができます (例えば、Mac 上では、Button はフォーカスを取得できませんが、Motifおよび Win32 上では可能です)。
+<p>既存のすべての AWTコンポーネントは、デフォルトでこの属性を適当にセットしておく必要がありますが、コンポーネントをサブクラス化してこのメソッドをオーバーライドし、プログラムに対して適当な値を返すオプションがあります。とりわけ、 java.awt.Canvas をサブクラス化してキーボードフォーカスを取得するよう設計された自分自身のカスタムコンポーネントを構築しようとする場合、次の 3 つのことを実行する必要があります:<ol>
+
+<li>isTabbable() をオーバーライドして true を返す (Canvas はデフォルトで false を返す) 
+
+<li>コンポーネント上のマウスダウンイベントをキャッチし、requestFocus() を起動す
+る (コンポーネントに「タイプするためのクリック」を実装する）
+
+<li>コンポーネントがフォーカスを得たとき、ビジュアルフィードバックを提供し、フォーカスを得たことを示す
+</ol>
+
+<p>コンポーネントが上記手順に従わない場合、ユーザがコンポーネントにフォーカスを与えることは困難になるかもしれません。
+<p>AWT は内部的にどのコンポーネントがフォーカスを持っているかを追跡し、Tab または Shift-Tab キーボードイベントに応じて、フォーカスをフォーワードにもバックワードにも移動できます。これは Windows に登録されている private FocusManager オブジェクトによって処理されます。FocusManager はウィンドウの Container がどれだけ深くネストしていても、フォーカスの移行を正しく管理できます。この横断の順番はコンテナに含まれるコンポーネントに等しくなります; デフォルトでは、これは子が Container に追加された順番に等しくなりますが、 Container の add(Component c, int pos) メソッドを使用してこの順番を制御できます。FocusManager は、フォーカスを割り当てる前に "focusTraversable" コンポーネントが可視であり、かつアクティブであるかどうかを自動的にチェックします (今後、isFocusTraversable() メソッドはこの状態を返された値に対して考慮する必要がありません)。<a name="920146"></a>
+<p>
+注: 横断の順番を構成するもっと柔軟な機構が必要であることが認識されており、現在この問題の解決に取り組んでいるところです。
+<p>
+<hr>
+<h2><a name= "shortcuts">メニューショートカット</a></h2>
+
+AWT ショートカット API の目標は、アプリケーション開発者がショートカットをメニューナビゲーションの補助として簡単に提供できるようにすることです。この API は、メニューショートカットだけに取り組み、他のマウスレスメニューナビゲーションの問題には触れません。
+<p>ショートカットはメニューコマンドのキーボード相当として定義され、適当なキーの組み合わせで、メニュー項目が選択されたかのように同じアクションを開始することができます。ショートカットはまたキーボード相当またはアクセラレータとして知られています。<a name="920155">
+<p>
+<h3>ショートカット API</h3>
+</a>
+API は次のクラスから構成されます:
+<pre><code>	<a href="../../../api/java.awt.MenuShortcut.html">java.awt.MenuShortcut</a>
+</code></pre>
+
+<p><a href="../../../api/java.awt.MenuItem.html">java.awt.MenuItem</a> には次の追加メソッドがあります:
+<pre><code>	public MenuItem(String label, MenuShortcut s)
+</code></pre>
+
+<pre><code>	public MenuShortcut getShortcut()
+</code></pre>
+
+<pre><code>	public void setShortcut(MenuShortcut s)
+</code></pre>
+
+<pre><code>	public void deleteShortcut();
+</code></pre>
+
+<p><a href="../../../api/java.awt.MenuBar.html">java.awt.MenuBar</a> には次の追加メソッドがあります:
+<p>
+<pre><code>	public MenuItem getShortcutMenuItem(MenuShortcut s);
+</code></pre>
+
+<pre><code>	public Enumeration shortcuts();
+</code></pre>
+
+<pre><code>	boolean handleShortcut(KeyEvent e);
+</code></pre>
+
+<pre><code>	public void deleteShortcut(MenuShortcut s);
+</code></pre>
+
+<h3>修飾子</h3>
+
+アプリケーションショートカットにはすべて、プラットフォーム毎に共通のキー修飾子があります: <ul>
+<li>&lt;Command&gt; Mac の場合
+
+<li>&lt;Control&gt; Windows の場合
+
+<li>&lt;Control&gt; Motif の場合
+</ul>
+<p><em>注: ALT の、 AWT が既に割り当てた QUIT 以外のアプリケーションショートカットへの使用は、想定されていません。</em>
+<p>ほとんどのショートカット API は共有コードで実装されますが、1 つのメソッドは java.awt.Toolkit に追加され、プラットフォーム毎に適当な修飾子を返します:
+<pre><code>	    <a href="../../../api/java.awt.Toolkit.html#getMenuShortcutKeyMask">public int getMenuShortcutKeyMask();</a>
+</code></pre>
+<h3>ビジュアル指標</h3>
+ユーザがメニューショートカットを学び使用するためには、メニュー項目がサポートするショートカットのビジュアル指標を表示することが重要です。これについては、与えられたプラットフォームに最も適した方法で、 AWT が自動的に処理します。
+<a name="920189">
+<h3>サンプルコード</h3>
+</a>
+1.0 でメニュー項目を作成するコード: 
+<pre><code>	    menu.add(new MenuItem("Save..."));
+</code></pre>
+
+<pre><code>	    menu.add(new MenuItem("Send..."));
+</code></pre>
+
+<p>1.1 でショートカット付メニュー項目を作成するコード:
+<pre><code>	    // Specify an 's' shortcut for save, and 'shift-s' for send.
+</code></pre>
+
+<pre><code>	    menu.add(new MenuItem("Save...", new MenuShortcut('s'));
+</code></pre>
+
+<pre><code>	    menu.add(new MenuItem("Send...", new MenuShortcut('s', true));
+</code></pre>
+
+<p>
+<p>
+<hr><br>
+ 
+<address>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</address>
+
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.5 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email yourEmail@xyzcorp.com -->
+<!-- -->
+<!-- Last updated: 09/13/96 16:30:50 -->
+
+</body>
+</html>

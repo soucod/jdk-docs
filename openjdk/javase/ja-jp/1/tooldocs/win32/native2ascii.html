@@ -1,0 +1,104 @@
+<!-- \docs\tooldocs\win32\native2ascii.html -->
+
+
+<html>
+<head>
+<title>ネイティブ - ASCII コンバータ</title>
+<!-- Created by: Doug Kramer, 19-Aug-1996 -->
+</head>
+
+
+<BODY BGCOLOR="#FFFFFF">
+
+<H1>native2ascii - ネイティブ - ASCII コンバータ</H1>
+<blockquote>
+ネイティブコード (非Latin 1および非Unicode{tm}) のファイルをUnicode{tm}コードに変換します。
+
+</blockquote>
+
+<h2>機能説明</h2>
+<blockquote>
+<pre>
+<code><strong>native2ascii</strong> [options] [inputfile [outputfile]]</code>
+</pre>
+</blockquote>
+ 
+<h2>説明</h2>
+<blockquote>
+Java コンパイラおよび Java ツールは、Latin-1 または Unicode{tm} コード(\udddd 表記法) のファイルだけを処理することができます。<code>native2ascii</code>は、その他の文字コードのファイルを Latin-1 または Unicode{tm} コードのファイルに変換します。
+<p>
+<code>outputfile</code> を省略した場合、標準出力に出力されます。さらに、<code>inputfile</code> を省略した場合、標準入力から入力されます。
+</blockquote>
+
+<a name=Options></a>
+<h2>オプション</h2>
+<blockquote>
+<dl>
+<dt><code><b>-reverse</b></code>
+<dd>反対の操作を行います。つまり、Latin-1文字 または Unicode{tm} コードのファイルをネイティブコードに変換します。
+<br><br>
+<dt><code><b>-encoding</b> encoding_name</code>
+<dd>変換処理が使用するコードの名前を指定してください。デフォルトのコードは、システムプロパティの <code>file.encoding</code> から与えられます。<code>encoding_name</code> の文字列は、クラス <code>CharacterEncoding</code> の引数として渡されるものでなければなりません。
+<br><br>
+<code>
+8859_1      ISO Latin-1<br>
+8859_2  ISO Latin 2<br>
+8859_3      ISO Latin-3<br>
+8859_5      ISO Latin/Cyrillic<br>
+8859_6 ISO Latin/Arabic <br>
+8859_7 ISO Latin/Greek 
+8859_8 
+ISO Latin/Hebrew <br>
+8859_9 ISO Latin-5 <br>
+Cp1250 Windows Eastern Europe / Latin-2 <br>
+Cp1251 Windows Cyrillic <br>
+Cp1252 Windows Western Europe / Latin-1 <br>
+Cp1253 Windows Greek <br>
+Cp1254 Windows Turkish <br>
+Cp1255 Windows Hebrew <br>
+Cp1256 Windows Arabic <br>
+Cp1257 Windows Baltic <br>
+Cp1258 Windows Vietnamese <br>
+Cp437 PC Original <br>
+Cp737 PC Greek<br>
+Cp775 PC Baltic <br>
+Cp850 PC Latin-1 <br>
+Cp852 PC Latin-2 <br>
+Cp855 PC Cyrillic <br>
+Cp857 PC Turkish <br>
+Cp860 PC Portuguese <br>
+Cp861 PC Icelandic <br>
+Cp862 PC Hebrew <br>
+Cp863 PC Canadian French <br>
+Cp864 PC Arabic <br>
+Cp865 PC Nordic <br>
+Cp866 PC Russian <br>
+Cp869 PC Modern Greek <br>
+Cp874 Windows Thai <br>
+EUCJIS Japanese EUC <br>
+JIS JIS <br>
+MacArabic Macintosh Arabic <br>
+MacCentralEurope <br>
+Macintosh Latin-2 <br>
+MacCroatian Macintosh Croation<br>
+MacCyrillic Macintosh Cyrillic <br>
+MacDingbat Macintosh Dingbat <br>
+MacGreek Macintosh Greek <br>
+MacHebrew Macintosh Hebrew <br>
+MacIceland Macintosh Iceland <br>
+MacRoman Macintosh Roman <br>
+MacRomania Macintosh Romania <br>
+MacSymbol Macintosh Symbol <br>
+MacThai Macintosh Thai <br>
+MacTurkish Macintosh Turkish <br>
+MacUkraine Macintosh Ukraine <br>
+SJIS PC and Windows Japanese <br>
+UTF8 Standard UTF-8<br>
+</code>
+
+</dl>
+</blockquote>
+
+</BODY>
+</HTML>
+

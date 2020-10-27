@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>java.net のその他の変更</title>
+  </head>
+
+  <body>
+      <h1>述べる価値のある java.net のその他の変更:</h1>
+      <H2>注目すべきバグの修正:</H2>
+      <UL>
+	<LI><B>InetAddress</B><BR>
+JDK1.0.2 ではバグが存在し、対応するホスト名 (例えば、"java.sun.com") が見付からない場合、IP アドレス String (例えば、"206.26.48.100") から  InetAddress を生成できませんでした。これは結果として、UnknownHostException となりました。このバグは JDK1.1 では修正されました。さらに、InetAddress が IP アドレスから生成されるとき、対応するホスト名は特別に要求される (InetAddress.getHostName() 経由で) まで、パフォーマンスの向上のため参照されません。
+	<LI><B>ServerSocket/DatagramSocket close()</B><BR>
+JDK1.0.2 ではバグが存在し、ServerSocket および DatagramSocket の <code>close()</code> メソッドは <code>synchronized</code> とされました。この結果、1つのスレッドが無期限に DatagramSocket.receive() または ServerSocket.accept() でブロックされた場合、別のスレッドは close() を呼び出してブロックしているスレッドを抜け出すことができませんでした。これは JDK1.1 では close() メソッドを非同期にして修正されました。
+	<LI><B>URLConnection</B><BR>
+JDK1.0.2 ではバグが存在し、次の URLConnection のメソッドなどが機能しませんでした:
+	  <UL>
+	    <LI>setRequestProperty()
+	    <LI>getRequestProperty()
+	    <LI>getHeaderField()
+	    <LI>getHeaderFieldInt()
+	    <LI>getContentLength()
+	    <LI>getDate()
+	  </UL>
+	 これらは JDK1.1 では修正されました。
+      </UL>
+      <H2>ローカルポート/アドレスへのバインディング:</H2>
+      <UL>
+	<LI><B>Socket、ServerSocket、DatagramSocket</B><BR>
+これらのクラスは、固有のローカルアドレスとポートへのバインディングのために構築子をオーバーロードしました。これは、マルチホームのコンピュータで動作し、ネットワークインタフェースを使用しているものを特定に制御する必要があるプロキシサーバなどのアプリケーションには有用で必要なものです。
+      </UL>
+      <H2>MulticastSocket:</H2>
+      <UL>
+      <LI>MulticastSocket クラスはパッケージ sun.net から java.net のコア API に移動しました。
+      </UL>
+      <H2>HttpURLConnection:</H2>
+      <UL>
+	<LI>JDK1.1 は新しいクラス、HttpURLConnection を導入し、これは URLConnection を
+拡張し	 HTTP に固有の追加機能を提供します:
+	<LI>次のような、すべての要求メソッドを HTTP/1.1 と共に使用する機能:
+	  <UL>
+	    <LI>GET
+	    <LI>POST
+	    <LI>PUT
+	    <LI>HEAD
+	    <LI>TRACE
+	    <LI>DELETE
+	    <LI>OPTIONS
+	  </UL>
+	<LI>HTTP リダイレクトに従うかどうかを制御します。
+      </UL>
+      <hr>
+      <address><a href="mailto:brown@eng.sun.com">David Brown</a></address>
+<!-- Created: Thu Dec  5 12:16:31 PST 1996 -->
+<!-- hhmts start -->
+Last modified: Thu Dec  5 15:09:54 PST 
+<!-- hhmts end -->
+  </body>
+</html>
+

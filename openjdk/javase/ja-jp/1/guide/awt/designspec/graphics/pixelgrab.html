@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>AWT PixelGrabber API の更新</title>
+</head>
+<BODY BGCOLOR="#FFFFFF">
+ 
+<h1>AWT PixelGrabber API の更新</h1>
+<hr>
+<address>最終更新: 1996 年 11 月 14 日</address>
+<h2>問題</h2>
+AWT イメージ機能イメージを多くのソースから取得または作成し、これらのイメージを画面に表示するプロセスを自動化する方法を提供します。この機能は、最も abstract なイメージデータ情報を除いたすべてからユーザを遮蔽する、不透明な外部インタフェースの背後にあるイメージデータに必要なすべての操作を実行します。
+<p>
+提供されるインタフェースは非常に不透明なため、初期の開発段階では、イメージのピクセルデータに直接アクセスする方法はありませんでした。開発者が難解で複雑な ImageConsumer インタフェースを積極的に学習すれば、データにアクセスすることは可能でした。このインタフェースは、イメージデコーダから画面へピクセルデータを交信するためにイメージサブシステムが使用するものです。しかし、ほとんどの開発者は、このデータを一般的なケースで取得する簡単な機構を望んでいました。
+<p>
+このニーズを満足するために、ユーティリティクラスが作成され、「位置 (x, y)のピクセルは何色か?」という質問に答えるだけにしたい平均的な開発者に代わって ImageConsumer インタフェースを管理します。<a href="../../../../api/java.awt.image.PixelGrabber.html">PixelGrabber</a> クラスは、ピクセルの矩形リージョンをイメージソースから Java 整数配列にスナップショットする機能を提供しました。
+<p>
+このクラスが提供するインタフェースで、次の 3 つの重要な機能が抜けていました．
+<ul>
+<li>データは、Java が色を記述するために使用するデフォルトの ARGB (alpha RGB) 利便フォーマットで、グラブし配列に格納する必要がある。生のピクセルをこのフォーマットに変換する変換プロセスは、開発者が関心のあるリージョン中にばらまかれた孤立ピクセルの色情報だけを本当に必要にしているときに特に、大量の時間を消費する可能性がある。元の ColorModel はデータがデフォルト表示に変換されたときに廃棄されるために、それがプロセスの希望する目標である場合、元のデータのフォーマットがなにか把握する方法もない。
+<li>開発者は、データをスナップショットする前でさえも、作成する配列のサイズを知る必要がある。多くのイメージはデータをソースから最初にロードするまで自分の次元を知らないため、競合条件がありえる。そこでは、開発者は、次元が配布されイメージがロードされるのを追跡し、PixelGrabber をインスタンスにし、イメージソースをスクラッチから再ロードするよう要求するデータが失われないように、ピクセルデータが配布される前にイメージソースでそれをポイントする必要がある。多くの開発者はこの目標を達成する最善の方法さえも知らない。それはイメージプロセスが、追跡するにはあまりに単純明快でないからである。
+<li>操作が完了するのを同様に待つ以外に、グラブ操作を開始する方法はなかった。そして一度開始すると、グラブ操作を停止する方法もなかった。
+</ul>
+
+<h2>新しい PixelGrabber メソッド</h2>
+PixelGrabber の機能を拡張するために、次の新しいメソッドと構築子が追加されています:
+<pre>	<a href="../../../../api/java.awt.image.PixelGrabber.html#PixelGrabber(java.awt.Image, int, int, int, int, boolean)">new PixelGrabber</a>(Image img,
+			 int x, int y, int w, int h,
+			 boolean forceRGB)
+	<a href="../../../../api/java.awt.image.PixelGrabber.html#startGrabbing()">startGrabbing</a>()
+	<a href="../../../../api/java.awt.image.PixelGrabber.html#abortGrabbing()">abortGrabbing</a>()
+	<a href="../../../../api/java.awt.image.PixelGrabber.html#getWidth()">getWidth</a>()
+	<a href="../../../../api/java.awt.image.PixelGrabber.html#getHeight()">getHeight</a>()
+	<a href="../../../../api/java.awt.image.PixelGrabber.html#getPixels()">getPixels</a>()
+	<a href="../../../../api/java.awt.image.PixelGrabber.html#getColorModel()">getColorModel</a>()
+</pre>
+
+<h2>サンプルコード</h2>
+<p>元のフォーマットで未知の次元のイメージのピクセルをグラブするための新しい API の使用方法を示すサンプルコードを、次に示します:
+<pre>
+
+    import java.awt.*;
+    import java.awt.image.*;
+    import java.applet.*;
+
+    public class GrabExample extends Applet implements Runnable {
+    	Thread grab;
+	Image img;
+	PixelGrabber pg;
+
+	public void init() {
+	    img = getImage(getDocumentBase(), "theImage.gif");
+	    pg = new PixelGrabber(img, 0, 0, -1, -1, false);
+	    // In reality, the init method shouldn't be kicking off
+	    // heavyweight operations like an image download, but
+	    // this demonstrates use of the asynchronous grabbing...
+	    pg.startGrabbing();
+	}
+
+    	public void start() {
+	    grab = new Thread(this);
+	    grab.start();
+	}
+
+	public synchronized void stop() {
+	    grab.interrupt();
+	    grab = null;
+	}
+
+	public synchronized void run() {
+	    try {
+		pg.grabPixels();
+		repaint();
+	    } catch (InterruptedException e) {
+		System.err.println("grab was interrupted");
+		return;
+	    }
+	}
+
+	public void paint(Graphics g) {
+	    // Display some pixel values
+	    int status = pg.getStatus();
+	    if ((status & ABORT) != 0) {
+		g.drawString("Image grab was aborted", 10, 100);
+	    } else if ((status & ALLBITS) != 0) {
+		g.drawString("Image grab is complete", 10, 100);
+	    } else if ((status & FRAMEBITS) != 0) {
+		g.drawString("Frame grab is complete", 10, 100);
+	    } else if ((status & SOMEBITS) != 0) {
+		g.drawString("Image grab is under way", 10, 100);
+	    }
+	    if ((status & (WIDTH|ALLBITS|FRAMEBITS)) != 0) {
+		FontMetrics fm = g.getFontMetrics();
+		String caption = "First 3 pixels: ";
+		int x = 10;
+		int w = pg.getWidth();
+		Object pix = pg.getPixels();
+		ColorModel cm = pg.getColorModel();
+
+		g.drawString(caption, x, 50);
+		x += fm.stringWidth(caption);
+		if (pix instanceof byte[]) {
+		    for (int i = 0; i < Math.min(3, w); i++) {
+			String s = Integer.toString(((byte[])pix)[i]&0xff, 16);
+			g.drawString(s, x, 50);
+			x += fm.stringWidth(s + " ");
+		    }
+		} else {
+		    for (int i = 0; i < Math.min(3, w); i++) {
+			String s = Integer.toString(((int[])pix)[i], 16);
+			g.drawString(s, x, 50);
+			x += fm.stringWidth(s + " ");
+		    }
+		}
+	    }
+	}
+    }
+</pre>
+
+<hr><br>
+
+<address>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</address>
+
+<i>Copyright (C) 1996, Sun Microsystems, Inc.   All rights
+reserved.</i>
+
+</body>
+</html>

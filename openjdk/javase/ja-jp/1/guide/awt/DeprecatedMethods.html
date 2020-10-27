@@ -1,0 +1,410 @@
+<html>
+<head>
+<title>
+1.1 AWT の推奨されないメソッド
+</title>
+</head>
+
+<BODY BGCOLOR="#FFFFFF">
+<font size=-1>
+<a href=HowToUpgrade.html>「変換方法...」へ戻る</a>
+</font>
+<hr>
+
+<h1>
+1.1 AWT の推奨されないメソッド
+</h1>
+
+<p>
+
+このドキュメントは 3 つの節からなり、1.1 AWT の推奨されないメソッドを扱う支援をします。
+
+<ul>
+<li> <a href="#overview">概要</a>
+<br>
+AWT に属する推奨されないメソッドの素晴らしい世界を紹介します。
+<li> <a href="#override">推奨されないメソッドのオーバーライド</a>
+<br>
+後方互換を犠牲にせずに、また不必要なコンパイル時の警告を表示させずに、推奨されないメソッドをオーバーライドする方法を検討します。
+<li> <a href="#table">AWT 1.1 の推奨されないメソッドの表</a>
+<br>
+推奨されないメソッドをリストアップし、推奨される置換を表示します。
+</ul>
+
+<h2>
+<a name="overview">概要
+</a>
+</h2>
+
+AWTはバージョン 1.0.2 と 1.1 の間で著しく変わりました。古いやり方の一部は<em>推奨されなくなり</em>、将来の重要なバージョンでサポートされない可能性があります。プログラムの変換が充分時間に間に合うように支援するために、Java コンパイラは推奨されない API を使用するプログラムをコンパイルするときに警告を出します。
+
+<p>
+
+<blockquote>
+<hr>
+<strong>興味のある方に:</strong>
+AWT は、 AWT ソースコードのドキュメンテーションコメントの <code>@deprecated</code> タグを使用して、推奨されない API にマークを付けます。これらのタグは 1.1 のベータバージョンにはありませんでした。
+<hr>
+</blockquote>
+
+<p>
+
+1.1 コンパイラを使用して推奨されない API を呼び出すクラスをコンパイルするとき、次のような警告が表示されます:
+
+<blockquote>
+<pre>
+% <b>javac Test.java</b>
+Note: Test.java uses a deprecated API.  Recompile with "-deprecation"
+for details.
+1 warning
+%
+</pre>
+</blockquote>
+
+推奨されない API をプログラムで呼びだしている場所のリストを表示するためには、<code>javac -deprecation</code> を使用します。たくさんの警告が出るかもしれません。
+<em>混乱してはいけません!</em>
+プログラムが長く実行されるにしても、それを変換しようと思うかもしれません。その場合、可能な限り、<em>新たに</em>コードを書くときは新しいAPIを使用するようにします。
+
+<p>
+
+AWT プログラムの変換方法と変換理由の詳細については、<a href=HowToUpgrade.html>プ
+ログラムの 1.1 AWT API への変換方法</a>を参照してください。
+
+<blockquote>
+<hr>
+<strong>注:</strong>
+1.1.1 の Java コンパイラは、プログラムが推奨されないメソッドを呼び出し、またはオーバーライドするとき必ず警告を出します (次の節で説明する 1 つの例外を除きます)。他方 、1.1 コンパイラは、プログラムが推奨されないメソッドを<em>呼び出し</em>するときだけ警告を出し、オーバーライドするときは警告を出しませんでした。例えば、プログラムが <code>action</code> メソッドをオーバーライドする場合、<code>action</code> の実装のほとんどがスーパークラスの実装を呼び出さないため、1.1 コンパイラは通常警告を出しませんでした。
+<hr>
+</blockquote>
+
+
+<h2>
+<a name="override">推奨されないメソッドのオーバーライド
+</a>
+</h2>
+
+次のような状況に置かれていると考えてみてください:
+
+<ul> 
+<li>1.1 ベースのコードを書いている。
+<li>1.0 のコードで呼び出しすることができない。
+<li>推奨されないメソッドをオーバーライドする必要がある。
+</ul>
+
+このような状況では、推奨されないメソッド、またはその置換のメソッド、どちらのバージョンをオーバーライドするか迷うかもしれません。単純に置換をオーバーライドする場合、ユーザのコードはそれを呼び出す 1.0 コードに対して正しく機能しないでしょう。(1.0 コードがそのメソッドを呼び出さない場合には、この状況は問題ありません。) 単純に推奨されないバージョンをオーバーライドする場合、コンパイル時に警告が出され、1.0 従属をコードに埋め込む必要があります。
+
+<p>
+
+この場合、<em>両方の</em>メソッドをオーバーライドする必要があります。推奨されないメソッドをオーバーライドして置換メソッドを呼び出すようにし、また置換メソッドをオーバーライドして適切な機能を提供するようにします。推奨されないメソッドを実装するときに、<code>@deprecated</code> ドキュメンテーションタグを使用し、後方互換を提供するために意図的にメソッドをオーバーライドしているということを示します。例えば:
+
+<blockquote>
+<pre>
+/** @deprecated */
+public Dimension preferredSize() {
+    return getPreferredSize();
+}
+
+public Dimension getPreferredSize() {
+    <em>...//implementation goes here</em>
+}
+</pre>
+</blockquote>
+
+この状況ではループホールが活用できます:
+コンパイラは、推奨されないメソッドをオーバーライドし、<em>かつ</em>オーバーライドするメソッドを推奨されないメソッドとしてマークしたとき、警告を出しません。例えば、前にあるコードはコンパイルしても警告が出ません。しかし、前のコードを<em>呼び出す</em>コードをコンパイルする場合、推奨されないという警告が出ます。
+
+<p>
+
+この節で説明するソリューションによって、後方互換のコードを書くことが容易になり、コンパイルが明瞭になり、理解し易くなります。1.0 互換を提供する必要がなくなったときには、推奨されないコードを簡単に見つけて削除できます。
+
+
+<h2>
+<a name="table">
+AWT 1.1 の推奨されないメソッドの一覧表
+</a>
+</h2>
+
+この節では、すべての推奨されない AWT メソッドおよびその 1.1 の置換をリストアップします。 <code>updateAWT</code> という名前のスクリプトが最も簡単な置換をしてくれます。このスクリプトの操作と例については、<a href=HowToUpgrade.html>プログラムの  1.1 AWT API への変換方法</a>を参照してください。
+
+<p>
+
+この節の表と同様のものが
+<a href=NameChanges.html>単純な名前変更</a>にあります。その表の情報量はこの表より少なくはありますが、1.1 列で英字化されスクリプトが行った不正な変更を簡単に取消す支援をします。
+
+<p>
+
+次の表で、<b>太字フォント</b>のメソッド名は優先するメソッド名です。イベント処理
+メソッドの有効な 1.1 の代替の一部は、他の 1.1 ソリューションに比べて優先度が低くなります。例えば、<code>gotFocus</code> は <code>processFocusEvent</code>で置換できますが、
+<code>FocusListener</code> に実装されている <code>focusGained</code> で置換することを薦めます。このことは
+<a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>で説明しています。
+
+<p>
+
+<table border=1>
+<tr>
+    <th>推奨されないメソッド
+    <th>推奨されないメソッドのあるクラス
+    <th>1.1 の置換
+<tr>
+    <td><code>action</code>
+    <td><code>Component</code>
+    <td> アクションイベントの処理例については、<a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>allowsMultipleSelections</code>
+    <td><code>List</code>
+    <td><code><b>isMultipleMode</b></code>
+<tr>
+    <td><code>appendText</code>
+    <td><code>TextArea</code>
+    <td><code><b>append</b></code>
+<tr>
+    <td><code>bounds</code>
+    <td><code>Component</code>
+    <td><code><b>getBounds</b></code>
+<tr>
+    <td><code>clear</code>
+    <td><code>List</code>
+    <td><code><b>removeAll</b></code>
+<tr>
+    <td><code>countComponents</code>
+    <td><code>Container</code>
+    <td><code><b>getComponentCount</b></code>
+<tr>
+    <td><code>countItems</code>
+    <td><code>Choice, List, Menu</code>
+    <td><code><b>getItemCount</b></code>
+<tr>
+    <td><code>countMenus</code>
+    <td><code>MenuBar</code>
+    <td><code><b>getMenuCount</b></code>
+<tr>
+    <td><code>deliverEvent</code>
+    <td><code>Component, Container</code>
+    <td><code><b>dispatchEvent</b></code>
+<tr>
+    <td><code>disable()</code>
+    <td><code>MenuItem</code>
+    <td><code><b>setEnabled(false)</b></code>
+<tr>
+    <td><code>enable()</code>
+    <td><code>Component, MenuItem</code>
+    <td><code><b>setEnabled(true)</b></code>
+<tr>
+    <td><code>enable(<em>expression</em>)</code>
+    <td><code>Component</code>
+    <td><code><b>setEnabled(<em>expression</em>)</b></code>
+<tr>
+    <td><code>getBoundingBox</code>
+    <td><code>Polygon</code>
+    <td><code><b>getBounds</b></code>
+<tr>
+    <td><code>getClipRect</code>
+    <td><code>Graphics</code>
+    <td><code><b>getClipBounds</b></code>
+<tr>
+    <td><code>getCurrent</code>
+    <td><code>CheckboxGroup</code>
+    <td><code><b>getSelectedCheckbox</b></code>
+<tr>
+    <td><code>getCursorType</code>
+    <td><code>Frame</code>
+    <td><code>Component</code> 内の <code><b>getCursor</b></code> メソッド
+<tr>
+    <td><code>getLineIncrement</code>
+    <td><code>Scrollbar</code>
+    <td><code><b>getUnitIncrement</b></code>
+<tr>
+    <td><code>getPageIncrement</code>
+    <td><code>Scrollbar</code>
+    <td><code><b>getBlockIncrement</b></code>
+<tr>
+    <td><code>getPeer</code>
+    <td><code>Component</code>
+    <td><em>置換なし</em>
+<tr>
+    <td><code>getVisible</code>
+    <td><code>Scrollbar</code>
+    <td><code><b>getVisibleAmount</b></code>
+<tr>
+    <td><code>gotFocus</code>
+    <td><code>Component</code>
+    <td><code>processFocusEvent</code>
+	<br>
+	    イベント処理を優先する方法については、<a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>handleEvent</code>
+    <td><code>Component</code>
+    <td><code>processEvent</code>
+	<br>
+	    イベント処理を優先する方法については、<a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>hide</code>
+    <td><code>Component</code>
+    <td><code><b>setVisible(false)</b></code>
+<tr>
+    <td><code>insertText</code>
+    <td><code>TextArea</code>
+    <td><code><b>insert</b></code>
+<tr>
+    <td><code>insets</code>
+    <td><code>Container</code>
+    <td><code><b>getInsets</b></code>
+<tr>
+    <td><code>inside</code>
+    <td><code>Component, Polygon, Rectangle</code>
+    <td><code><b>contains</b></code>
+<tr>
+    <td><code>isSelected</code>
+    <td><code>List</code>
+    <td><code><b>isIndexSelected</b></code>
+<tr>
+    <td><code>keyDown</code>
+    <td><code>Component</code>
+    <td><code>processKeyEvent</code>
+	<br>
+	    <a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>keyUp</code>
+    <td><code>Component</code>
+    <td><code>processKeyEvent</code>
+	<br>
+	    <a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>layout</code>
+    <td><code>Component, Container, ScrollPane</code>
+    <td><code><b>doLayout</b></code>
+<tr>
+    <td><code>locate</code>
+    <td><code>Component, Container</code>
+    <td><code><b>getComponentAt</b></code>
+<tr>
+    <td><code>location</code>
+    <td><code>Component</code>
+    <td><code><b>getLocation</b></code>
+<tr>
+    <td><code>lostFocus</code>
+    <td><code>Component</code>
+    <td><code>processFocusEvent</code>
+	<br>
+	    <a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>minimumSize</code>
+    <td><code>Component, Container, TextArea, TextField</code>
+    <td><code><b>getMinimumSize</b></code>
+<tr>
+    <td><code>mouseDown</code>
+    <td><code>Component</code>
+    <td><code>processMouseEvent</code>
+	<br>
+	    <a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>mouseDrag</code>
+    <td><code>Component</code>
+    <td><code>processMouseMotionEvent</code>
+	<br>
+	    <a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>mouseEnter</code>
+    <td><code>Component</code>
+    <td><code>processMouseEvent</code>
+	<br>
+	    <a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>mouseExit</code>
+    <td><code>Component</code>
+    <td><code>processMouseEvent</code>
+	<br>
+	    <a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>mouseMove</code>
+    <td><code>Component</code>
+    <td><code>processMouseMotionEvent</code>
+	<br>
+	    <a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>mouseUp</code>
+    <td><code>Component</code>
+    <td><code>processMouseEvent</code>
+	<br>
+	    <a href=HowToUpgrade.html#events>イベント処理コードの変換方法</a>を参照
+<tr>
+    <td><code>move</code>
+    <td><code>Component, Rectangle</code>
+    <td><code><b>setLocation</b></code>
+<tr>
+    <td><code>nextFocus</code>
+    <td><code>Component, Container, Window</code>
+    <td><code><b>transferFocus</b></code>
+<tr>
+    <td><code>postEvent</code>
+    <td><code>Component, Window</code>
+    <td><code><b>dispatchEvent</b></code>
+<tr>
+    <td><code>preferredSize</code>
+    <td><code>Component, Container, TextArea, TextField</code>
+    <td><code><b>getPreferredSize</b></code>
+<tr>
+    <td><code>replaceText</code>
+    <td><code>TextArea</code>
+    <td><code><b>replaceRange</b></code>
+<tr>
+    <td><code>reshape</code>
+    <td><code>Component, Rectangle</code>
+    <td><code><b>setBounds</b></code>
+<tr>
+    <td><code>resize</code>
+    <td><code>Component, Rectangle</code>
+    <td><code><b>setSize</b></code>
+<tr>
+    <td><code>setCurrent</code>
+    <td><code>CheckboxGroup</code>
+    <td><code><b>setSelectedCheckbox</b></code>
+<tr>
+    <td><code>setCursor</code>
+    <td><code>Frame</code>
+    <td><code>Component</code> 内の <code><b>setCursor</b></code> メソッド
+<tr>
+    <td><code>setEchoCharacter</code>
+    <td><code>TextField</code>
+    <td><code><b>setEchoChar</b></code>
+<tr>
+    <td><code>setLineIncrement</code>
+    <td><code>Scrollbar</code>
+    <td><code><b>setUnitIncrement</b></code>
+<tr>
+    <td><code>setMultipleSelections</code>
+    <td><code>List</code>
+    <td><code><b>setMultipleMode</b></code>
+<tr>
+    <td><code>setPageIncrement</code>
+    <td><code>Scrollbar</code>
+    <td><code><b>setBlockIncrement</b></code>
+<tr>
+    <td><code>show()</code>
+    <td><code>Component</code>
+    <td><code><b>setVisible(true)</b></code>
+<tr>
+    <td><code>show(<em>expression</em>)</code>
+    <td><code>Component</code>
+    <td><code><b>setVisible(<em>expression</em>)</b></code>
+<tr>
+    <td><code>size</code>
+    <td><code>Component</code>
+    <td><code><b>getSize</b></code>
+</table>
+
+<p>
+
+<hr>
+<font size=-1>
+<a href=HowToUpgrade.html>「変換方法...」へ戻る</a>
+<hr>
+<em>
+By <a href=mailto:kwalrath@eng.sun.com>Kathy Walrath</a>
+</em>
+</font>
+</body>
+</html>
+
+
+

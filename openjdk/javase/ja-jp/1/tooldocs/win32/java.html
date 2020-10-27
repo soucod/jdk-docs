@@ -1,0 +1,399 @@
+<html>
+
+<head>
+
+<title>java - Java インタプリタ</title>
+
+</head>
+
+<BODY BGCOLOR="#FFFFFF">
+
+
+
+<h1>java - Java インタプリタ</h1>
+
+<blockquote>
+
+<b>java</b> は Java バイトコードを解釈 (実行) します。
+
+</blockquote>
+
+
+
+<h2>機能説明</h2>
+
+<pre>
+   java [ <a href="java.html#Options">options</a> ] classname &lt;args&gt;
+   java_g [ <a href="java.html#Options">options</a> ] classname &lt;args&gt;
+   javaw [ <a href="java.html#Options">options</a> ] classname &lt;args&gt;
+   javaw_g [ <a href="java.html#Options">options</a> ] classname &lt;args&gt;
+</pre>
+
+
+
+<h2>説明</h2>
+
+<blockquote>
+
+<b>java</b> コマンドは、 
+<a href=javac.html><b>javac</b></a> などの Java コンパイラによって作られた Java <code>クラス</code> ファイルを実行します。
+<b>javaw</b> コマンドは、<b>javaw</b>  には関連のコンソール ウィンドウが存在しない点を除けば、<b>java</b> と同じです。コマンド プロンプト ウィンドウを表示したくない場合には、<b>javaw</b> を使用します。
+<p>
+
+<code>classname</code> 引数は実行されるクラスの名前です。
+
+<code>classname</code> は、その名前の中にパッケージ名を含むことによって完全に修飾されなければなりません。たとえば、次のとおりです。
+
+<pre>
+   C:\&gt; java java.lang.String
+</pre>
+
+コマンド行にある <code>classname</code> の後の引数はいずれも、クラス <code>main</code> メソッドに渡されることに注意してください。
+
+
+
+<p>
+
+<b>java</b> は、対応するソースファイルを <b>javac</b> でコンパイルすることによって作成される<code>classname.class</code> と呼ばれるファイルの中に、クラスのバイナリ表現があることを予想します。Java クラスファイルはすべて、ファイル名の最後に拡張子 <code>.class</code> が付きます。この拡張子はクラスがコンパイルされるとき、コンパイラが自動的に付加するものです。<i>classname</i> は次のように定義された <code>main</code> メソッドを含まなければはなりません。
+
+
+<pre>
+   class Aclass {
+    public static void main(String argv[]){ 
+        . . .
+    }
+}
+</pre>
+<b>java</b> は <code>main</code> メソッドを実行し、
+<code>main</code> が 1 つもスレッドを作成しない場合は終了します。もしスレッドが <code>main</code> によって作成される場合、java は最後のスレッドが終了するまで待ちます。
+
+
+
+<p>
+
+クラスを定義するときは、それらの位置を指定する必要があります。そのときは、CLASSPATH を使用してください。CLASSPATH は、パスを指定するディレクトリのリストから成り、セミコロンで分割します。たとえば、次のとおりです。
+
+
+<pre>
+   .;C:\xyz\classes
+</pre>
+
+
+パスの指定に <code>-classpath</code> オプションを使用しない場合、システムは、常にクラスパスの終わりにシステムクラスの位置を追加することに注意してください。
+
+
+
+<p>
+
+普通、<b>javac</b> でソースファイルをコンパイルし、<b>java</b> を使用してプログラムを実行します。しかし、<b>java</b> は、<code>-cs</code> オプションが指定されていると、プログラムをコンパイルして実行することができます。クラスがロードされるたびに、その修正日付はクラスソースファイルの修正日付と比較されます。ソースにその後変更があった場合、再コンパイルされ、新しいクラスファイルがロードされます。<b>java</b> は、すべてのクラスが正確にコンパイルされ、ロードされるまで、この手順を繰り返します。
+
+
+
+<p>
+
+インタプリタは検査のメカニズムを介して、クラスの正当性を判定します。検査により、実行に先立って、クラスファイルがいかなる言語制約にも違反していないことを保証します。
+
+
+
+<p>
+
+<b>java_g</b> は、<a href=jdb.html><b>jdb</b></a> などのデバッガの使用に適した、<b>java</b> の最適化されていないバージョンです。
+
+
+
+<a name=Options>
+
+<h2>オプション</h2>
+
+</a>
+
+
+
+<dl>
+
+<dt><b>-debug</b>
+
+<dd>
+
+Java デバッガ - <a href=jdb.html><b>jdb</b></a> を、この <b>java</b> セッションに付加することができます。<code>-debug</code> がコマンド行で指定されているとき、<b>java</b> は、デバックセッションの開始時に使われるパスワードを表示します。
+
+
+
+<dt><b>-cs, -checksource</b>
+
+<dd>
+
+このオプションは、コンパイルされたクラスがロードされるとき、クラスバイトコードファイルとクラスソースファイルの修正時間を比較します。ソースに最近変更があった場合、それは再コンパイルされ、新しいクラスファイルがロードされます。
+
+<p>
+
+
+
+<dt><b>-classpath</b><i> path</i>
+
+<dd>
+
+<b>java</b> がクラスを探すために使用するパスを指定します。デフォルト、あるいは CLASSPATH 環境変数の設定を上書きします。ディレクトリはセミコロンで分割します。したがって、<i>path</i> の一般形式は、次のようになります。
+
+
+<pre>
+   .:&lt;your_path&gt;
+</pre>
+
+たとえば、パスの指定は次のとおりです。
+
+<pre>
+   C:\xyz\classes;C:\usr\local\java\classes
+</pre>
+
+<p>
+
+
+
+<dt><b>-mx</b> <i>x</i>
+
+<dd>
+
+<i>x</i> にメモリアロケーションプール（ガベージコレクトヒープ）の最大サイズを指定します。デフォルトは 16MB メモリです。<i>x</i> には 1000 バイト以上が必要です。
+
+<p>
+
+デフォルトでは、<i>x</i> はバイト単位です。<i>x</i> には、文字 &quot;k&quot; を追加することでキロバイトを、文字 &quot;m&quot; を追加することでメガバイトを指定することができます。
+
+<p>
+
+
+
+<dt><b>-ms</b> <i>x</i>
+
+<dd>
+
+<i>x</i> にアロケーションプール（ガベージコレクトヒープ）のスタートアップサイズを設定します。デフォルトは 1MB のメモリです。<i>x</i> には 1000 バイト以上が必要です。
+
+<p>
+
+デフォルトでは、<i>x</i> はバイト単位です。<i>x</i> には、文字 &quot;k&quot; を追加することでキロバイトを、文字 &quot;m&quot; を追加することでメガバイトを指定することができます。
+
+<p>
+
+
+
+<dt><b>-noasyncgc</b>
+
+<dd>
+
+非同期ガベージコレクションをオフにします。このオプションが指定されると、ガベージコレクションは、明示的に呼び出すか、プログラムがメモリを使い果たしたときだけ起動します。通常ガベージコレクションは、非同期スレッドとして他のスレッドと並列して実行されます。
+
+<p>
+
+
+
+<dt><b>-noclassgc</b>
+
+<dd>
+
+Java クラスのガベージコレクションをオフにします。デフォルトでは、ガベージコレクション中に使用されない Java クラスのスペースを、Java インタプリタが再利用します。
+
+<p>
+
+
+
+<dt><b>-prof</b>
+
+<dd>
+
+Java プロファイル機能を有効にして Java ランタイムを起動します。デフォルトでは、プロファイル結果を <code>.\java.prof</code> ファイルに入れます。
+
+<p>
+
+
+
+<dt><b>-prof:</b><i>   file</i>
+
+<dd>
+
+Java プロファイル機能を有効にして Java ランタイムを起動します。このフラグの形式では、ユーザがプロファイル情報に対して異なる出力ファイルを指定できます。たとえば、<code>-prof:myprog.prof</code> フラグは、プロファイル機能を有効にし、デフォルトの <code>.\java.prof</code> ファイルではなく <code>myprog.prof</code> ファイルにプロファイル結果を入れます。
+
+<p>
+
+
+
+
+
+<dt><b>-version</b> 
+
+<dd> 
+
+バージョン情報を表示します。
+
+<p>
+
+
+
+<dt><b>-help</b>  
+
+<dd> 
+
+利用法のメッセージを表示します。
+
+<p> 
+
+<dt><b>-ss</b> <i>x</i>
+
+<dd>
+
+Java スレッドはそれぞれ、Java コードと C コードの2つのスタックを持っています。<code>-ss</code> オプションは、スレッドの中で C コードによって使用されるスタックサイズの最大値を、<i>x</i> に指定します。<b>java</b> に渡されたプログラムの実行中に生成されるすべてのスレッドは、C スタックサイズとして <i>x</i> を持ちます。<i>x</i> のデフォルト単位はバイトです。<i>x</i> の値は 1000 バイト以上が必要です。
+
+<p>
+
+キロバイトには文字 &quot;k&quot; を追加し、メガバイトには文字 &quot;m&quot; を追加することにより、<i>x</i> の意味を変更することができます。デフォルトのスタックサイズは 128KB （"-ss 128k"） です。
+
+<p>
+
+
+
+<dt><b>-oss</b> <i>x</i>
+
+<dd>
+
+Java スレッドはそれぞれ、Java コード用と C コード用の2つのスタックを持っています。<code>-oss</code> オプションは、スレッドの中で Java コードによって使用されるスタックサイズの最大値を <i>x</i> に指定します。<b>java</b> に渡されたプログラムの実行中に生成されるすべてのスレッドは、Java スタックサイズとして <i>x</i> を持ちます。<i>x</i> のデフォルト単位はバイトです。<i>x</i> の値は 1000 バイト以上が必要です。
+
+<p>
+
+キロバイトには文字 &quot;k&quot; を追加し、メガバイトには文字 &quot;m&quot; を追加することにより、<i>x</i> の意味を変更することができます。デフォルトのスタックサイズは 400KB （"-ss 400k"） です。
+
+<p>
+
+
+
+<dt><b>-t</b>
+
+<dd>
+
+実行された命令のトレースを表示します（<b>java_g</b> のみ）。
+
+<p>
+
+
+
+<dt><b>-v, -verbose</b>
+
+<dd>
+
+クラスファイルがロードされるたびに、<b>java</b> が標準出力にメッセージを表示します。
+
+<p>
+
+
+
+<dt><b>-verify</b>
+
+<dd>
+
+すべてのコード上で検査を行います。
+
+<p>
+
+
+
+<dt><b>-verifyremote</b>
+
+<dd>
+
+クラスローダによってシステムにロードされるすべてのコード上で、検査を行います。<i>verifyremote</i> はインタプリタのデフォルトです。
+
+<p>
+
+
+
+<dt><b>-noverify</b>
+
+<dd>
+
+検査をオフにします。
+
+<p>
+
+
+
+<dt><b>-verbosegc</b>
+
+<dd>
+
+メモリを解放するときはいつでも、ガベージコレクタにメッセージを表示させます。
+
+<p>
+
+
+
+<dt><b>-D</b><i>propertyName=newValue</i>
+
+<dd>
+
+プロパティ値を再定義します。<i>propertyName</i> は値を変更するプロパティの名前で、<i>newValue</i> は変更される値です。たとえば、次のコマンド行は awt.button.color プロパティの値を green にセットします。
+
+
+<pre>
+   C:\&gt; java -Dawt.button.color=green ...
+</pre>
+
+
+<b>java</b> では、コマンド行の <code>-D</code> オプションの数は複数であってもかまいません。
+
+
+
+</dl>
+
+</blockquote>
+
+
+
+<h2>環境変数</h2>
+
+<blockquote>
+
+<dl>
+
+
+
+<dt>CLASSPATH
+
+<dd>
+
+ユーザ定義クラスへのパスをシステムに指定します。ディレクトリはセミコロンで分割します。たとえば、次のとおりです。
+
+
+<pre>
+   C:\xyz\classes;C:\usr\local\java\classes
+</pre>
+
+
+</dl>
+
+</blockquote>
+
+
+
+<h2>参照</h2>
+
+<blockquote>
+
+<a href="javac.html">javac</a>,
+
+<a href="jdb.html">jdb</a>,
+
+<a href="javah.html">javah</a>,
+
+<a href="javap.html">javap</a>,
+
+<a href="javadoc.html">javadoc</a>
+
+</blockquote>
+
+
+
+</body>
+
+</html>
+
+

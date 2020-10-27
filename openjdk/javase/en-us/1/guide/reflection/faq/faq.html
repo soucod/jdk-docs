@@ -1,0 +1,219 @@
+/* Last edited @(#)faq.html	1.1 01/05/98 */
+<HTML>
+<HEAD>
+<!--#config timefmt="%d-%b-%y" -->
+<TITLE>Reflection Frequently Asked Questions </TITLE>
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF"  
+    TEXT="#000000" LINK="#990000" ALINK="#333399" VLINK="#333399">
+
+
+
+<!-- begin main page table -->
+
+<TABLE BORDER=0 CELLPADDING=0 CELLSPACING=0>
+  <TR>
+    <TD WIDTH=157 VALIGN=TOP>
+
+      <!--#include virtual="/share/include/navigate.html"-->
+
+    </TD>
+    <TD WIDTH=452 VALIGN=TOP>
+
+      <!--  begin header table -->
+
+      <TABLE BORDER=0 WIDTH=452>
+
+
+        <!--#include virtual="/share/include/normal.header.html"-->
+
+
+        <!-- breadcrumb trail -->
+
+        <TR>
+          <TD ALIGN=RIGHT HEIGHT=25 VALIGN=TOP>
+
+
+
+          </TD>
+        </TR>
+
+        <TR>
+          <TD>
+            <P>
+          </TD>
+        </TR>
+
+        <TR>
+          <TD ALIGN=RIGHT COLSPAN=2>
+            <!-- page headline -->
+            <FONT SIZE=+2>Reflection FREQUENTLY ASKED QUESTIONS </FONT><br>
+          </TD>
+        </TR>
+
+        <TR>
+          <TD ALIGN=RIGHT VALIGN=TOP HEIGHT=30 COLSPAN=2>
+
+            <!-- subcategories of the current topic -->
+
+            <font size=-1>
+        <A HREF="../index.html"> Reflection Home Page</A>  |
+        <A HREF="..//spec/java-reflectionTOC.doc.html"> Specification</A>  |
+        <A HREF="../../../api/Package-java.lang.reflect.html"> Reflection API Re ference</A>
+
+
+            </font>
+            <p>
+
+          </TD>
+        </TR>
+      </TABLE>
+
+      <TABLE BORDER=0 WIDTH=452>
+
+        <TR>
+          <TD WIDTH=452 COLSPAN=2>
+            
+
+            <!-- Begin Page Data -->
+
+
+<P>
+<STRONG>What kind of applications might want to use the Reflection API?</STRONG>
+<P>
+The Reflection API is intended for
+use by tools such as debuggers, class browsers, object inspectors,
+and interpreters.
+
+<P>
+<STRONG>When should the Reflection API not be used?</STRONG>
+<P>
+You should avoid the temptation to use the reflection mechanism when other tools
+more natural to the language would suffice. 
+If you are accustomed to using
+function pointers in another language, for example, you might think that
+using <code>Method</code> objects are a natural replacement, but
+usually an
+object-oriented tool, such as an interface that is implemented by objects
+that perform the needed action, is better.
+Programs that needlessly use the Reflection API will be more difficult to read,
+debug, and maintain.
+
+
+<P>
+<STRONG>
+If the constructor of a class is overloaded, does the
+<code>Constructor.newInstance()</code> method use the types of the
+arguments to select an overloading? 
+</STRONG>
+<P>
+No. The <code>Constructor.newInstance()</code> method is always
+invoked on a specific overloading of the constructor,
+previously selected by a call to <code>Class.getConstructor()</code>
+or by other means.  The Reflection API does not automatically
+choose between overloadings.
+
+
+<P>
+<STRONG>
+If a class has an overloaded method, does the
+<code>Method.invoke()</code> method use the types of the
+arguments to select which method will be invoked? 
+</STRONG>
+<P>
+No.  <code>Method.invoke()</code> is always
+invoked on a specific overloading of the method,
+previously selected by a call to <code>Class.getMethod()</code>
+or by other means.  The Reflection API does not automatically
+choose between overloadings.
+
+<P>
+<STRONG>
+How does access control apply to the invocation of the
+<code>Constructor.newInstance()</code>, 
+<code>Method.invoke()</code>, 
+<code>Field.get()</code>, and
+<code>Field.set()</code> methods?
+</STRONG>
+<P>
+When one of these methods
+is called, the Java Virtual Machine (JVM) performs the
+access checks described in the Java Language Specification
+(6.6.1), which are usually carried out
+by the verifier.  
+For example, when <code>newInstance()</code> is called,
+the checks made by the JVM compare the identity of the caller of
+<code>newInstance()</code> with the access permission and identity of the
+constructor being called.  It is as if the caller of <code>newInstance()</code>
+had a statically-compiled call to the selected constructor.
+The access check takes into account both the accessibility of
+the constructor itself, and the accessibility of its class.
+
+
+<P>
+<STRONG>
+It seems that <code>Method.invoke()</code> sometimes throws an 
+<code>IllegalAccessException</code> when invoking a <code>public</code>
+method.  What's going on?
+</STRONG>
+<P>
+It is a common error to attempt to invoke an overridden method
+by retrieving the overriding method from the target object.
+This will not always work, because the overriding method
+will in general be defined in a class inaccessible to the
+caller.  
+For example, 
+the following code only works some of the time, 
+and will fail when the <code>target</code>
+object's class is too private: 
+
+<pre>
+   void invokeCommandOn(Object target, String command) {
+     try {
+       Method m = target.getClass().getMethod(command, new Class[] {});
+       m.invoke(target, new Object[] {});
+     } catch ...
+   }
+</pre>
+
+The workaround is to use a much more
+complicated algorithm, which starts with <code>target.getClass()</code> 
+and works
+up the inheritance chain, looking for a version of the method in an
+accessible class.
+
+<!--
+<P>
+<STRONG>question
+</STRONG>
+<P>
+answer
+-->
+
+
+
+<P>
+<P>
+<BR>
+
+
+            <!-- End Page Data -->
+
+
+    </TD>
+  </TR>
+</TABLE>
+
+  
+    </TD>
+  </TR>
+</TABLE>
+
+
+  <!-- Footer table -->
+
+  <!--#include virtual="/share/include/normal.footer.html"-->
+
+</BODY>
+</HTML>

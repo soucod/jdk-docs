@@ -1,0 +1,169 @@
+<html><head><title>スタブ/スケルトンインタフェース
+</title></head>
+<body bgcolor=#ffffff>
+ 
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-registry.doc.html">前項目</a> <a href="rmi-dgc.doc.html">次項目</a>
+<hr><br>
+ 
+<a name="60">
+<h1>スタブ/スケルトンインタフェース
+</h1>
+</a>
+<hr><p><a name="64">
+
+<p>
+</a>この章は <code>rmic</code> コンパイラにより生成されるスタブとスケルトンが使用するインタフェースとクラスを説明します。
+<p><h3><a name="3210">
+トピックス:
+</a></h3><ul><li><a href="rmi-stubs.doc.html#4526">RemoteStub クラス</a>
+<li><a href="rmi-stubs.doc.html#161">RemoteCall インタフェース</a>
+<li><a href="rmi-stubs.doc.html#5474">RemoteRef インタフェース</a>
+<li><a href="rmi-stubs.doc.html#6689">ServerRef インタフェース</a>
+<li><a href="rmi-stubs.doc.html#5718">Skeleton インタフェース</a>
+<li><a href="rmi-stubs.doc.html#6598">Operation クラス</a>
+</ul><h1><a name="4526">
+RemoteStub クラス
+</a></h1><code>java.rmi.server.RemoteStub</code> クラスは全てのクライアントスタブに共通なスーパークラスです。スタブオブジェクトは代理であり、リモートオブジェクトの実際の実装が定義するのと全く同じインタフェースのセットをサポートします。
+<p><dl><a name="4543"><pre>package java.rmi.server;
+</pre></a><a name="4540"><pre>public abstract class RemoteStub extends java.rmi.RemoteObject {}
+</pre></a></dl><h1><a name="161">
+RemoteCall インタフェース
+</a></h1><code>RemoteCall</code> インタフェースはリモートオブジェクトのスタブとスケルトンがリモートオブジェクトへの呼び出しを実行するための抽象化です。
+<p><dl><a name="6486"><pre>package java.rmi.server;
+import java.io.*;
+
+public interface RemoteCall {
+
+	ObjectOutput getOutputStream() throws IOException;
+
+	void releaseOutputStream() throws IOException;
+
+	ObjectInput getInputStream() throws IOException;
+
+	void releaseInputStream() throws IOException;
+
+	ObjectOutput getResultStream(boolean success)
+		throws IOException, StreamCorruptedException;
+
+	void executeCall() throws Exception;
+
+	void done() throws IOException;
+}
+</pre></a></dl><code>getOutputStream</code> メソッドは出力ストリームを返す。スタブは引数を一体化してその出力ストリームに送り出し、スケルトンはそこから結果を分解して取り出す。
+<p><code>releaseOutputStream</code> メソッドは出力ストリームを開放します。トランスポートによってはこのメソッドはストリーム自体を開放します。
+<p><code>getInputStream</code> メソッドは InputStream の結果を返す。スタブはそこから結果を分解して取り出すか、スケルトンはパラメーターを分解して取り出す。
+<p><code>releaseInputStream</code> メソッドは入力ストリームを開放します。この結果いくつかのトランスポートは接続の入力側を早期に開放することができます。
+<p><code>getResultStream</code> メソッドは出力ストリームを返します (コールが成功したかどうかを示すヘッダー情報を書き込んだ後)。 結果ストリームを得ることができるのは一回のリモートコールに対して一回のみです。 もし success が true ならば、転送のため一体化される結果は正常終了であり、それ以外の場合の結果は例外になります。
+<code>StreamCorruptedException</code> は、そのリモートコールに対しての結果ストリームがすでに得られている場合にスローされます。
+<p><code>executeCall</code> メソッドは何であれ与えられた値によりコールを実行します。
+<p><code>done</code> メソッドはリモートコールが完了した後のクリーンアップを許可します。
+<p><h1><a name="5474">
+RemoteRef インタフェース
+</a></h1><code>RemoteRef</code> インタフェースはリモートオブジェクトへのハンドルを表します。 それぞれのスタブは RemoteRef のインスタンスを持ち、そのインスタンスは参照の具体的な表現を含みます。このリモート参照は参照されているリモートオブジェクトへのリモートコール実行に使われます。
+<p><dl><a name="5478"><pre>package java.rmi.server;
+
+public interface RemoteRef extends java.io.Externalizable {
+
+	RemoteCall newCall(RemoteObject obj, Operation[] op, int opnum,
+		long hash) throws RemoteException;
+
+	void invoke(RemoteCall call) throws Exception;
+
+	void done(RemoteCall call) throws RemoteException;
+
+	String getRefClass(java.io.ObjectOutput out);
+
+	int remoteHashCode();
+
+	boolean remoteEquals(RemoteRef obj);
+
+	String remoteToString();
+}
+
+</pre></a></dl><code>newCall</code> メソッドはリモートオブジェクト obj 上での新しいリモートメソッド呼び出しのための適切な呼び出しオブジェクトを作成します。 
+操作配列 op はリモートオブジェクト上で利用可能な複数の操作を含みます。 
+操作番号 opnum は操作配列の中の今回リモートコールで使用する特定の操作を指定するためのインデックスです。 
+操作配列とインデックスを渡すことにより、スタブジェネレーターは操作インデックスを割り付けてそれらを解釈することができます。 
+リモート参照では呼び出しの中でエンコードするために操作記述子を必要とすることがあります。 
+<p><code>invoke</code> メソッドはリモートコールを実行します。 <code>invoke</code> は全ての「ユーザ (user) 定義」例外を発生させます。この例外はスタブでは捉えずに通過させるべきものです。
+リモート呼び出しの途中で何らかの例外が発生した場合には、<code>invoke</code> はユーザ定義例外または <code>RemoteException</code> を発生させる前に接続のクリーンアップを行います。
+<p><code>done</code> メソッドはリモート参照に接続のクリーンアップ（または再利用）を許可します。<code>done</code> がコールされるのは <code>invoke</code> コールが成功裡に（例外を発生させずに）終了してスタブに戻った場合のみです。
+<p><code>getRefClass</code> メソッドは、直列化されてストリームに出力される参照タイプの内でパッケージ修飾されていないクラス名を返します
+<p><code>remoteHashCode</code> メソッドはリモートオブジェクトの ハッシュコードを返します。 同一のリモートオブジェクトを参照する2つのリモートオブジェクトスタブは（リモートオブジェクトをハッシュテーブル上のキーとしてサポートするために）同じハッシュコードを持ちます。
+<code>RemoteObject</code> は <code>hashCode</code>メソッドへのコールをリモート参照の <code>remoteHashCode</code> メソッドへ転送します。
+<p><code>remoteEquals</code>メソッドは2つのリモートオブジェクトを比較して異同判定します。2つのリモートオブジェクトは両者が同一のリモートオブジェクトを参照するとき等しいとされます。
+例えば、2つのスタブはもし両者が同一のリモートオブジェクトを参照するならば等しいとされます。 
+<code>RemoteObject</code> はその <code>equals</code> メソッドへの呼び出しをリモート参照の<code>remoteEquals</code> メソッドへ転送します。
+<p><code>remoteToString</code> メソッドはそのリモートオブジェクトへの参照を表現する文字列を返します。
+<p><h1><a name="6689">
+ServerRef インタフェース
+</a></h1><code>ServerRef</code>インタフェースはリモートオブジェクトの実装に対するサーバ側のハンドルを表します。
+<p><dl><a name="5722"><pre>package java.rmi.server;
+
+public interface ServerRef extends RemoteRef {
+
+	RemoteStub exportObject(java.rmi.Remote obj, Object data)
+		throws java.rmi.RemoteException;
+
+	String getClientHost() throws ServerNotActiveException;
+}
+</pre></a></dl><code>exportObject</code>メソッドは与えられた <code>Remote</code> オブジェクトの実装 obj に対するクライアントスタブオブジェクトを探すかまたは作成します。
+パラメーターデータにはオブジェクトをエクスポートするのに必要となる情報（例えばポート番号）が含まれます。
+<p><code>getClientHost</code> メソッドは現在のクライアントのホスト名を返します。
+現在リモートメソッド呼び出しを操作中のスレッドからコールされた場合には、コールを実行中のクライアントのホスト名が返されます。リモートメソッドへのコールが現在実行中でなければ、<code>ServerNotActiveException</code> がコールされます。
+<h1><a name="5718">
+Skeleton インタフェース
+</a></h1><code>Skeleton</code> インタフェースは <code>rmic</code> コンパイラにより作成されたスケルトンの実装によってのみ使用されます。
+リモートオブジェクトに対するスケルトンとは、実際のリモートオブジェクトの実装へコールをディスパッチするサーバ側の要素です。
+<p><dl><a name="5798"><pre>package java.rmi.server;
+
+public interface Skeleton {
+
+    void dispatch(Remote obj, RemoteCall call, int opnum, long hash)
+		throws Exception;
+
+    Operation[] getOperations();
+}
+</pre></a></dl><code>dispatch</code> メソッドはコールオブジェクトから入力ストリームとして得られた引数をストリームの分解によって取り出し、実際のリモートオブジェクトの実装である obj 上のメソッド（操作番号 opnum で示される）を呼び出します。そして返り値をストリームに流すため一体化するか、または呼び出し中に例外が発生した場合には例外をスローします。
+<p><code>getOperations</code> メソッドはリモートオブジェクトのメソッドに対する操作記述子が書かれた配列を返します。
+<p><h1><a name="6598">
+Operation クラス
+</a></h1><code>Operation</code> クラスはリモートオブジェクトに対する Java メソッドの記述子を保持します。
+<p><dl><a name="5258"><pre>package java.rmi.server;
+
+public class Operation {
+
+	public Operation(String op);
+
+	public String getOperation();
+
+	public String toString();
+}
+</pre></a></dl><code>Operation</code> オブジェクトは多くの場合メソッドのシグネチャ付きで生成されます。
+<p><code>getOperation</code> メソッドは操作記述子の内容を返します。（初期化されたときの値）
+<p><code>toString</code>メソッドもまた操作の文字列による表現を返します。（典型的にはメソッドのシグネチャ）
+<p>
+<hr><br>
+ 
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-registry.doc.html">前項目</a> <a href="rmi-dgc.doc.html">次項目</a>
+<hr><br>
+ 
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.4 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email  -->
+<!-- -->
+<!-- Last updated: 03/18/97 13:00:04 -->
+
+</body>
+</html>
+

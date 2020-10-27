@@ -1,0 +1,249 @@
+<html>
+
+<head>
+
+<title>javap - Java クラスファイル逆アセンブラ</title>
+
+</head>
+
+<BODY BGCOLOR="#FFFFFF">
+
+
+
+<h1>javap - Java クラスファイル逆アセンブラ</h1>
+
+<blockquote>
+
+クラスファイルを逆アセンブルします。
+
+</blockquote>
+
+
+
+<h2>機能説明</h2>
+
+<pre>
+   javap [ <a href="javap.html#Options">options</a> ] class. . .
+</pre>
+
+
+<h2>説明</h2>
+
+<blockquote>
+
+<b>javap</b> コマンドは、クラスファイルを逆アセンブルします。その出力は指定するオプションにより異なります。何もオプションを指定しない場合、<b>javap</b> は渡されたクラスの public フィールドとメソッドを表示します。<b>javap</b> はその出力を標準出力に表示します。たとえば、次のクラス宣言をコンパイルしてください。
+
+<pre>
+import java.awt.*;
+import java.applet.*;
+
+public class DocFooter extends Applet {
+        String date;
+        String email;
+
+        public void init() {
+                resize(500,100);
+
+                date = getParameter("LAST_UPDATED");
+                email = getParameter("EMAIL");
+        }
+
+        public void paint(Graphics g) {
+                g.drawString(date + " by ",100, 15);
+                g.drawString(email,290,15);
+        }
+}
+</pre>
+<b>javap DocFooter</b> の出力は次のようになります。
+
+
+<pre>
+Compiled from DocFooter.java
+public class DocFooter extends java.applet.Applet {
+    java.lang.String date;
+    java.lang.String email;
+    public void init();
+    public void paint(java.awt.Graphics);
+    public DocFooter();
+}
+</pre>
+
+</blockquote>
+
+
+
+<a name=Options>
+
+<h2>オプション</h2>
+
+</a>
+
+<blockquote>
+
+<dl>
+
+<dt><b>-l</b>
+
+<dd>
+
+行番号と局所変数テーブルを表示します。
+
+<p>
+
+
+
+<dt><b>-b</b>
+
+<dd>
+
+JDK 1.1 での、<b>javap</b> との後方互換性を保証します。 
+
+<p>
+
+
+
+<dt><b>-public</b>
+
+<dd>
+
+public クラスとメンバだけを表示します。
+
+
+<p>
+
+
+
+<dt><b>-protected</b>
+
+<dd>
+
+protectedとpublic のクラスとメンバだけを表示します。
+
+
+<p>
+
+
+
+<dt><b>-package</b>
+
+<dd>
+
+package、protected および public のクラスとメンバだけを表示します。これがデフォルトです。
+
+<p>
+
+
+
+<dt><b>-private</b>
+
+<dd>
+
+すべてのクラスとメンバを表示します。
+
+<p>
+
+
+
+<dt><b>-J <i>flag</i></b>
+
+<dd>
+
+ランタイム システムに直接 <i>flag</i> を渡します。
+
+
+
+<p>
+
+
+
+<dt><b>-s</b>
+
+<dd>
+
+内部の型シグネチャをプリントします。
+
+
+
+<p>
+
+
+
+<dt><b>-c</b>
+
+<dd>
+
+クラスの各メソッドのために逆アセンブルされるコード、すなわち Java バイトコードから成る命令を表示します。 
+
+<p>
+<dt><b>-classpath <i>path</i></b>
+<dd>
+<b>javap</b> がクラスを探すために使用するパスを指定します。デフォルトまたは CLASSPATH 環境変数設定を上書きします。ディレクトリはセミコロンで分割します。したがって、<i>path</i> の一般形式は次のようになります。
+<p>
+
+<pre>
+   .;&lt;your_path&gt;
+</pre>
+たとえば、パスの指定は次のとおりです。
+
+<pre>
+   .;C:\usrs\dac\classes;C:\tools\java\classes
+</pre>
+
+<dt><b>-h</b>
+
+<dd>
+C 言語ヘッダファイルに置くことができるコードを生成します。
+<p>
+
+<dt><b>-verbose</b>
+<dd>
+
+メソッドのスタックサイズおよび <code>locals</code> と <code>args</code> の数をプリントします。 
+<p>
+
+<dt><b>-verify</b> 
+<dd> 
+verifier を実行します。 
+
+<p> 
+<dt><b>-version</b>  
+<dd> 
+<b>javap</b> バージョン文字列を表示します。
+<p>  
+
+</dl>
+
+</blockquote>
+
+<h2>環境変数</h2>
+<blockquote>
+
+<dl>
+
+<dt>CLASSPATH
+
+<dd>ユーザ定義クラスへのパスをシステムに指定します。ディレクトリはセミコロンで分割します。たとえば、次のとおりです。
+
+<pre>
+   .;C:\usrs\dac\classes;C:\tools\java\classes
+</pre>
+</dl>
+
+</blockquote>
+
+
+
+<h2>参照</h2>
+
+<blockquote>
+<a href="javac.html">javac</a>,
+<a href="java.html">java</a>,
+<a href="jdb.html">jdb</a>,
+<a href="javah.html">javah</a>,  
+<a href="javadoc.html">javadoc</a>,
+</blockquote>
+
+</body>
+</html> 
+
+

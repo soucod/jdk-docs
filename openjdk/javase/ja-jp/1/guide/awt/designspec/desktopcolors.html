@@ -1,0 +1,173 @@
+<html><head><title>Java AWT: デスクトップカラー</title></head>
+<BODY BGCOLOR="#FFFFFF">
+<a name="920106">
+<h1><img src="images/pencil.sm.gif">Java AWT: デスクトップカラー</h1>
+</a>
+<hr><p><a name="920107">
+<address>最終更新: 1997 年 2 月 3 日</address>
+
+<h2>目的</h2>
+</a>
+プラットフォームのデスクトップ（Windows95、Solaris/CDE など）がデスクトップ上のオブジェクトに対して配色を提供することは一般的であり、通常この配色はユーザが構成可能です。デスクトップで実行されるアプリケーションが、その配色を使用してビジュアルな一貫性を維持することが通常望まれます。
+<p>AWT は、そのコンポーネントに対して適当なデフォルト色をセットしようと試みますが、現在 Java プログラムがこれらの色を直接問い合わせし使用する便利な方法はありません。これは特に、バックグラウンド、影、およびフォント色をデスクトップの他の部分とすべて確実に適合するような、カスタムコンポーネントを作成するときに問題になります。 JDK1.1 では、AWT がこれらデスクトップカラーにアクセスし使用するための簡単な API を提供します。<a name="920110">
+<p>
+<h2>デスクトップカラー API</h2>
+</a>
+この API は、次の java.awt.Color のサブクラスが表す新しい型の「シンボル」色を導入します:
+<pre><code>
+        <a href="../../../api/java.awt.SystemColor.html">java.awt.SystemColor</a>
+</code></pre>
+SystemColor オブジェクトは、他の Color オブジェクトと同じように使用することができます。唯一の違いは、（ユーザが配色を変えた際、ダイナミックな通知をサポートするシステム上で、）現在の色を表す実際の値がダイナミックに変わる可能性があるということです。
+<p>
+SystemColor オブジェクトはシステムが定義し、Java プログラムがインスタンスにすることはできません。
+<a name="920240">
+<p>
+<h3>色の範囲</h3>
+</a>
+SystemColor クラスは、デスクトップ上の配色の個別の型を各々表すシンボル色の標準セットを提供します。これらシンボル色オブジェクトは自動的に作成され、java.awt.SystemColor に静的に格納されます:
+<pre><code>	public final static SystemColor <b>desktop</b>; // デスクトップのバックグラウンド色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>activeCaption</b>; // キャプションのバックグラウンド色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>activeCaptionText</b>; // キャプションテキスト色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>activeCaptionBorder</b>; // キャプションテキストの境界色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>inactiveCaption</b>; // 非アクティブなキャプションのバックグラウンド色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>inactiveCaptionText</b>; // 非アクティブなキャプションのテキスト色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>inactiveCaptionBorder</b>; // 非アクティブなキャプションの境界色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>window</b>; // ウィンドウのバックグラウンド
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>windowBorder</b>; // ウィンドウ境界フレーム色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>windowText</b>; // ウィンドウ内のテキスト色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>menu</b>; // メニューのバックグラウンド
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>menuText</b>; // メニューのテキスト色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>text</b>; // テキストのバックグラウンド色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>textText</b>; // テキストのテキスト色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>textHighlight</b>; // 強調表示されたテキストのバックグラウンド色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>textHighlightText</b>; // 強調表示されたテキストのテキスト色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>control</b>; // コントロールのバックグラウンド色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>controlText</b>; // コントロールのテキスト色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>controlLtHighlight</b>; // コントロールの明るい強調表示色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>controlHighlight</b>; // コントロールの強調表示色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>controlShadow</b>; // コントロールの影の色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>controlDkShadow</b>; // コントロールの暗い影の色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>inactiveControlText</b>; // 非アクティブなコントロールのテキスト色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>scrollbar</b>; // スクロールバーのバックグラウンド色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>info</b>; // スポットヘルプテキストのバックグラウンド色
+</code></pre>
+
+<pre><code>	public final static SystemColor <b>infoText</b>; // スポットヘルプテキストのテキスト色
+</code></pre>
+
+<p>Java プログラムが、コンポーネントのフォアグラウンドかバックグラウンドのどちらかをこれらシンボル色の1 つにセットするか、またはこれらの1つをレンダリングに使用する場合、そのシンボル色の現在の値が使用されます。
+<p>すべてのプラットフォームがこれらシンボル名の各々に対して別個の色をサポートしているわけではありません。シンボル色をプラットフォームがサポートしていないケースでは、最も適当なデフォルトに割り当てられます。これらの色は null でないことが保証されます。<p>AWT ベースコンポーネントはこれらシンボル色を使用するように変更され、より一貫性のあるデスクトップとのデフォルト統合を提供します。コンポーネントのデフォルト色についてなんらかの仮定（すなわち、「灰色」という仮定）を行っている 1.0 用に書かれた Java プログラムは、1.1 の下では正しくレンダしない可能性があります。このため paint() メソッド内でそのバックグラウンド/フォアグラウンド色について、コンポーネントに問い合わせすることが常に重要です。
+<a name="920253">
+<h3>一時更新とダイナミック更新の対比</h3>
+</a>
+ツールキットを最初にロードしたとき、最低これらの色はダイナミックに初期化されます。あるデスクトップでは、ダイナミック更新機能を提供し、AWT はユーザが配色を変更したときを検出し、これらすべてのシンボル色を、たちまちのうちに更新します。しかし、これはプラットフォーム固有のもので、このインタフェースで保証された機能ではありません。<a name="920139">
+<h2>サンプルコード</h2>
+</a>
+この API を使用するカスタムコンポーネント（区切り記号）の例を次に示します:
+<pre><code>	
+import java.awt.*;
+
+//
+// Oversimplified separator class for creating 3D horizontal
+// line separators
+//
+public class Separator extends Component {
+
+    public Separator(int length, int thickness) {
+       super();
+       setSize(length, thickness);
+       <b>setBackground(SystemColor.control);</b>
+    }
+
+    public void paint(Graphics g) {
+       int x1, y1, x2, y2;
+       Rectangle bbox = getBounds();
+     
+       x1 = 0;
+       x2 = bbox.width - 1;
+       y1 = y2 = bbox.height/2 - 1;
+
+       <b>g.setColor(SystemColor.controlShadow);</b>
+       g.drawLine(x1, y2, x2, y2);
+       <b>g.setColor(SystemColor.controlHighlight);</b>
+       g.drawLine(x1, y2+1, x2, y2+1);
+    }
+
+    public static void main(String[] args) {
+        Frame f = new Frame("Separator Example");
+        f.setSize(200, 100);
+        f.setBackground(SystemColor.control);
+        Separator sep = new Separator(200, 4);
+        f.add("Center", sep);
+        f.show();
+    }
+}
+
+</code></pre>
+
+<hr><br>
+ 
+<address>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</address>
+ 
+<i>Copyright (C) 1996, Sun Microsystems, Inc.   All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.5 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email yourEmail@xyzcorp.com -->
+<!-- -->
+<!-- Last updated: 09/13/96 16:25:45 -->
+
+</body>
+</html>

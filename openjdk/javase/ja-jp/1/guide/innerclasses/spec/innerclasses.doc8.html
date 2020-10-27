@@ -1,0 +1,83 @@
+<html>
+<head>
+<title> </title>
+</head>
+<body BGCOLOR=#eeeeff text=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+ 
+<table width=600><tr>
+<td><a href="innerclasses.doc.html">目次</a> | <a href="innerclasses.doc7.html">前項目</a> | <a href="innerclasses.doc9.html">次項目</a> 
+</td><td align=right><i>内部クラス仕様</i></td>
+</tr></table>
+
+<hr><br>
+ 
+<a name="10676"></a>
+<h1>Java 言語仕様は内部クラスに対してどのように変わったか?
+</h1>
+<a name="11665"></a>
+顕著な変更はわずかしかありません。それは、新しい機能が主に既存の言語の制限を緩和し、古い設計に対して新しい機能開発に取り組んだからです。主要な変更は、型が現在型をメンバとして持てるということです。（しかし、型名はインスタンス式を含むことができません。）スコープ、名前スコーピング、メンバ名前付け、メンバアクセス制御の基本的な定義は代わっていません。
+<p><a name="11666"></a>
+クラス本体およびブロック構文には次の拡張が行われました:
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a name="17672"></a><var>ClassMemberDeclaration, InterfaceMemberDeclaration:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ClassDeclaration<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;InterfaceDeclaration
+</var><br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a name="17540"></a><var>BlockStatement:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ClassDeclaration
+</var><br><br><a name="17561"></a>
+型メンバである型はサブ型によって継承され、同じ名前の型宣言によってその中に覆い隠されます。（型は決して「仮想」ではありません。) 型であるメンバは <code>private</code> または <code>protected</code> と宣言される可能性があります。<code>
+</code><p><a name="17642"></a>
+非 <code>static</code> メンバクラスまたはブロックや式によって定義されたクラスは、<em>内部</em>クラスです。他のすべてのクラスは<em>トップレベル</em>です。内部クラスは <code>static</code> メンバ、<code>static</code> 初期化子またはメンバインタフェースを宣言しません。パッケージメンバは決して <code>static</code> にはなりません。しかし、トップレベルクラスのメンバであるクラスは <code>static</code> と宣言されるかもしれず、そのためこれもまたトップレベルであると宣言します。インタフェースは非メソッドメンバであると同様に、常に <code>static</code> です。
+<p><a name="17673"></a>
+クラスは親クラスと同じような簡単な名前を持たない可能性があります。
+<p><a name="17562"></a>
+キーワード <code>this</code> は可能ないくつかのカレントインスタンスを選択するために、修飾することができます。（内部クラスは 2 つ以上のカレントインスタンスを持ちます。）
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a name="11606"></a><var>PrimaryNoNewArray:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ClassName </var><code>.</code> <code>this
+</code><br><br><a name="13677"></a>
+クラスインスタンス作成の構文は、匿名クラスおよび囲うインスタンスをサポートするために、次のように拡張されました:
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a name="13704"></a><var>ClassInstanceCreationExpression:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</var>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>new</code> <var>TypeName </var>(<var> ArgumentList</var><sub><i>opt</i></sub> <code>)</code> <var>ClassBody</var><sub><i>opt<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</i></sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<var>Primary</var> <code>.</code> <code>new</code> <var>Identifier</var> <code>(</code> <var>ArgumentList</var><sub><i>opt </i></sub><code>)</code> <var>ClassBody</var><sub><i>opt
+</i></sub><br><br><a name="13698"></a>
+<code>new</code> 式は、本体を指定して匿名クラスを定義します。独立して、<code>new</code> 式の型は、即座の親クラスがキーワード <code>new</code> の前の修飾式として与えられた場合、内部クラスの簡単な名前として指定されます。修飾インスタンスは新しいオブジェクトの囲うインスタンスになります。<code>super</code> の対応する修飾によって、サブクラス構築子は、内部クラスであるスーパークラスの囲うインスタンスを指定できるようになります:
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a name="17718"></a><var>ExplicitConstructorInvocation:  ...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</var>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<var> Primary</var> <code>.</code> <code>super</code> <code>(</code> <var>ArgumentList</var><sub><i>Opt</i></sub> <code>)</code> <code>;
+</code><br><br><a name="11544"></a>
+内部クラスが修飾されていない <code>new</code> または <code>super</code> 式で構築される場合、囲うインスタンスは必要な型の（最奥の）カレントインスタンスです。
+<p><a name="17902"></a>
+1.0 Java 言語仕様における名前バインディングの詳細記述では、辞書スコーピングの新しい規則を反映するために一部改訂が必要となります。例えば、簡単な変数名は、定義がクラスまたはブロックから来たものかどうかに関わらず、最奥の辞書的に明白な定義を参照します。簡単な型名についても同じことが言えます。修飾子名の文法（すなわち、<var>AmbiguousName</var>）は他の型名を修飾するクラス名の可能性を反映するために拡張されます。修飾された型名内の当初の簡単な名前は、その名前のクラスがスコープにある場合、クラス名になります; そうでなければ、Java 1.0 のようにパッケージ名になります。
+<p><a name="17934"></a>
+サブクラス <var>C</var> のすべての継承されたメンバ <var>m</var> は、<var>C</var> 内のすべての内部クラスを含め <var>C</var> の本体内のスコープにあります。<var>C</var> 自身が内部クラスの場合、親スコープ内に <var>m</var> に対する同じ種類の定義（変数、メソッドまたは型）がある可能性があります。（スコープはブロック、クラスまたはパッケージです。） このようなケースすべてにおいて、継承されたメンバ <var>m</var> は <var>m</var> の他の定義を覆い隠します。さらに、覆い隠された定義がパッケージメンバでない場合、簡単な名前 <var>m</var> は不当です; プログラマは <var>C</var><code>.this.</code><var>m</var> を書く必要があります。
+<p><a name="18352"></a>
+すべての種類（トップレベルまたは内部）のネストしたクラスは、 <code>import</code> 文のどちらかの種類によってインポートすることができます。<code>import</code> 文のクラス名は完全パッケージ修飾され、継承関係の参照なしに解決できる必要があります。Java 1.0 でのように、同じ名前のクラスとパッケージが共存することは不当です。
+<p><a name="20001"></a>
+<code>break</code> または <code>continue</code> 文は、即座の親メソッドまたは初期化子ブロック内のラベルを参照する必要があります。非ローカルなジャンプはありません。
+<p><a name="20004"></a>
+明確な代入の確認は、ブロックと式によって定義されたクラスを含み、これらクラス内の変数の発生に拡張します。内部クラスで使用され定義されていない局所変数はすべて、<code>final</code> と宣言し、内部クラスの本体の前に明確に代入する必要があります。
+<p>
+
+<hr>
+<!-- This inserts footnotes--><p>
+<a href="innerclasses.doc.html">目次</a> | <a href="innerclasses.doc7.html">前項目</a> | <a href="innerclasses.doc9.html">次項目</a> 
+
+<p>
+<font size=-1>内部クラス仕様 (HTML generated by dkramer on March 15, 1997)<br>
+<i><a href="copyright.doc.html">Copyright (c) 1996, 1997 Sun Microsystems, Inc.</a>
+All rights reserved</i>
+<br>
+コメントや訂正は <a href="mailto:john.rose@eng.sun.com">john.rose@eng.sun.com</a> 宛てに送ってください。
+</font>
+</body></html>

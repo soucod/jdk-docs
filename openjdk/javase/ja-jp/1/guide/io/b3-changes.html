@@ -1,0 +1,68 @@
+<html>
+<head>
+<title>JDK 1.1 ベータ 2 以降の java.io の変更</title>
+</head>
+<body>
+<h1>JDK 1.1 ベータ 2 以降の <tt>java.io</tt> の変更</h1>
+
+
+<p> 現在、クラス <a href="../../api/java.lang.Throwable.html"><tt>java.lang.Throwable</tt></a> は <a href="../../api/java.lang.Throwable.html#printStackTrace(java.io.PrintWriter)"><tt>printStackTrace</tt></a> メソッドをサポートし、このメソッドは<a href="../../api/java.io.PrintStream.html"><tt>PrintStream</tt></a> オブジェクトよりも <a href="../../api/java.io.PrintWriter.html"><tt>PrintWriter</tt></a> オブジェクトを取ります。
+
+<p><a href="../../api/java.io.Writer.html"><tt>Writer</tt></a> オブジェクトより <a href="../../api/java.io.OutputStream.html"><tt>OutputStream</tt></a> オブジェクトを取る次の 2 つの便利な構築子が、<tt>PrintWriter</tt> クラスに追加されました:
+
+<p>
+<table width=100% border=0 cellpadding=0 cellspacing=0>
+<tr><td width=25% align=right valign=top>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.io.PrintWriter.html#PrintWriter(java.io.OutputStream)"><tt>PrintWriter(OutputStream out)</tt></a>
+<tr><td width=25% align=right valign=top>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.io.PrintWriter.html#PrintWriter(java.io.OutputStream, boolean)"><tt>PrintWriter(OutputStream out, boolean autoFlush)</tt></a>
+</table>
+
+<p>これらの構築子は、 <tt>PrintStream</tt> クラスから新しい <tt>PrintWriter</tt> クラスへの移行を簡単にすることを念頭においています。
+
+
+<p><a href="../../api/java.io.ByteArrayInputStream.html"><tt>ByteArrayInputStream</tt></a> クラスは現在、 <a href="../../api/java.io.ByteArrayInputStream.html#mark(int)"><tt>mark</tt></a> および <a href="../../api/java.io.ByteArrayInputStream.html#reset()"><tt>reset</tt></a> メソッドをサポートします。
+
+<p><tt>ByteToCharConverter</tt> および <tt>CharToByteConverter</tt> クラスは、もはや public API の一部ではありません。これらは関連クラス <tt>ConversionBufferFullException</tt>、<tt>MalformedInputException</tt> および <tt>UnknownCharacterException</tt> と共に <tt>sun.io</tt> パッケージに移動しました。低レベル文字変換機能をアクセスするインタフェースの改善を、将来のバージョンで計画しています。
+
+<p>コンバータクラスはもはや public ではないので、コンバータ引数を以前取っていた多数の構築子とメソッドは、現在文字エンコーディングの名前を受け付けます。これらは次のとおりです:
+
+<p>
+<table width=100% border=0 cellpadding=0 cellspacing=0>
+
+<tr><td width=25% align=right valign=top><tt>byte[]</tt>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.lang.String.html#getBytes(java.lang.String)"><tt>String.getBytes(String enc)</tt></a>
+<tr><td width=25% align=right valign=top>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.lang.String.html#String(byte[], java.lang.String)"><tt>String(byte[] buf, String enc)</tt></a>
+<tr><td width=25% align=right valign=top>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.lang.String.html#String(byte[], int, int, java.lang.String)"><tt>String(byte[] buf, int off, int len, String enc)</tt></a>
+
+<tr><td width=25% align=right valign=top>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.io.OutputStreamWriter.html#OutputStreamWriter(java.io.OutputStream, java.lang.String)"><tt>OutputStreamWriter(OutputStream out, String enc)</tt></a>
+
+<tr><td width=25% align=right valign=top>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.io.InputStreamReader.html#InputStreamReader(java.io.InputStream, java.lang.String)"><tt>InputStreamReader(InputStream in, String enc)</tt></a>
+
+<tr><td width=25% align=right valign=top><tt>String</tt>&nbsp;&nbsp;
+    <td width=75% align=left valign=top><a href="../../api/java.io.ByteArrayOutputStream.html#toString(java.lang.String)"><tt>ByteArrayOutputStream.toString(String enc)</tt></a>
+
+</table>
+
+
+<p><a href="../../api/java.io.InputStreamReader.html"><tt>InputStreamReader</tt></a> および <a href="../../api/java.io.OutputStreamWriter.html"><tt>OutputStreamWriter</tt></a> クラスは、基礎をなすバイトストリームをバッファする約束はしません。そのため、バイトバッファサイズを指定できる構築子は除外されました。これらのクラスの <tt>getCharacterEncoding</tt> メソッドは <a href="../../api/java.io.InputStreamReader.html#getEncoding()"><tt>getEncoding</tt></a> に名前を変更されました。
+
+
+<p><a href="../../api/java.io.StreamTokenizer.html#StreamTokenizer(java.io.InputStream)"><tt>StreamTokenizer(InputStream)</tt></a> 構築子は、ASCII を前提にするのではなく、デフォルトの文字エンコーディングを使用するように変更されました。これによってバイナリ互換が崩れ、元の動作が復元され、この構築子は推奨されなくなりました。
+
+
+<p>
+<hr noshade>
+<table border=0 width=100% cellpadding=0 cellspacing=0>
+<tr><td valign=top align=left>
+    コメントは <a href="mailto:java-io@java.sun.com"><i>java-io@java.sun.com</i></a> 宛てに送ってください。
+    </td>
+    <td valign=top align=right>Mark Reinhold / 4 February 1997</td></tr>
+</table>
+
+</body>
+</html>

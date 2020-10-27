@@ -1,0 +1,109 @@
+<html><head><title>Java AWT: ScrollPane コンテナ</title></head>
+<BODY BGCOLOR="#FFFFFF">
+ 
+<a name="919682">
+<h1><img align=middle src="images/box.sm.gif"> Java AWT: ScrollPane コンテナ</h1>
+
+</a>
+<hr><p><a name="919687">
+<address>
+最終更新: 1997 年 2 月 3 日
+</address>
+<h2>問題</h2>
+</a>
+AWT1.0 では、スクロール動作すべてを実装するタスクは開発者に任されていました。Java プログラムが管理する必要のある基本的な Scrollbar クラスだけが提供され、 Java プログラムがスクロールバーイベントをキャッチし、スクロールされるコンテンツを更新するために適当なアクションを取る必要がありました。
+<p>ツールキットでもっとよいサポートに慣れている開発者にとって、これは全般的に負荷になるだけでなく、重大なパフォーマンスの問題でもあります。それは、発生する個別のスクロールイベント各々にとってラウンドトリップ (ネイティブ-&gt;java-&gt;ネイティブ) となり、アプリケーションはイベントに応答し、遅い Java 描画/移動操作を使用してそのコンテンツを移動する必要があるからです。これは、特にイベント集中スクロールドラッグ操作の際は顕著です。<a name="919690">
+<h2>スクロールペイン API</h2>
+</a>
+この問題を解決するために、ScrollPane クラスが 1.1 の AWT に追加されています。ScrollPane は単一コンポーネントの子に対して自動スクロールを実装するコンテナを提供します:
+<pre><code>	<a href="../../../api/java.awt.ScrollPane.html">java.awt.ScrollPane</a>
+</code></pre>
+ScrollPane はそのスクロールバーに対して 3 つのモードをサポートします:
+<ol>
+<li>「必要時」のスクロールバー: 子のサイズがスクロールペインのサイズを超えたときだけ、スクロールバーが表示される。
+<li>「常時」のスクロールバー: 子と親の相対的なサイズに関わらず、スクロールバーは常に表示される。
+<li>「非表示」のスクロールバー: スクロールバーは決して表示されず、プログラムはスクロールが発生するときを完全に制御する。このモードは、プログラムが自分のスクロールバー制御を実装したいときに有用である。
+</ol>
+ケース 1 & 2 の垂直および水平スクロールバーの状態は、次のインタフェースを実装する ScrollPane に対する別個の内部オブジェクトによって表されます:
+<pre><code>       <a href="../../../api/java.awt.Adjustable.html">java.awt.Adjustable</a>
+</code></pre>
+そのため、プログラムが unitIncrement,value などのプロパティをスクロールペイン上にセットしたい場合、最初に適当な Adjustable を取得し、プロパティをそこにセットします。
+
+<h2>サンプルコード</h2>
+
+次のサンプルコードはサンプルケースでのこの API の使用方法です:
+<pre><code>	
+import java.awt.*;
+
+public class Scroller extends Frame {
+
+    public Scroller() {
+        super("Scroller Example");
+    
+        <b>ScrollPane scroller = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
+        scroller.add(new DrawCanvas());
+
+        Adjustable vadjust = scroller.getVAdjustable();
+        Adjustable hadjust = scroller.getHAdjustable();
+        hadjust.setUnitIncrement(10);
+        vadjust.setUnitIncrement(10);
+
+        scroller.setSize(200, 200);</b>
+
+        add("Center", scroller);
+        pack();
+
+    }
+   // No more handleEvent method needed to implement scrolling!
+
+    public static void main(String args[]) {
+        Scroller test = new Scroller();
+        test.show();
+    }
+}
+
+class DrawCanvas extends Component {
+
+    public Dimension getPreferredSize() {
+        return new Dimension(300, 300);
+    }
+  
+    public void paint(Graphics g) {
+        // Note: For most efficient repainting, we should check the
+        // clip rectangle in the Graphics object to determine the
+        // damaged region and only paint that;  we don't do that here
+        // for simplicity in this example
+        //
+        Rectangle r = getBounds();
+
+        g.setColor(Color.black);
+        g.fillRect(0, 0, r.width, r.height);
+
+        g.setColor(Color.yellow);
+        g.drawLine(0, 0, r.width, r.height);
+
+        g.setColor(Color.white);
+        g.drawLine(0, r.height, r.width, 0);
+    }
+}
+</code></pre>
+
+<hr><br>
+<address>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</address>
+
+
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.5 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email yourEmail@xyzcorp.com -->
+<!-- -->
+<!-- Last updated: 09/13/96 16:16:05 -->
+
+</body>
+</html>

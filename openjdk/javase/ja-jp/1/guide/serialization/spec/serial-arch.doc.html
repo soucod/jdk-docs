@@ -1,0 +1,169 @@
+<html><head><title>システムアーキテクチャ
+</title></head>
+<body bgcolor=#ffffff>
+ 
+<a href="serialTOC.doc.html">[目次]</a> <a href="serialTOC.doc.html">[前項目]</a> <a href="output.doc.html">[次項目]</a>
+<hr><br>
+ 
+<h1><a name="60">
+システムアーキテクチャ
+
+</a></h1>
+<hr><p>
+<p><h3><a name="3541">
+トピック:
+</a></h3><ul><li><a href="serial-arch.doc.html#4895">概要</a>
+<li><a href="serial-arch.doc.html#4176">オブジェクトストリームへの書き込み</a>
+<li><a href="serial-arch.doc.html#4188">オブジェクトからの読み込み</a>
+<li><a href="serial-arch.doc.html#962">コンテナとしてのオブジェクトストリーム</a>
+<li><a href="serial-arch.doc.html#4542">ObjectOutput インタフェース</a>
+<li><a href="serial-arch.doc.html#4548">ObjectInput インタフェース</a>
+<li><a href="serial-arch.doc.html#4539">Serializable インタフェース</a>
+<li><a href="serial-arch.doc.html#4333">Externalizable インタフェース</a>
+<li><a href="serial-arch.doc.html#4160">センシティブ情報の保護</a>
+</ul><h1><a name="4895">
+概要
+</a></h1>Java オブジェクトの格納と取り出しの能力は、一過性のものを除くすべてのアプリケーションを作成するために必要なことです。オブジェクトの格納と取り出しで重要なことは、オブジェクトの状態を、それを再構築するのに十分な直列化された形式で表現することです。ストリームに保管されるオブジェクトは、Serializable か Externalizable インタフェースのどちらかをサポートします。Java オブジェクトでは、直列化された形式によって、オブジェクトの内容が保管されていた Java クラスを識別および検証し、その内容を新しいインスタンスに復元できなければなりません。Serializable オブジェクトの場合、ストリームには、そのフィールドを互換性のあるバージョンのクラスに復元できるだけの十分な情報が含まれています。Externalizable オブジェクトの場合、その内容の外部形式については、そのクラスの責任です。
+<p>頻繁に格納と取り出しが行われるオブジェクトは、他のオブジェクトを参照します。これらの他のオブジェクトは、それらの間の関係を維持するために、同時に格納と取り出しが行われなければなりません。オブジェクトが格納されると、そのオブジェクトから参照関係にあるすべてのオブジェクトも格納されます。
+<p>Java オブジェクトの直列化によるねらいは次のとおりです。
+<p><ul><li>シンプルで拡張性のあるメカニズムにする。
+<li>Java オブジェクトの型とその属性を、直列化された形式に維持する。
+<li>リモートオブジェクトに対し、必要に応じて集積と分散をサポートするだけの拡張性をもつ。
+<li>Java オブジェクトの持続性をサポートするだけの拡張性をもつ。
+<li>カスタマイズの場合だけ、クラスごとの実装を必要とさせる。
+<li>オブジェクトによってその外部形式を定義できる。
+</ul><h1><a name="4176">
+オブジェクトストリームへの書き込み
+</a></h1>オブジェクトやプリミティブをストリームに書き込むことは、複雑な処理ではありません。たとえば、次のようにします。
+
+<p><dl><pre>// Serialize today's date to a file.
+	FileOutputStream f = new FileOutputStream("tmp");
+	ObjectOutput &#32;s &#32;= &#32;new &#32;ObjectOutputStream(f);
+	s.writeObject("Today");
+	s.writeObject(new Date());
+	s.flush();
+</pre></dl>まず <code>OutputStream</code>（この場合は <code>FileOutputStream</code>）が、このバイトを受け取るために必要です。次に、<code>OutputStream</code> に書き込む <code>ObjectOutputStream</code> が作成されます。そして、文字列 "Today"と日付オブジェクトがストリームに書き込まれます。一般に、オブジェクトは <code>writeObject</code> メソッドによって書き込まれ、プリミティブはストリームに <code>DataOutput</code> のメソッドによって書き込まれます。
+<p><code><a href="output.doc.html#1038">writeObject</a></code>メソッドは、指定されたオブジェクトを直列化し、オブジェクトグラフにある他のオブジェクトへのそれの参照を再帰的に処理（トラバース）して、そのグラフを完全に直列化した表現を作成します。ストリーム内でオブジェクトに対する初めての参照があると、そのオブジェクトが直列化または外部化され、そのオブジェクトのハンドルが割り当てられます。そのオブジェクトに対するそれ以後の参照は、そのハンドルとしてコード化されます。オブジェクトハンドルを使用すれば、オブジェクトにおいて当然起こる共用参照や環状参照が保存されます。オブジェクトのそれ以後の参照ではそのハンドルだけを使用するため、非常に簡潔な表現が可能になります。
+<p>型が <code>クラス</code>、<code>ObjectStreamClass</code>、文字列、配列のオブジェクトには、特別の処理が必要です。他のオブジェクトをストリームに保管したり、そこから取り出したりするには、それらのオブジェクトに Serializable か Externalizable インタフェースが実装されていなければなりません。
+<p>プリミティブデータ型は、<code>DataOutput</code> インタフェースのメソッド（<code>writeInt</code>、<code>writeFloat</code>、<code>writeUTF</code>など）でストリームに書き込まれます。個別のバイトと配列バイトは、<code>OutputStream</code> のメソッドで書き込まれます。すべてのプリミティブデータはブロックデータレコードでストリームに書き込まれ、レコードの前にはマーカーと長さが入れられます。レコードにデータを入れることにより、必要ならデータをスキップすることができます。
+<p><code>ObjectOutputStream</code> を拡張すれば、ストリームのクラスに関する情報をカスタマイズしたり、直列化されるオブジェクトを置き換えることができます。詳しくは、<code>annotateClass</code> と <code>replaceObject</code> メソッドの説明を参照してください。
+<p><h1><a name="4188">
+オブジェクトストリームからの読み込み
+</a></h1>書き込みと同様、ストリームから読み込むことは、複雑なことではありません。
+<p><dl><pre>// Deserialize a string and date from a file.
+	FileInputStream in = new FileInputStream("tmp");
+	ObjectInputStream s = new ObjectInputStream(in);
+	String today = (String)s.readObject();
+	Date date = (Date)s.readObject();
+</pre></dl>まず <code>InputStream</code>（この場合は <code>FileInputStream</code>）がソースストリームとして必要です。次に、<code>InputStream</code>から読み込む <code>ObjectInputStream</code>が作成されます。そして、文字列 "Today"と日付オブジェクトがストリームから読み込まれます。一般に、オブジェクトは <code>readObject</code> メソッドで読み込まれ、プリミティブは <code>DataInput</code> のメソッドによってストリームから読み込まれます。
+<p><code><a href="input.doc.html#2971">readObject</a></code> メソッドは、ストリームにある次のオブジェクトを直列化復元し、他のオブジェクトへのそれの参照を再帰的に処理（トラバース）して、直列化された完全なオブジェクトグラフを作成します。
+<p>プリミティブデータ型は、<code>DataOutput</code> インタフェースのメソッド（<code>readInt</code>、<code>readFloat</code>、<code>readUTF</code>など）によってストリームから読み込まれます。個別のバイトと配列バイトは、<code>InputStream</code> のメソッドによって読み込まれます。すべてのプリミティブデータはブロックデータレコードから読み込まれます。
+<p>ObjectInputStream を拡張すれば、クラスに関してストリームにある情報を利用したり、直列化復元されたオブジェクトを置き換えることができます。詳しくは、<code>resolveClass</code> と <code>resolveObject</code> メソッドの説明を参照してください。
+<p><h1><a name="962">
+コンテナとしてのオブジェクトストリーム
+</a></h1>オブジェクト直列化によって、1 つまたは複数のプリミティブやオブジェクトが入ったバイトストリームが作成され、消費されます。ストリームに書き込まれたオブジェクトは、そのストリームに表されている他のオブジェクトを順に参照します。オブジェクト直列化によって、ストリームに含まれるオブジェクトをコード化し格納するストリーム形式が、 1 つだけ作成されます。オブジェクト直列化は、Javaクラスに豊富な機能を提供するように設計されています。OLEや OpenDocなど、他のコンテナ形式は、これとは異なるストリームやファイルシステムの表現をもっています。
+<p>コンテナとして作用する各オブジェクトには、プリミティブやオブジェクトをそこに格納したり、そこから取り出したりすることができるインタフェースが実装されています。これらのインタフェースは <code>ObjectOutput</code> と <code>ObjectInput</code> で、次のことを行います。
+<p><ul><li>書き込む先のストリームや読み込み元のストリームを与える。
+<li>プリミティブ型やオブジェクトをストリームに書き込む要求を処理する。
+</ul>ストリームに格納される各オブジェクトは、格納できることを明示的に示さなければなりません。また、その状態の保管と復元に必要なプロトコルを実装していなければなりません。オブジェクト直列化では、そのようなプロトコルが 2 つ定義されています。これらのプロトコルによって、コンテナは、オブジェクトの状態を書き込んだり、読み込んだりすることをオブジェクトに依頼することができます。オブジェクトストリームに格納されるためには、各オブジェクトは、Serializable か Externalizable インタフェースを実装しなければなりません。
+<p>Serializable クラスの場合、オブジェクト直列化によって、オブジェクトの各クラスのフィールドが自動的に保管および復元され、フィールドやスーパー型を追加することで発展するクラスが自動的に処理されます。Serializable クラスは、それのどのフィールドが transient（保管もリストもされない）かを宣言し、任意指定の値やオブジェクトの書き込みや読み込みを行うことができます。
+<p>Externalizable クラスの場合、オブジェクト直列化では、その外部形式の制御と、スーパー型の状態の保管と復元方法に対する制御がクラスにすべてまかされます。
+<p><h1><a name="4542">
+ObjectOutputインタフェース
+</a></h1><code>ObjectOutput</code> インタフェースは、オブジェクトストレージに対する abstract のストリームベースのインタフェースです。このインタフェースは DataOutput の拡張ですので、それらのメソッドを使ってプリミティブデータ型を書き込むことができます。このインタフェースを実装するオブジェクトを使えば、プリミティブやオブジェクトを格納することができます。
+<p><dl><pre>package java.io;
+
+public interface ObjectOutput extends DataOutput
+{
+	public void writeObject(Object obj) throws IOException;
+
+	public void write(int b) throws IOException;
+
+	public void write(byte b[]) throws IOException;
+
+	public void write(byte b[], int off, int len) throws IOException;
+
+	public void flush() throws IOException;
+
+	public void close() throws IOException;
+}
+</pre></dl><code>writeObject</code> メソッドは、オブジェクトを書き込むために使用します。スローされる例外は、オブジェクトやそのフィールドをアクセスしているとに起こったエラーか、ストレージに書き込んでいるときに起こった例外を表しています。何らかの例外がスローされた場合、そのストレージが壊されている可能性があります。詳細については、このインタフェースを実装しているオブジェクトを参照してください。
+<p><h1><a name="4548">
+ObjectInputインタフェース
+</a></h1><code>ObjectInput</code> インタフェースは、オブジェクトの取り出しに対する abstract のストリームベースのインタフェースです。このインタフェースは <code>DataInput</code> の拡張ですから、このインタフェースでは、プリミティブデータ型を読み込むメソッドがアクセス可能です。
+<p><dl><pre>package java.io;
+
+public interface ObjectInput extends DataInput
+{
+	public Object readObject()
+		throws ClassNotFoundException, IOException;
+
+	public int read() throws IOException;
+
+	public int read(byte b[]) throws IOException;
+
+	public int read(byte b[], int off, int len) throws IOException;
+
+	public long skip(long n) throws IOException;
+
+	public int available() throws IOException;
+
+	public void close() throws IOException;
+}
+</pre></dl><code>readObject</code> メソッドは、オブジェクトを読み込み、返すために使用します。スローされる例外は、オブジェクトやそのフィールドをアクセスしているときに起こったエラーか、ストレージから読み込んでいるときに起こった例外を表しています。何らかの例外がスローされた場合、そのストレージが壊されている可能性があります。詳細については、このインタフェースを実装しているオブジェクトを参照してください。
+<p><h1><a name="4539">
+Serializable インタフェース
+</a></h1>オブジェクト直列化を行うと、保管しようとするオブジェクトの Java クラスに関する情報をもつストリームが作成されます。Serializable オブジェクトの場合、そのクラスの異なる（しかし互換性のある）バージョンの実装が存在していても、これらのオブジェクトを復元するのに十分な情報が保持されます。インタフェース Serializable は、Serializable プロトコルを実装するクラスを識別するように定義されます。
+<p><dl><pre>package java.io;
+
+public interface Serializable {};
+</pre></dl><code>Serializable</code>オブジェクトは、
+<p><ul><li><code>java.io.Serializable</code> インタフェースを実装しなければならない。
+<li>永続性のないフィールドを transient キーワードで明らかにしなければならない。
+<li><code>writeObject</code> メソッドを実装することによって、保管する情報を制御したり、情報をストリームに追加したりすることができる。
+<li><code>readObject</code> メソッドを実装することによって、対応する <code>writeObject</code>メソッドで書き込まれた情報を読み込んだり、オブジェクトが復元された後にその状態を更新したりすることができる。
+</ul><code>ObjectOutputStream</code> と <code>ObjectInputStream</code> は、それらが作用する Serializable クラスが発展できるように実装および設計されています。この文脈における発展とは、クラスの前のバージョンと互換性がある変更であれば、それらのクラスに対して行うことができるという意味です。互換性のある変更を可能にするメカニズムの詳細については、<a href="version.doc.html#6519">互換性のある Javaの型展開</a>を参照してください。
+<p><h1><a name="4333">
+Externalizable インタフェース
+</a></h1>Externalizable オブジェクトの場合、そのオブジェクトのクラスを識別する情報だけがコンテナによって保管されます。それらのコンテナを保管し復元するのは、そのクラスの責任です。インタフェース Externalizable は、次のように定義されます。
+<p><dl><pre>package java.io;
+
+public interface Externalizable extends Serializable
+{
+	public void writeExternal(ObjectOutput out)
+		throws IOException;
+
+	public void readExternal(ObjectInput in)
+		throws IOException, java.lang.ClassNotFoundException;
+}
+</pre></dl><code>Externalizable</code>オブジェクトは、
+<p><ul><li><code>java.io.Externalizable</code> を実装しなければならない。
+<li><code>writeExternal</code> メソッドを実装して、オブジェクトの状態を保管しなければならない。さらに、そのスーパー型と明示的に連携して、それの状態を保管する必要がある。
+<li><code>readExternal</code> メソッドを実装して、<code>writeExternal</code> メソッドで書き込まれたデータをストリームから読み込み、そのオブジェクトの状態を復元しなければならない。さらに、そのスーパー型と明示的に連携して、それの状態を保管する必要がある。
+<li>外部で定義された形式の場合は、その形式に対する責任は全面的に <code>writeExternal</code> と <code>readExternal</code> メソッドにある。</ul>
+<em><code>writeExternal</code> と <code>readExternal</code> のメソッドは public であるため、クライアントが、オブジェクトのメソッドとフィールドを使わずにオブジェクトの情報を書き込んだり、読み込んだりできるおそれがあります。これらのメソッドを使うのは、オブジェクトで表す情報がセンシティブでないときや、書き込みや読み込みがあっても機密保護のリスクとはならない場合だけにしなければなりません。
+</em><p><h1><a name="4160">
+センシティブ情報の保護
+</a></h1>リソースのコントロールアクセスを行うクラスを開発する場合には、センシティブな情報と機能が保護されるように注意しなければなりません。直列化復元の際、オブジェクトの private 状態が復元されます。たとえば、ファイル記述子には、オペレーティングシステムにアクセスできるハンドルが含まれています。状態の復元はストリームから行われますので、ファイル記述子を偽造できるということは、何らかの不法なアクセスが可能だということです。したがって、直列化の実行時には安全なアプローチを取るべきであり、ストリームにオブジェクトの有効な表現だけが含まれているとは信じないことです。クラスを正しく保つには、オブジェクトのセンシティブな状態を、ストリームから復元しないようにするか、そのクラスによって再び検証するようにする必要があります。クラスのセンシティブなデータを保護するにはいくつかの技法があります。
+<p>最も簡単な技法は、センシティブなデータを含むフィールドを <strong>private transient</strong> とすることです。transient と static のフィールドは、直列化も直列化復元もされません。フィールドをこのようにすると、その状態がストリームに現れませんし、直列化復元の際にも復元されません。（private フィールドの）書き込みや読み込みをそのクラスの外で代わりに行うことはできませんので、そのクラスの transient フィールドは安全です。
+<p>特にセンシティブなクラスは、一切直列化すべきではありません。これを確実にするには、オブジェクトに Serializable や Externalizable インタフェースを実装しないことです。
+<p>クラスによっては、書き込みや読み込みを許し、直列化復元の際に状態を特に処理して再検証する方が便利なこともあります。クラスには <code>writeObject</code> と <code>readObject</code> のメソッドを実装して、適切な状態だけを保管および復元すべきです。アクセスが拒否される場合には、<code>NotSerializableException</code> がスローされ、それ以上のアクセスは行われません。
+<p>
+<hr><br>
+ 
+<a href="serialTOC.doc.html">[目次]</a> <a href="serialTOC.doc.html">[前項目]</a> <a href="output.doc.html">[次項目]</a>
+<hr><br>
+ 
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.4 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email rmi-support@javasoft.com -->
+<!-- -->
+<!-- Last updated: 02/04/97 16:45:49 -->
+
+</body>
+</html>

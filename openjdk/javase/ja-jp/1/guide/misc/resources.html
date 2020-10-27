@@ -1,0 +1,329 @@
+<html>
+<head>
+<title>リソースへのアクセス</title>
+</head>
+
+<BODY BGCOLOR="#FFFFFF" TEXT=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+<CENTER><P ALIGN=LEFT>
+<IMG SRC="../../images/smi.logo.gif" ALT=" Sun Microsystems, Inc " BORDER=0>
+</P></CENTER>
+
+
+<font size=-1><a href="../../index.html">JDK 目次</a></font>
+<HR SIZE=3 NOSHADE>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<center>
+     <H1>位置に依存しない方法でリソースにアクセスする</H1>
+</center>
+
+<H2>はじめに</H2>
+
+アプレット、Beans、アプリケーション、ライブラリには、ほとんどの場合リソースファイルが関連づけられています。これらのアプレット、Beans 等では、アプレット等がある位置に依存しない方法で、これらのファイルにアクセスする必要があります。
+
+<P> JDK1.0.x 内の既存のコードでは、2 種類のメカニズムを使用しています。1 つめのメカニズムはアプレット内で使用されています。<EM>Applet.getCodeBase()</EM> は、アプレットのコードの基準となる URL を返します。この基本 URL を相対パスで拡張して目的のリソースを参照し、リソースをロードすることができます (<EM>Applet.getAudioClip(url)</EM> などを使用)。
+2 つめのメカニズムはアプリケーション内で使用されています。アプリケーションは「有名な場所」(<EM>System.getProperty("user.home")</EM> 
+または <EM>System.getProperty("java.home"))</EM> を使用します。これらの位置に「/lib/&lt;resource&gt;」を追加して、目的のファイルを開くことができます。
+
+<P> これまで、JDK1.0.x には、コードに依存しない方法でリソースを探すメカニズムがありませんでした。つまり JDK1.0.x では、複数の http 接続によってネットワーク上からロードされたアプレットや、JAR ファイルを使用してロードされたアプレット、ロードされた Bean、CLASSPATH にインストールされた Bean、CLASSPATH にインストールされた「ライブラリ」などから、リソースをみつける手段がありませんでした。ここではこのようなメカニズムを提供する API について説明します。
+<P> I18N API はこの API を基本操作として使用し、<EM>ResourceBundle</EM> を探します。詳細については、最新の I18N ドキュメンテーションを参照してください。
+
+<H2>リソース、名前、コンテキスト</H2>
+
+<P>リソースは String によって表されます。この String は空のこともありますが、基本的には <B>/</B> で区切られた一連の部分文字列で、それぞれが有効な Java 識別子のあとに「&lt;shortName&gt;」または「&lt;shortName&gt;.&lt;extension&gt;」という形式の名前が続きます。「shortName」と「extension」は、どちらも有効な Java Letters と Numbers (JLS 3.8 節) から成ります。「shortName」の後に任意指定のシーケンスが続く場合は、「shortName」との間が <B>/</B> で区切られます。
+
+<P>リソースの名前は Java の実装機能には依存しません。特に、区切り文字としては必ず <B>/</B> が使われます。ただし、リソースの中身のファイル、データベース、そのほか実際のリソースを含むオブジェクトへのマップ方法は、Java の実装機能が制御します。
+
+<P>リソース名は、ClassLoader インスタンスに対して相対的に解釈されます。ClassLoader によって実装されるメソッドがこの解釈を行います。
+
+<H2>システムリソース</H2>
+
+<P>システムリソースは、システムクラス (JLS の 20.14.5 節) に似ています。システムリソースとは、システムに組み込まれているリソース、またはホストの実装機能に組み込まれているリソースのことで、ローカルファイルシステムがその一例です。システムリソースにアクセスするには特殊なメソッド (<EM>getSystemResource</EM> と <EM>getSystemResourceAsStream</EM>) を使用し、基本ホストの実装機能を実行します。
+
+<P>たとえば、一部の実装機能では、システムリソースを見つけるために CLASSPATH 内の項目を検索しなければならないことがあります。CLASSPATH 内の各ディレクトリ、zip ファイル、JAR ファイル内でリソースファイルを探し、見つかった場合はその InputStream か名前が返されます。リソースが見つからない場合は null が返されます。リソースは、クラスファイルをロードしたのと同じ CLASSPATH 項目にあるとは限りません。
+
+<H2>非システムリソース</H2>
+
+特定の <EM>ClassLoader</EM> での <EM>getResource</EM> の実装方法は、ClassLoader の詳細によって異なります。AppletClassLoader の場合は次のようになります。
+
+<UL>
+<LI>まず、システムリソースとしてリソースを探す。見つからない場合は、
+
+<LI>この CODEBASE にすでにロードされている ARCHIVES (JAR ファイル) 内でリソースを探す。見つからない場合は、
+<LI>CODEBASE を使用して、リソースの検索を試みる (リモートサイトに接続することもある)。
+</UL>
+
+<P> 大部分の ClassLoader、特に AppletClassLoader は、クラスファイルを探すのと同じように、リソースをまずシステムリソースとして探します。このため、すべてのリソースをローカルに上書きすることが可能になります。リソース名には一意の名前を選択する必要があります (接頭辞として会社名やパッケージ名などを使用します)。
+
+<H2>リソース名</H2>
+
+<P> 各クラスは一般的に、リソース名を表す際に、クラスのパッケージ名の完全修飾名を使用し、すべての「.」を「/」に変換し、リソース名を「&lt;Name&gt;.&lt;ext&gt;」の形式で追加するという規則を使用します。この規則をサポートし、システムクラス (<EM>getClassLoader</EM> が <B>null</B> を返すクラス)の詳細の処理を簡略化するために、Class クラスには 2 つの便利なメソッドが用意されています。これらのメソッドは <EM>ClassLoader</EM> 内の適切なメソッドを呼び出します。
+
+<P> Class のメソッドに渡されるリソース名は、先頭が「/」で始まるものがあります。これは「絶対」名を表します。先頭が「/」ではないリソース名は「相対」名です。
+
+<P> リソースを探す際、絶対名は、先頭の「/」が除去されただけの状態で、適切な ClassLoaderのメソッドに渡されます。相対名は、前述の規則に従って修正されたあと、ClassLoaderのメソッドに渡されます。
+
+<H2>リソースを操作する</H2>
+
+<P> <EM>getResource()</EM> メソッドはリソースの URL を返します。URL (およびその表現) はの実装方法に特有であり、実装方法の詳細によっても変わることがあります(JDK1.1 と JDK1.1.1 の間でも変わります)。
+プロトコルは通常、リソースをロードする ClassLoader に特有です。リソースが見つからない場合は、null が返されます。
+<P> クライアントコードでリソースの内容を InputStream として読み込むには、その url に <EM>openStream()</EM> メソッドを適用します。これは、<EM>getResourceAsStream()</EM> メソッドが Class や ClassLoader に追加されてもよいくらい一般的な方法です。
+
+<P> クライアントコードは、url に対して <EM>getContent()</EM> メソッドを適用することによって、リソースの内容をオブジェクトとして要求することもできます。このメソッドは、リソース内にイメージデータが含まれている場合などにとても便利です。
+
+<H2>Class に追加された API</H2>
+
+<P><EM>Class</EM> クラスの各メソッドの形式は次のとおりです。
+
+<PRE>
+<CODE>
+class Class {
+
+    /**
+     * Find a resource with a given name.  Will return null if no
+     * resource with this name is found.  The rules for searching a
+     * resources associated with a given class are implemented by the
+     * ClassLoader of the class.
+     *
+     * The Class methods delegate to ClassLoader methods, after applying
+     * a naming convention: if the resource name starts with "/", it is used
+     * as is.  Otherwise, the name of the package is prepended, after
+     * converting "." to "/".
+     *
+     * @see java.lang.ClassLoader
+     */
+    public InputStream getResourceAsStream(String name) {
+	name = resolveName(name);
+	ClassLoader cl = getClassLoader();
+	if (cl==null) {
+	    // A system class.
+	    return ClassLoader.getSystemResourceAsStream(name);
+	}
+	return cl.getResourceAsStream(name);
+    }
+
+    public java.net.URL getResource(String name) {
+	name = resolveName(name);
+	ClassLoader cl = getClassLoader();
+	if (cl==null) {
+	    // A system class.
+	    return ClassLoader.getSystemResource(name);
+	}
+	return cl.getResource(name);
+    }
+
+    /**
+     * Add a package name prefix if the name is not absolute
+     * Remove leading "/" if name is absolute
+     */
+    private String resolveName(String name) {
+	if (name == null) {
+	    return name;
+	}
+	if (!name.startsWith("/")) {
+	    Class c = this;
+	    while (c.isArray()) {
+		c = c.getComponentType();
+	    }
+	    String baseName = c.getName();
+	    int index = baseName.lastIndexOf('.');
+	    if (index != -1) {
+		name = baseName.substring(0, index).replace('.', '/')
+		    +"/"+name;
+	    }
+	} else {
+	    name = name.substring(1);
+	}
+	return name;
+    }
+
+
+</CODE>
+</PRE>
+
+<P> あまり一般的ではありませんが、2 つの異なるパッケージ内にある 2 つのクラスが、同じリソースを共有することも可能です。
+
+<H2>ClassLoader に追加された API</H2>
+
+<P> リソースにアクセスするために、2 セットのメソッドが用意されています。1 セット目のメソッドはリソースの InputStream を返します。もう 1 セットは URL を返します。 
+InputStream を返す各メソッドは比較的使いやすく、用途も多くあります。もう一方の URL を返す各メソッドを使うと、Image オブジェクトや AudioClip オブジェクトなど、もっと複雑な情報にアクセスすることができます。
+
+<P>リソースは、クラスと同じような方法で、ClassLoader を通して管理されます。ClassLoader はリソース名とその内容のマップ方法を制御します。また<EM>システムクラス</EM>の場合と同じように、ClassLoader には <EM>システムリソース</EM> にアクセスするためのメソッドも用意されています (JDK1.0.x と JDK1.1 では、システムクラスには ClassLoader がありません)。
+Class クラスには、機能を ClassLoader クラスの各メソッドに任せるという便利なメソッドがあります。
+
+<P>多くの Java プログラムは、I18N API を使用してこれらのメソッドに間接的にアクセスします。Class クラスのメソッドを介してアクセスするプログラムもあります。ClassLoader クラスのメソッドを直接呼び出すプログラムはほとんどありません。
+
+<P> ClassLoader のメソッドは、受け取った String をリソース名として使用します。絶対名と相対名との変換は行いません (Class クラスのメソッドとは対照的です)。名前の先頭には「/」をつける必要がありません。
+
+<PRE>
+<CODE>
+class ClassLoader {
+
+    /**
+     * A resource is some data (images, audio, text, etc) that wants to be
+     * accessed by some class code in a way that is independent of the
+     * location of the code.  Resources are found with cooperation of the
+     * class loaders, since they are the only ones who know where the class
+     * actually came from. <p>
+     *
+     * System resources are those that are handled by the host implemenation
+     * directly.  For example, they may be located in the CLASSPATH.<p>
+     *
+     * The name of a resource is a "/"-separated sequence of identifiers.
+     * The class Class provides convenience methods for accessing resources;
+     * the methods implement a convention where the package name is prefixed
+     * to the short name of the resource.<p>
+     * 
+     * Resources can be accessed as an InputStream, or as a URL.
+     *
+     * @see	Class
+     */
+
+    /**
+     * Get an InputStream on a given resource..  Will return null if no
+     * resource with this name is found. <p>
+     *
+     * The resource name may be any system resource (e.g. follows CLASSPATH order)
+     * @param	name	the name of the resource, to be used as is.
+     * @return		an InputStream on the resource, or null if not found.
+     */
+
+    public static final InputStream getSystemResourceAsStream(String name) {
+	... this is equivalent to getSystemResource() call plus a openStream()
+    }
+
+    /**
+     * Find a resource with a given name.  The return is a URL to the resource
+     * Doing a getContent() on the URL may return an ImageProducer, an AudioClip, or
+     * an InputStream.<p>
+     *
+     * The resource name may be any system resource (e.g. follows CLASSPATH order)
+     * @param	name	the name of the resource, to be used as is.
+     * @return		the URL on the resource, or null if not found.
+     */
+    public static final java.net.URL getSystemResource(String name) {
+	...
+    }
+
+    /**
+     */
+
+    /**
+     * Get an InputStream on a given resource.  Will return null if no
+     * resource with this name is found. <p>
+     *
+     * The class loader can choose what to do to locate the resource.
+     * @param	name	the name of the resource, to be used as is.
+     * @return		an InputStream on the resource, or null if not found.
+     */
+    public InputStream getResourceAsStream(String name) {
+	return null;
+    }
+
+    /**
+     * Find a resource with a given name.  The return is a URL to the resource.
+     * Doing a getContent() on the URL may return an ImageProducer, an AudioClip,
+     * or an InputStream.<p>
+     *
+     * The class loader can choose what to do to locate the resource.
+     * @param	name	the name of the resource, to be used as is.
+     * @return		an InputStream on the resource, or null if not found.
+     */
+    public java.net.URL getResource(String name) {
+	return null;
+    }
+
+    }
+</CODE>
+</PRE>
+
+<H2>クライアントコード</H2>
+
+<P>次に、クライアントコードの例を 2 つ示します。1 つめの例では「絶対リソース」名と従来のメカニズムを使用して Class クラスのオブジェクトを取得しています。
+
+<PRE>
+<CODE>
+package pkg;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+
+class Test {
+
+    private static final String absName = "/pkg/mumble.baf";
+
+    public static void test1() {
+	Class c=null;
+	try {
+	    c = Class.forName("pkg.Test");
+	} catch (Exception ex) {
+	    // This should not happen.
+	}
+	InputStream s = c.getResourceAsStream(absName);
+	// do something with it.
+    }
+
+    public void test2() {
+	InputStream s = this.getClass().getResourceAsStream(absName);
+	// do something with it.
+    }
+
+</CODE>
+</PRE>
+
+<P>2 つめの例では「相対リソース」名と新しいメカニズムを使用して Class クラスのオブジェクトを取得しています。この新しいメカニズムは、コンパイル時に -experimental フラグを使用して利用できます。
+
+<PRE>
+<CODE>
+package pkg;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+
+class Test {
+
+    private static final String relName = "mumble.baf";
+
+    public static void test1() {
+	InputStream s = Test.class.getResourceAsStream(relName);
+	// do something with it.
+    }
+
+    public void test2() {
+	InputStream s = Test.class.getResourceAsStream(relName);
+	// do something with it.
+    }
+
+</CODE>
+</PRE>
+
+<H2>関連トピックと既知のバグ</H2>
+
+<P> <EM>getResource</EM> インタフェースには、言語対応されたリソースをみつけるためのサポートは特にありません。言語対応されたリソースは、<A HREF="../intl/index.html">国際化機能</A>によってサポートされます。
+
+<P> getResource のバグについては、
+<A HREF="http://java.sun.com/products/JDK/1.1/knownbugs/classes_java.html">
+classes_java</A> に記載されています。
+
+<p>
+
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE>
+
+<IMG SRC="../../images/JAVA.85.GIF" ALIGN=RIGHT>
+
+<FONT SIZE=-2>
+<A HREF="../../relnotes/SMICopyright.html">Copyright (C)</A> 1996 Sun Microsystems, Inc., 2550 Garcia Ave., Mtn. View, CA 94043-1100 USA. All rights reserved.
+</FONT>
+<br><br>
+<FONT SIZE=-1>
+ご意見等は Eduardo Pelegri-Llopart
+(<A HREF="mailto:pelegri@eng.sun.com">pelegri@eng.sun.com</A>)までお送りください。
+<BR>
+Last update November 29th, 1994.
+</FONT>
+
+</BODY>
+</HTML>
+

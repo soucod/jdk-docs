@@ -1,0 +1,138 @@
+<html><head><title>Java AWT: ポップアップメニュー</title></head>
+<BODY BGCOLOR="#FFFFFF">
+ 
+ 
+<a name="919735">
+<h1><img src="images/flip.sm.gif"> Java AWT: ポップアップメニュー</h1>
+</a>
+<hr><p><a name="919737">
+<address>最終更新: 1997 年 2 月 3 日</address>
+
+<h2>目的</h2>
+</a>
+現在、ポップアップメニュー (「コンテキストメニュー」としても知られている）は、近代的な GUI (Win95、CDEなど) での非常に一般的な UI 要素です。1.0 の AWT はプルダウンメニュー (メニューバーまたはメニュー項目に常に接続されるメニュー) しかサポートしておらず、Java プログラムが簡単にポップアップメニューを作成できる API を必要としています。<a name="919739">
+<p>
+<h2>ポップアップメニュー API</h2>
+</a>
+この API の主要な目標は、ポップアップの作成と起動を、 Java プログラムにて極めて簡単にできるようにすることです。さらに、ポップアップが単一のコンポーネントに強く結び付けられないこと、そして包含階層内外両方で簡単に再使用できることを保証したいと思っています。
+<p>この API は Menu の新しいサブクラスから構成されます:
+<pre><code>	<a href="../../../api/java.awt.PopupMenu.html">java.awt.PopupMenu</a>
+</code></pre>
+
+<p>このサブクラスに主に追加されたものは、次のポップアップを起動するメソッドです:<pre><code>	<a href="../../../api/java.awt.PopupMenu.html#show">public void show(Component origin, int x, int y)</a>
+</code></pre>
+
+<p>このメソッドはコンポーネントパラメータに関する x、y 座標位置のポップアップを
+起動します (この意図は、すべてのパラメータが与えられたマウスダウンイベントオブジェクトから簡単に抽出できるようにすることです）。<a name="919746">
+<p>
+<h3>ポップアップメニューの所有権</h3>
+</a>
+ポップアップメニューが表示されるためには有効な「親」コンポーネントが必要です。これは、ポップアップメニューをインスタンスにし、表示される前にキャッシュすることが可能であると保証するためです (ユーザの観点から見ると、それを起動したマウスイベントと同時に発生するはずの遅延が、表示操作の間に起こらないようにするため）。ポップアップメニューは、 java.awt.Component クラスの新しいメソッドを使用して、すべてのコンポーネントに対して登録/削除することができます:
+<pre><code>	<a href="../../../api/java.awt.Component.html#add">add(PopupMenu popup)</a>
+</code></pre>
+
+<pre><code>	<a href="../../../api/java.awt.Component.html#remove">remove(MenuComponent popup)</a>
+</code></pre>
+<p>ポップアップメニューは、一時に 1 つのコンポーネントによってのみ所有することができます。
+
+<p>show() メソッドに渡された「元の」パラメータは、ポップアップの親をルートとして定義された包含階層内に含まれるどのコンポーネントにもなれます (それ自身が親である必要はありません)。単一のポップアップをウィンドウ全体に定義する必要がある場合に、これは特に有効です。ポップアップメニューをフレームに登録しますが、そのフレーム内のすべてのコンポーネントのマウスダウンイベントに応じて、これを起動できます。<a name="919813">
+<p>
+<h3>ポップアップイベントのトリガー</h3>
+</a>
+ポップアップメニューの大事な課題は、適切なイベントトリガーを定義することです。なぜならば、これは異なるプラットフォームでわずかに変わるからです:<ul>
+<li>Windows では、マウスボタン *2* マウス UP でメニューがポップアップされる。
+
+<li>Motif では、マウスボタン *3* マウス DOWN でメニューがポップアップされる (引き続いてマウス UP が短い間隔で発生する場合、メニューは表示されたままとなる; さもなければ、マウス DOWN でメニューはプルダウンされる）
+</ul>
+<p>この API はプラットフォーム独立の抽象概念を提供し、内部にハードコーディングのプラットフォーム固有イベント処理論理を持たずに、プログラムはポップアップメニュートリガーイベントを検出できます。これは、java.awt.event.MouseEvent 上の次のメソッドを提供することで達成されます:
+<pre><code>	<a href="../../../api/java.awt.event.MouseEvent.html#isPopupTrigger">public boolean isPopupTrigger()</a>
+</code></pre>
+
+<p>
+<h3>イベントモデルの問題</h3>
+
+AWT の 1.0イベントモデルは、メニューイベント (メニュー項目が選択されたとき、起動されるアクション）はメニュー自身内でキャッシュ可能でなく、親のフレームでキャッチしなければならないという制限を持っています。1.0 イベントモデルで作業するためには、ポップアップメニューイベントは、それを所有するコンポーネントの action() メソッドでキャッチする必要があります。ポップアップメニューは特定のコンポーネントに強く結び付けるように設計されていないため、ポップアップメニューにとってこれは明らかに望ましくない制限です。 新しい 1.1 イベントモデル API に関しては、アクションリスナは直接メニュー項目自身に接続でき、この問題は緩和されます（詳細については、ドキュメント<a href="./events.html">AWT Delegation イベントモデル</a>を参照してください）。
+<a name="919769">
+<p>
+<h2>サンプルコード</h2>
+</a>
+1.1 delegationイベントモデルを使用してこの API の使用法を示す、非常に簡単なサンプルプログラムを次に示します。
+
+<pre><code>    
+    import java.awt.*;
+    import java.applet.*;
+    import java.awt.event.*;
+
+    public class PopupMenuTest extends Applet implements ActionListener {
+
+	<b>PopupMenu popup;</b>
+
+	public void init() {	    
+            MenuItem mi;
+
+	    <b>popup = new PopupMenu("Edit");</b>
+
+            mi = new MenuItem("Cut");
+            mi.addActionListener(this);
+	    <b>popup.add(mi);</b>
+
+            mi = new MenuItem("Copy");
+            mi.addActionListener(this);
+	    <b>popup.add(mi);</b>
+
+	    <b>popup.addSeparator();</b>
+
+            mi = new MenuItem("Paste");
+            mi.addActionListener(this);
+	    <b>popup.add(mi);</b>
+
+	    <b>add(popup); // add popup menu to applet</b>
+           
+            <b>enableEvents(AWTEvent.MOUSE_EVENT_MASK); </b>
+
+	    resize(200, 200);
+        }
+
+	public void processMouseEvent(MouseEvent e) {
+
+	    <b>if (e.isPopupTrigger()) {</b> 
+	        <b>popup.show(e.getComponent(), e.getX(), e.getY());</b>
+	    <b>}</b>
+	    super.processMouseEvent(e);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+	    String command = e.getActionCommand();
+
+            if (command.equals("Cut")) {
+	        // perform cut operation
+            } else if (command.equals("Copy")) {
+                // perform copy operation
+            } else if (command.equals("Paste")) {
+                // perform paste operation
+            }
+        }
+    }
+	
+</code></pre>
+
+<p>
+<hr><br>
+
+
+<address>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</address>
+
+<i>Copyright (C) 1996, Sun Microsystems, Inc.   All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.5 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email yourEmail@xyzcorp.com -->
+<!-- -->
+<!-- Last updated: 09/13/96 15:17:22 -->
+
+</body>
+</html>

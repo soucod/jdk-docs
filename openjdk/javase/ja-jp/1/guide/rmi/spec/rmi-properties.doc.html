@@ -1,0 +1,105 @@
+<html><head><title>RMI のプロパティ
+</title></head>
+<body bgcolor=#ffffff>
+
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-exceptions.doc.html">前項目</a>
+次項目
+<hr><br>
+
+<a name="3601">
+<h1>RMI のプロパティ
+</h1>
+</a>
+<hr><p><a name="4120">
+
+<p>
+</a><h3><a name="4748">
+トピックス:
+</a></h3><ul><li><a href="rmi-properties.doc.html#4746">サーバのプロパティ</a><li><A href="rmi-properties.doc.html#4332">その他のプロパティ</a>
+</ul><h1><a name="4746">
+サーバのプロパティ
+</a></h1>
+<p>
+次の表はサーバがコンフィギュレーション設定で使うプロパティのリストです。
+<p>
+<Table Border="3">
+<caption></caption>
+<tr><th>プロパティ
+<th>説明 
+
+<tr><td>java.rmi.server.codebase 
+
+<td>サーバの codebase URL を示します。クライアントはここからクラスをダウンロードできます。 
+
+<tr><td>java.rmi.server.disableHttp
+<td>true にセットすると、RMI コールは HTTP を使用できなくなります。 この状態では、RMI はファイアウオール経由での呼び出しに HTTPを使いません。デフォルト設定は false です（HTTP を利用する）。 
+
+<tr><td>java.rmi.server.hostname
+<td>完全修飾したホスト名が InetAddress.getLocalHost() から得られないときに、ここに設定しておきます。デフォルトは非設定です。 
+
+<tr><td>java.rmi.dgc.leaseValue
+<td>クライアントが VM のリモートオブジェクトを参照するためにクライアントに許される最大 lease 期間を設定します。デフォルト値は10分です。 
+
+<tr><td>java.rmi.server.logCalls
+<td>true に設定すると、サーバコールのログが残され、標準エラー出力に表示されます。デフォルトでは false に設定されます。 
+
+<tr><td>java.rmi.server.useCodebaseOnly
+<td>true に設定しておくと、RMI がクラスをローディングするときに（CLASSPATH が使えなければ）、プロパティ java.rmi.server.codebasede で指定される URL のみを参照してロードします。 
+
+
+</Table>
+
+<table>
+<tr><td>
+</table>
+
+<p><h1><a name="4332">
+その他のプロパティ
+</a></h1>
+
+<p>
+これらのプロパティは実装パッケージに含まれる特定の実装クラスが置かれている場所を指示するのに使われます。
+<p>
+<Table Border="3">
+<caption></caption>
+<tr><th>プロパティ
+<th>説明
+
+<tr><td>java.rmi.loader.packagePrefix
+<td>インタフェース java.rmi.server.LoaderHandler を実装するクラスのためのパッケージプリフィックス。 デフォルト値は sun.rmi.server。 
+
+<tr><td>java.rmi.registry.packagePrefix
+<td>インタフェース java.rmi.registry.RegistryHandler を実装するクラスのためのパッケージプリフィックス。 デフォルト値は sun.rmi.registry。 
+
+<tr><td>java.rmi.server.packagePrefix
+<td>サーバパッケージのプリフィックス。前提として、サーバ参照クラスの実装 (UnicastRef や UnicastServerRef) はプリフィックスで指定されるパッケージに置かれる。デフォルト値は sum.rmi.server。 
+
+</Table>
+
+<table>
+<tr><td>
+</table>
+
+<p>
+<hr><br>
+
+<a href="rmiTOC.doc.html">目次</a> <a href="rmi-exceptions.doc.html">前項目</a>
+次項目
+<hr><br>
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.  All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.4 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email  -->
+<!-- -->
+<!-- Last updated: 03/18/97 13:00:15 -->
+
+</body>
+</html>

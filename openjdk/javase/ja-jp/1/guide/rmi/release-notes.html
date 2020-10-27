@@ -1,0 +1,119 @@
+<html>
+<head>
+<title>リリースノート</title>
+</head>
+<!-- Changed by: Chris Darke - JavaSoft East,  20-Nov-1996 -->
+
+<BODY BGCOLOR="#FFFFFF" TEXT=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+<CENTER><P ALIGN=LEFT>
+<IMG SRC="../../images/smi.logo.gif" ALT=" Sun Microsystems, Inc " BORDER=0>
+</P></CENTER>
+
+
+<font size=-1><a href="../../index.html">JDK 目次</a></font>
+<HR SIZE=3 NOSHADE>
+
+<center><h1>RMI とオブジェクト直列化</h1>
+<h1>JDK 1.1 リリースノート</h1></center>
+
+<p>
+リリースノートは次の内容を含みます。
+<ul>
+<li><a href="#rmi">RMI の一般的注意</a>
+<li><a href="#serial">直列化の一般的注意</a>
+<li><a href="#fire">CGI プログラムを使ったファイアウオールを通しての RMI (特定の条件下でのみ必要)</a>
+<li><a href="#bugs">現在知られている制限事項とバグ</a>
+</ul>
+<p>
+<h2><a name=rmi>RMI の一般的注意</a></h2>
+<p>
+<ol>
+<li>2つの例によって RMI API の使い方を説明します。最初の分散システム版の
+Hello World プログラムの例には入門用のチュートリアルが付属して
+RMI の使い方の基本を説明します。2番目の例は株価モニタリングアプレットで、ポートフォリオに変動があったときにその通知を受け取り、アプレットがエクスポートしたオブジェクトからのコールバックを例示します。
+<p>
+
+<li>JDK 1.1 でリリースされる RMI を使って開発されたアプレットは
+appletviewer および <a href="http://java.sun.com/products/HotJava">HotJava 1.0</a> で実行することができます。
+Java を実行できるブラウザ上での完全なサポートは、Java のライセンシーが
+JDK リリース 1.1 を組み込むことにより利用可能になります。経過措置として、<a href ="http://chatsubo.javasoft.com/current/rmi/index.html">JDK 1.0.2 上の RMI</a>
+は Netscape への plug-in を備えており、RMI を使ったアプレットを Netscape3.0.1 で実行することができます。
+<p>
+</ol>
+
+<h2><a name=serial>直列化の一般的注意</a></h2>
+<p>
+<ol>
+<li>オブジェクトは、インタフェース <code>java.io.Serializable</code>
+またはインタフェース <code>java.io.Externalizable</code>
+を実装することにより ObjectOutputStream へ書き込み可能であることを陽に宣言しなければなりません。コアとなるクラスの多くは
+<code>Serializable</code>
+インタフェースを実装しています。<p>
+
+<li>インタフェース <code>java.io.Externalizable</code>
+を実装したオブジェクトはオブジェクトの全ての状態を保存するために
+<code>writeExternal</code> メソッドを実装しなければなりません。また、オブジェクトの全ての状態を復元するために
+<code>readExternal</code> メソッドを実装しなければなりません。
+<p>
+
+<li>クラスのバージョン管理のために、クラスの各バージョンは最初のバージョンを除いて変数 <code>SerialVersionUID</code>
+を指定しなければなりません。この変数は現在のクラスからストリームへの読み/書きが可能な最初のバージョンを示します。例：
+<pre>
+      static final long serialVersionUID = 3487495895819393L; 
+</pre>
+<p>
+
+この値を読取るためにはメソッド <code>ObjectStreamClass.getSerialVersionUID</code> またはツール <code>serialver</code> を使用します。
+<p>
+
+</ol>
+<p>
+<h2><a name=fire>CGI プログラムを使ったファイアウオールを通しての RMI (特定の条件下でのみ必要)</a></h2>
+
+<p>
+ファイアウオールの外側にあり、HTTP 要求を任意のポートに出す機能のないクライアントからの RMI コールをサポートしなければならないサーバでは、そのサーバホストのデフォルト HTTP サーバ上に
+CGIプログラムがインストールされていなければなりません（ポート80で受信）。（CGIプログラムがインストールされていなくても、サーバは典型的なファイアウオールの外にあるクライアントからの RMI コールをサポート可能です）
+<p>
+デフォルト HTTP サーバに送られ、さらに URL で指定されるポートを受信している RMI サーバへ転送される HTTP パッケージ化された RMI コールの転送を司るのは CGI プログラムの "java-rmi.cgi" です。 特に、POST 要求が URL パス "/cgi-bin/java-rmi.cgi?forward=&lt;port&gt;" と共に送られる場合には要求の本体は特定のポート（ポート番号 &gt;=1024）をリスンしているサーバへ（別な POST 要求として）送られます。こうして転送された要求への HTTP 応答が、オリジナル要求への応答になります。
+<p>
+Solaris の場合
+<p>
+JDK リリースの中のファイル bin/java-rmi.cgi を、HTTP サーバが URL パスを "/cgi-bin" と割り付けているディレクトリへコピーします。このスクリプトにはコメントが付けてありますから、その指示にしたがってスクリプトを編集し、Java インタープリタが置かれているディレクトリを正しく書き込まなければなりません。
+<p>
+Windows 95/NT の場合
+<p>
+JDK リリースの中のファイル bin/java-rmi.cgi を、HTTP サーバが URL パスを "/cgi-bin" と割り付けているディレクトリへコピーします。このプログラムを正しく実行するためには、システムの環境変数 PATH の中に Java インタープリタの格納されているパスが含まれていなければなりません。
+<h2><a name=bugs>現在までに知られている制限とバグ</a></h2>
+<p>
+<ul>
+<p>
+<li>JDK 1.1 および RMI プリベータバージョンは、アプレットまたはアプリケーションで <code>java.rmi.server.UnicastRemoteObject.exportObject</code> メソッドを使用する場合、互換ではありません。これはメソッドシグネチャの変更によるもので、JDK 1.1 では現在 <code>void</code> の代わりに <code>RemoteStub</code> が返されます。
+<p>
+<li>ネットワーク構成によっては、バインド、リバインドまたはアンバインドなどの操作により予期せぬ
+<code>AccessException</code>
+スローが発生することがあります。 レジストリの実装により、これらの操作は同じホストのレジストリの範囲に制限されています。もしホスト名または IP アドレスが一致しない場合は例外がスローされます。DHCP と PPP ネットワークの構成によっては、IP アドレスとホスト名がノードに割り付けられた名前と一致しない場合があります。これを回避するためには IP アドレスをノードに静的かつ陽に割り付けます。
+<p>
+Solaris の場合には別な方法としてノード名に PPP により割り付けられる IP アドレスを持たせる方法、またはノード名を "localhost" として IP アドレス 127.0.0.1 と結び付ける方法があります。
+<p>
+<li>リモートオブジェクトをエクスポートするアプリケーション（サーバ）が、全てのリモートオブジェクトがガベージコレクトされたにもかかわらず終了せず、プロセスには RMI スレッドを除けば非デーモンスレッドが存在しない状態が発生することがあります。現状でのこの現象の回避策はサーバプロセスから <code>System.exit()</code> を呼び出してアプリケーションを停止させることです。
+<p>
+<li><code>rmic</code> はリモートクラスにより実装されたリモートインタフェースが public でない場合はエラーフラグを立てません。
+<p>
+<li><code>java.rmi.registry.Registry</code> インタフェースの実装はスタブクラスが時間と共に変化した場合に正しく処理できません。もし以前のスタブがレジストリにロードされた後でリモートオブジェクトの実装にインタフェースが追加された場合は、オブジェクトの直列化がレジストリの新しいスタブとバインドされたときにクラス不一致のフラグを立てます。これの回避策として、リモートオブジェクト実装クラスによってリモートインタフェースの実装に変更が加えられている場合は一度レジストリを止めてから再スタートさせてください。
+
+</ul>
+
+<p>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE>
+
+<IMG SRC="../../images/JAVA.85.GIF" ALIGN=RIGHT>
+
+
+<FONT SIZE=-2>
+<A HREF="../../relnotes/SMICopyright.html">Copyright (C)</A> 1996 Sun Microsystems, Inc., 2550 Garcia Ave., Mtn. View, CA 94043-1100 USA. All rights reserved.
+</FONT>
+<br><br>
+
+</BODY>
+</HTML>

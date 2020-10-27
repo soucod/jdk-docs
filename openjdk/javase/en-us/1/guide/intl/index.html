@@ -1,0 +1,124 @@
+<html>
+<head>
+<title>Internationalization</title>
+</head>
+
+<BODY BGCOLOR="#FFFFFF" TEXT=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+<CENTER><P ALIGN=LEFT>
+<IMG SRC="../../images/smi.logo.gif" ALT=" Sun Microsystems, Inc " BORDER=0>
+</P></CENTER>
+
+
+<font size="-1"><a href="../../index.html">JDK Contents</a></font>
+<HR SIZE=3 NOSHADE>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<center>
+           <h1>Internationalization<font size="-1"><sup></sup></font></h1>
+</center>
+
+<blockquote>
+Allows the development of localizable applets.  Enhancements include the display of UNICODE characters, a locale mechanism, localized message support, locale-sensitive date, time, time zone and number handling, collation services, character set converters, parameter formatting, and support for finding character/word/sentence boundaries.
+ <p>
+NOTE: Internationalization uses enhancements to IO.  
+     See <a href="../io/index.html">IO&nbsp;Enhancements</a> for related information. 
+<p>
+Acknowledgment: Most of the design and implementation of the
+Internationalization API is by IBM's Center for Java Technology -
+Silicon Valley. Java Software is grateful for their work.
+</blockquote>
+
+
+<br>
+
+<font size="+2"><b>JDK 1.1 Internationalization Overview</b></font><br>
+
+<ul>
+   <LI><b><a href="intlTOC.doc.html">
+       JDK 1.1 Internationalization Overview</a></b>
+</ul>
+
+<font size="+2"><b>Internationalization Tutorial</b></font><br>
+
+<ul>
+    <li><a href="http://java.sun.com/docs/books/tutorial/i18n/index.html"><b>A New Tutorial for Internationalization!</b></a>
+</ul>
+
+
+<br>
+<font size="+2"><b>Internationalization Font Properties</b></font><br>
+<ul>
+    <li><a href="fontprop.html"><b>Adding Fonts to the Java Runtime</b></A>
+    <li><a href="unicode_font.doc.html"><b>Unicode Font Support in JDK 1.1</b></A>
+</ul>
+<br>
+
+
+<font size="+2"><b>Internationalization Demos</b></font><br>
+<ul>
+    <li><a href="demos/Collate/example1.html"><b>Collation</b></A>
+    <li><a href="demos/DateTimeFormat/example1.html"><b>Date and time formatting</b></A>
+    <li><a href="demos/MessageFormat/example1.html"><b>Message formatting</b></A>
+    <li><a href="demos/NumberFormat/example1.html"><b>Number formatting</b></A>
+    <li><a href="demos/TextBound/example1.html"><b>Text boundaries</b></A>
+</ul>
+
+<br>
+
+<font size="+2"><b>Internationalization API Reference</b></font><br>
+<font size="-1">(javadoc)</font>
+<ul>
+   <LI><b><a href="../../api/Package-java.text.html">java.text Package</a></b>
+   <LI><b><a href="../../api/Package-java.io.html">java.io Package</a></b>
+</ul>
+
+
+<blockquote>
+<hr width=440 align=left>
+<b>NOTE</b> -  Do not directly call any API in:
+<pre>
+   text.resource.*
+</pre>
+This package is not included in this list, because it is a temporary package.<br>
+We had to make them public to work around a problem in 1.1 that we will fix<br>
+in the next API-change release.  The API and implementation in this package<br>
+will change, and some API will possibly be added and deleted. <br>
+Please treat these as if they were package-private.<br>
+<hr width=440 align=left>
+</blockquote>
+
+
+<font size="+2"><b>Internationalization Tools</b></font><br>
+<ul>
+<li><b>native2ascii</b> - Converts native-encoded characters to UNICODE <br>
+(<a href="../../tooldocs/solaris/native2ascii.html">for Solaris</a>) (<a href="../../tooldocs/win32/native2ascii.html">for Windows</a>)
+ </ul>
+
+
+
+<font size="+2"><b>JDK 1.1 Locales and Encodings</b></font><br>
+<ul>
+<li>
+<a href="locale.doc.html"><b>Supported Locales</b></a>
+<li>
+<a href="encoding.doc.html"><b>Supported Encodings</b></a>
+<li>
+<a href="euro.html"><b>Euro Support</b></a>
+ </ul>
+
+
+
+<p>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE>
+
+<IMG SRC="../../images/JAVA.85.GIF" ALIGN=RIGHT>
+
+<FONT SIZE="-2">
+<A HREF="../../relnotes/SMICopyright.html">Copyright &#169;</A> 1996-1999 Sun Microsystems, Inc., 901 San Antonio Road, Palo Alto, CA 94303 USA. All rights reserved.
+<br><br>
+<FONT SIZE="-1">
+Please send comments to: <a href="mailto:java-intl@java.sun.com">java-intl@java.sun.com</a> 
+</FONT>
+
+</BODY>
+</HTML>

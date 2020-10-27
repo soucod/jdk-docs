@@ -1,0 +1,119 @@
+<html>
+
+<head>
+<title>javac - Java コンパイラ</title>
+
+</head>
+<BODY BGCOLOR="#FFFFFF">
+<h1>javac - Java コンパイラ</h1>
+<blockquote>
+<b>javac</b> により、Java プログラムがコンパイルされます。
+</blockquote>
+
+
+<h2>機能説明</h2>
+<pre>
+   javac [ <a href="javac.html#Options">options</a> ] filename.java ...
+   javac_g [ <a href="javac.html#Options">options</a> ] filename.java ...
+</pre>
+
+<h2>説明</h2>
+
+<blockquote>
+<b>javac</b> コマンドにより、Java ソースコードが Java バイトコードにコンパイルされます。そして Java インタプリタの <a href="java.html"><b>java</b></a> コマンドを、Java バイトコードの実行に使用します。
+<p>
+Java ソースコードは、ファイル名の最後に
+<code>.java</code> 拡張子が付いたファイルにする必要があります。また、クラスが public になっていたり、または他のソースファイルから参照される場合、そのファイル名は <i>classname</i><code>.java</code> のように、クラス名から構成されなければなりません。
+
+<p>
+<b>javac</b> でコンパイルされるソースファイルで定義される各クラスごとに、コンパイラは結果のバイトコードを <i>classname</i><code>.class</code> という名前の <em>クラスファイル</em> に格納します。<b>-d</b> オプションを指定しない場合、コンパイラは、対応するソースファイルと同じディレクトリにクラスファイルを置きます。
+<p>
+コンパイラがユーザ自身のクラスを参照しなければならない場合、場所を指定する必要があります。これを行うためには、<b>-classpath</b> オプションか <b>CLASSPATH</b> 環境変数を使用してください。クラスパスは一連のディレクトリ (または zip ファイル)です。<b>javac</b>が、コマンド引数として直接指定されたファイルの中でまだ定義されていないクラスを探す一連のディレクトリ (または zip ファイル) が、クラスパスです。コンパイラは、ソースファイルとクラスファイルの双方をクラスパスの中で探し、ソースファイルのほうが新しい場合には再コンパイルします（そしてクラスファイルを再生成します）。
+
+<p>
+出力メッセージを <code>System.out</code> に送り出すためには、プロパティ <code>javac.pipe.output</code> を <code>true</code> にセットします。出力メッセージを <code>System.err</code> に送り出すためには、<code>javac.pipe.output</code> を <code>false</code> にセットします (つまりセットしません)。
+<p>
+<b>javac_g</b> は <a href=jdb.html><b>jdb</b></a> のようなデバッガに適した、<b>javac</b> の最適化されていないバージョンです。
+</blockquote>
+
+<a name=Options>
+
+<h2>オプション</h2>
+</a>
+
+<blockquote>
+
+<dl>
+<dt><b>-classpath</b><i> path</i>
+<dd>
+<b>javac</b> がクラスを探すために使用するパスを指定します。デフォルトまたは<b>CLASSPATH</b> 環境変数が設定されている場合、その設定を上書きします。ディレクトリはセミコロンで分割します。ディレクトリがクラスパス上にソースファイルを含む場合、これはかなり有効です。パスの最後にシステムクラスを常に含むようにします。たとえば、次のとおりです。
+
+<pre>
+   javac -classpath .;C:\users\dac\classes;C:\tools\java\classes ...
+</pre>
+
+<p>
+<dt><b>-d</b><i> directory</i>
+<dd>
+クラスファイル階層のルートディレクトリを指定します。たとえば、次のようにします。
+<pre>
+   javac -d C:\users\dac\classes MyProgram.java
+</pre>
+<code>MyProgram.java</code> ソースファイルの中のクラスから作られるクラスファイルが、ディレクトリ <code>C:\users\dac\classes\demos\awt</code> に保存されます。その場合クラスは、パッケージ <code>demos/awt</code> で定義されているものとします。
+
+<p>
+<b>-d</b> オプションと <b>-classpath</b> オプションによる効果は、独立的であることに注意してください。コンパイラはクラスパスからしか読み取らないし、出力ディレクトリにしか書き込みません。出力ディレクトリがクラスパス上にあれば、これはかなり有効です。<b>-d</b> オプションが指定されていない場合、ソースファイルは、パッケージ構成を示す階層ディレクトリに格納されます。
+<p>
+<dt><b>-encoding</b><i> encoding name</i>
+<dd>
+
+<code>EUCJIS\SJIS</code> などのソース ファイル エンコーディング名を指定します。このオプションを指定しない場合には、プラットフォームのデフォルトのコンバータが使用されます。
+<p>
+<dt><b>-g</b>
+<dd>
+デバッグテーブルが生成されます。デバッグテーブルは、行番号とローカル変数についての情報、つまり Java デバッグツールによって使用される情報を含みます。デフォルトでは、最適化 (<b>-O</b>) が指定されていなければ、行番号だけが生成されます。
+<p>
+<dt><b>-nowarn</b>
+<dd>
+警告をオフにします。指定した場合、コンパイラはいかなる警告も表示しません。
+<p>
+<dt><b>-O</b>
+<dd>
+static、final および private なメソッドをインライン化することによって、コンパイルされるコードを最適化します。クラスはサイズが大きくなる可能性があることに注意してください。
+<p>
+<dt><b>-verbose</b>
+<dd>
+何のソースファイルがコンパイルされ、何のクラスファイルがロードされているかについての情報を、コンパイラとリンカに表示させます。
+<p>
+<dt><b>-depend</b>
+<dd>
+このオプションは、他のクラスファイルから参照されるクラスファイルを再コンパイルさせます。普通は、他のソースコードから参照されるファイルのうち、欠落した、または古くなったクラスファイルを再コンパイルするだけです。
+<p>
+<dt><b>-J</b><i>javaoption</i>
+<dd>
+コンパイラを実行する Java インタプリタへ、文字列 <i>javaoption</i> を 1 つの引数として渡します。引数にはスペースを入れません。複数の引数は、すべて前置<b>-J</b> で始め、一つずつ区分しなければなりません。これは、コンパイラの実行環境またはメモリの利用に有効です。
+</dl>
+</blockquote>
+
+<h2>環境変数</h2>
+<blockquote>
+<dl>
+<dt><b>CLASSPATH</b>
+<dd>
+ユーザ定義のクラスへのパスをシステムに指定します。ディレクトリはセミコロンで分割します。たとえば、次のとおりです。
+<pre>
+   .;C:\users\dac\classes;C:\tools\java\classes
+</pre>
+</dl>
+</blockquote>
+<h2>参照</h2>
+<blockquote>
+<a href="java.html">java</a>,
+<a href="jdb.html">jdb</a>,
+<a href="javah.html">javah</a>,
+<a href="javap.html">javap</a>,
+<a href="javadoc.html">javadoc</a>,
+</blockquote>
+</body>
+</html>
+

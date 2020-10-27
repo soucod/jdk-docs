@@ -1,0 +1,267 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="intro.doc.html">前項目</a>  | <a href="drivermanager.doc.html">次項目</a>
+</font></td><td align=right><i>JDBC<sup><font size=-2>TM</font></sup> ガイド: 「はじめましょう」</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+<a name="1000900"></a>
+<h1>2  - 接続</h1>
+<a name="1000908"></a>
+この概要は、現在 JavaSoft で作成中の <em>JDBC<font size=-1><sup>TM</sup></font> Database Access from Java<font size=-1><sup>TM</sup></font>:  A Tutorial and Annotated Reference,</em> からの引用です。この本は JDBC の自習書であるとともに決定版リファレンスマニュアルで、1997 年春に Addison-Wesley Publishing Company から Java シリーズの一部として発行されています。
+<p>
+<a name="996856"></a>
+<h2>2.1	 &nbsp;&nbsp;  概要</h2>
+<a name="1001148"></a>
+<code>Connection</code> オブジェクトは、データベースとの接続を表します。接続セッションには、実行された SQL 文とその接続を介して返された結果が入ります。1 つのアプリケーションが 1 つのデータベースとの 1 つ以上の接続を持つことも、多くの異なるデータベースとの接続を持つこともできます。
+<p>
+<a name="1000950"></a>
+<h3>2.1.1	 &nbsp; &nbsp; 接続の開始</h3>
+<a name="1000951"></a>
+データベースとの接続を達成する標準的な方法は、メソッド 
+<code>DriverManager.getConnection</code> を呼び出すことです。このメソッドは、URL の入った文字列をパラメータとして受け取ります。JDBC 管理レイヤと呼ばれる 
+<code>DriverManager</code> クラスは、URL が表すデータベースに接続できるドライバの検索を試みます。<code>DriverManager</code> クラスは登録済みの <code>Driver</code> クラスのリストを持ち、メソッド 
+<code>getConnection</code> が呼び出されると、URL で指定されたデータベースに接続できるドライバが見つかるまで、リストの中の各ドライバを確認します。 <code>Driver</code> のメソッドの <code>connect</code> は、この URL を使用して実際に接続を達成します。  
+<p><a name="1000952"></a>
+ユーザは、JDBC 管理レイヤをバイパスして、<code>Driver</code> メソッドを直接呼び出すことができます。これは、2 つのドライバがデータベースに接続でき、ユーザが特定のドライバを明示的に選択するというまれなケースでは役に立ちます。しかし、通常は、<code>DriverManager</code> クラスに接続の開始を処理させる方がはるかに簡単です。
+
+<p>
+<a name="1000959"></a>
+以下のコードは、<code>"oboy"</code> という ID と <code>"12Java"</code> というパスワードを使用してURL <code>"jdbc:odbc:wombat"</code> にあるデータベースへの接続を開始する例を示します。
+<p>
+<pre><a name="1000960"></a>    String url = "jdbc:odbc:wombat";
+<a name="1000961"></a>    Connection con = DriverManager.getConnection(url, "oboy", "12Java");
+</pre>
+<a name="1001163"></a>
+<h3>2.1.2	 &nbsp; &nbsp; URL の一般的な使用</h3>
+<a name="1001164"></a>
+URL に関しては混乱が生じることがよくあるので、まず URL の一般的な説明を手短かに行ってから、 JDBC の URL について説明することにします。
+<p><a name="1001165"></a>
+URL  (Uniform Resource Locator) は、インターネット上のリソースの位置を指定するために使用します。これはアドレスと考えることができます。
+<p>
+<a name="1001166"></a>
+URL の最初の部分で、情報にアクセスするために使用するプロトコルを指定します。その後には常に、コロンが続きます。よく使用されるプロトコルには、「ファイル転送プロトコル」を指定する "ftp" と「ハイパーテキスト転送プロトコル」を指定する "http" があります。プロトコルが "file" の場合には、リソースがインターネット上なのではなく、ローカルファイルシステム中にあることを示します（以下の例中の下線は、説明対象の URL の部分を示すために使用しているもので、 URL の一部ではありません）。
+
+<p>
+<pre><a name="1001167"></a>        <strong>ftp:</strong>//javasoft.com/docs/JDK-1_apidocs.zip
+<a name="1001168"></a>        <strong>http:</strong>//java.sun.com/products/JDK/CurrentRelease
+<a name="1001169"></a>        <strong>file</strong>:/home/haroldw/docs/tutorial.html
+</pre><a name="1001170"></a>
+URL の最初のコロンの後に続く残りの部分はすべて、データソースがどこにあるかを指定するものです。プロトコルが <code>file</code> の場合には、URL の残りの部分はファイルに対するパスになります。プロトコルが <code>ftp</code> と <code>http</code> の場合には、 URL の残りの部分はホストを指定するもので、より特定のサイトに対するパスをオプションとして指定することもできます。たとえば、以下は、 JavaSoft ホームページに対する URL となります。この URL はホストだけを指定します。
+<p>
+<pre><a name="1001171"></a>    http://www.javasoft.com
+</pre><a name="1001172"></a>
+このホームページから、多数の他のホームページに行くことができます。JDBC ホームページもその 1つです。JDBC ホームページの URL はより具体的で、次のようになっています。
+<p><pre><a name="1001173"></a>    http://www.javasoft.com/products/jdbc
+</pre>
+<a name="1001174"></a>
+<h3>2.1.3	 &nbsp; &nbsp; JDBC の URL  </h3>
+<a name="1001175"></a>
+JDBC の URL は、適切なドライバがデータベースを認識してそれとの接続を達成するように、データベースを識別する方法を提供します。ドライバの作成者が、その特定のドライバを識別する JDBC URL を何にするかを実際に決定します。ユーザは、JDBC URL をどのような形式するかについては心配する必要はありません。ユーザは、その使用しているドライバが供給する URL を単に使用するだけですみます。JDBC の役割は、単にドライバの作成者が JDBC の URL を構成する際に使用する規則を推奨するだけです。
+<p><a name="1001176"></a>
+JDBC の URLは、さまざまな種類のドライバで使用するため、規則は当然、非常に柔軟です。まず、この規則では、異なるドライバがデータベースを名付けるための異なる仕組みを使用できます。たとえば、<code>odbc</code> サブプロトコルは、URL に属性値を含めさせることができます (ただし、必要とする訳ではありません)。
+
+<p>
+<a name="1001177"></a>
+第 2 に、JDBC の URLにより、ドライバの作成者が必要な接続情報をそれの中にエンコードできるようになります。これにより、たとえば、アプレットがデータベースとやり取りを行おうとする際、ユーザが何らの管理作業を行うことなくデータベース接続を開始することができます。
+<p>
+<a name="1001178"></a>
+第 3 に、JDBC の URLでは間接的なレベルが可能です。すなわち、JDBC の URL が、論理ホストまたはネットワーク名前付けシステムによって、実際の名前に動的に翻訳されるデータベース名を参照できるということです。これにより、システム管理者は特定のホストを JDBC 名の一部として指定しなくてすみます。ネットワークネームサービスにはいくつかの異なる種類 (たとえば、DNS、NIS、およびDCE) があり、どれを使用するかについての制約はありません。
+<p>
+<a name="1001179"></a>
+JDBC URL の標準構文は以下のとおりです。 その構文には <strong> 3 つの部分があり、コロンによって区切られています。 </strong>
+<p>
+<pre><a name="1001180"></a>      jdbc:&lt;subprotocol&gt;:&lt;subname&gt;
+</pre><a name="1001181"></a>
+<strong> JDBC のURL の 3 つの部分は以下のように分割できます。 
+</strong><p>
+<ol>
+<a name="1001182"></a>
+<li><code>jdbc</code> はプロトコルです。JDBC のURL のプロトコルは常に <code>jdbc</code>です。
+
+
+<pre><a name="1001183"></a>    
+</pre><a name="1001184"></a>
+<li> <code>&lt;subprotocol&gt;</code> は通常、ドライバ名またはデータベース接続メカニズムの名前で、1 つ以上のドライバによってサポートすることができます。サブプロトコル名の顕著な例は、"odbc" で、これは ODBC スタイルデータソース名を指定する URL のために予約されていました。たとえば、JDBC-ODBC ブリッジによってデータベースにアクセスするには、以下のように URL を使用します。
+
+<pre><a name="1001185"></a>      jdbc:odbc:fred
+<a name="1001186"></a>
+この例では、サブプロトコルは "odbc" で、サブネーム "fred" はローカルの ODBC データソースです。
+<p>
+</pre><blockquote><a name="1001187"></a>
+ネットワークネームサービスを使用したい (JDBC の URL 中のデータベースの名前を実際の名前にする必要をなくしたい) 場合には、名前付けサービスはサブプロトコルにすることができます。すなわち、たとえば、次のような URL を持っているものとします。 
+
+<p>
+</blockquote><pre><a name="1001188"></a>      jdbc:dcenaming:accounts-payable
+<a name="1001189"></a></pre>
+この例では、ローカルの DCE の名前付けサービスを指定する URL は、データベース名 "accounts-payable" を実際のデータベースに接続するのに使用できるより具体的な名前に解決する方が望ましいはずです。
+
+<p>
+<blockquote><a name="1001190"></a>
+
+<p>
+</blockquote><a name="1001191"></a>
+<li><code>&lt;subname&gt;</code> は、データベースを識別する方法です。
+サブネームは、サブプロトコルによってさまざまに変化することができ、ドライバの作成者が選択する、どのような内部構文を使用したサブサブネームをも持つことができます。サブネームのポイントは、データベースを探すために十分な情報を提供することです。上記の例では、ODBC が残りの情報を提供するので、"fred" で十分です。しかし、リモートサーバ上のデータベースでは、もっと多くの情報が要求されます。たとえば、データベースがインターネット経由でアクセスされる場合は、ネットワークアドレスがサブネームの一部として JDBC の URL に含まれるべきである、という標準の URL 名前付け規則に従う必要があります。
+</ol>
+<pre><a name="1001192"></a>       <code>//hostname:port/subsubname</code> 
+<a name="1001193"></a>
+"dbnet" がインターネット上のホストに接続するためのプロトコルだとすると、JDBC の URL は以下のような形になります。
+<p>
+<a name="1001194"></a>      jdbc:dbnet://wombat:356/fred
+</pre>
+<a name="1001002"></a>
+<h3>2.1.4	 &nbsp; &nbsp; "odbc" のサブプロトコル</h3>
+<a name="1001003"></a>
+サブプロトコル <code>odbc</code> は、特別なケースです。これは ODBC スタイルのデータソース名を指定する URL のために予約され、サブネーム (データソース名) の後に任意の数の属性値を指定できるようにする特別な機能を備えています。odbc サブプロトコルの完全な構文は以下のとおりです。
+<p>
+<a name="1001004"></a>
+
+<p>
+<pre><a name="1001005"></a>      jdbc:odbc:&lt;<code>data-source-name</code>&gt;[;&lt;<code>attribute-name&gt;</code>=&lt;<code>attribute-value</code>&gt;]*
+</pre><a name="1001006"></a>
+
+<p>
+<a name="1001007"></a>
+したがって、以下はすべて有効な <code>jdbc:odbc</code> 名です。
+<p>
+<pre><a name="1001008"></a>    <code>  jdbc:odbc:qeor7
+</code><a name="1001009"></a>    <code>  jdbc:odbc:wombat
+</code><a name="1001010"></a>    <code>  jdbc:odbc:wombat;CacheSize=20;ExtensionCase=LOWER
+</code><a name="1001011"></a>    <code>  jdbc:odbc:qeora;UID=kgh;PWD=fooey
+</code></pre>
+<a name="1001012"></a>
+<h3>2.1.5	 &nbsp; &nbsp; サブプロトコルの登録</h3>
+<a name="1001013"></a>
+ドライバ開発者は、JDBC の URL でサブプロトコルとして使用する名前を予約することができます。<code>DriverManager</code> クラスがこの名前をその登録済みドライバのリストに示すと、この名前に予約されたドライバがそれを認識して、それによって識別されるデータベースへの接続を達成します。たとえば、<code>odbc</code> は JDBC-ODBC ブリッジのために予約されています。また別の例として、仮に Miracle Corporation という企業が存在すれば、その Miracle DBMS に接続する JDBC ドライバのサブプロトコルとして "miracle" を登録して、他に誰もその名前を使えないようにすることでしょう。  
+<p><a name="1001014"></a>
+JavaSoft は JDBC サブプロトコル名の非公式な登録機関として活動しています。サブプロトコル名を登録するには、以下のアドレスに電子メールを送ります。
+<p>
+<pre><a name="1001015"></a>      jdbc@wombat.eng.sun.com
+</pre>
+<a name="1001016"></a>
+<h3>2.1.6	 &nbsp; &nbsp; SQL 文の送付</h3>
+<a name="1001017"></a>
+いったん達成されると、接続は、SQL 文をその基盤データベースに渡すために使用されます。JDBC は送付される SQL 文の種類について何の制約も課していないので、大きな柔軟性があり、データベース固有の文や SQL でない文でさえも使用することができます。ただしユーザは、基盤となるデータベースが送付される SQL 文を処理できることを確認する責任があり、処理できない場合はその結果を甘受する必要があります。たとえば、アプリケーションが、ストアードプロシージャをサポートしない DBMS にストアードプロシージャ呼び出しを送信しようとすると、正常には処理されず、例外処理を生成します。JDBC は、JDBC COMPLIANT<font size=-1><sup>TM</sup></font> として指定されるためには、ドライバが最低 ANSI SQL-2 エントリレベル機能を持つ必要があります。つまり、ユーザは少なくともこの標準レベルの機能はあてにすることができます。
+<p><a name="1001018"></a>
+JDBC は、SQL 文をデータベースに送付するために、以下の 3 つのクラスを用意しており、 <code>Connection</code> インタフェースの 3 つのメソッドはこれらのクラスのインスタンスを作成します。これらのクラスとクラスを作成するメソッドを、以下に示します。
+<p>
+<ol>
+<a name="1001019"></a>
+<li> <code>Statement</code>- -メソッド <code>createStatement</code>によって作成されます。<code>Statement</code> オブジェクトは、簡単な SQL 文の送信に使用されます。 
+
+
+<a name="1001020"></a>
+<li><code>PreparedStatement</code>- -メソッド <code>prepareStatement</code>によって作成されます。<code>PreparedStatement</code> オブジェクトは、1 つ以上のパラメータを入力引数 (IN パラメータ) としてとる SQL 文に使用します。<code>PreparedStatement</code> は IN パラメータの値を設定するメソッドのグループを持ち、これらの IN パラメータは文が実行されるときにデータベースに送付されます。<code>PreparedStatement</code> のインスタンスは、<code>Statement</code> を継承しているため <code>Statement</code> メソッドを含みます。 <code>PreparedStatement</code> オブジェクトはコンパイル済みで、将来の使用に備えて格納されているので、<code>Statement</code> オブジェクトよりも効率的に使用できる能力を潜在的に備えています。 
+
+<a name="1001091"></a>
+<li><code>CallableStatement</code>- -メソッド <code>prepareCall</code> によって作成されます。<code>CallableStatement</code> オブジェクトは、SQL ストアードプロシージャ (一連の SQL 文で、関数を起動するのとまったく同様に、名前によって呼び出されます) を実行するために使用します。<code>CallableStatement</code> オブジェクトは、IN パラメータを処理するためのメソッドを <code>PreparedStatement</code> から継承し、これは、OUT および INOUT パラメータを処理するためのメソッドを追加します。
+</ol>
+<a name="1001022"></a>
+以下のリストは、異なるタイプの SQL 文を作成するために、どちらの <code>Connection</code> メソッドが適切かを素早く判定する方法を示します。
+<p>
+<a name="1001023"></a>
+
+<p>
+<blockquote><a name="1001024"></a>
+<code>createStatement</code> メソッドは以下に使用します。
+<p>
+
+
+<ul>
+<a name="1001025"></a>
+<li>簡単な SQL 文 (パラメータなし)
+<br><br>
+</ul>
+</blockquote><a name="1001026"></a>
+
+<p>
+<blockquote><a name="1001027"></a>
+<code>prepareStatement</code> メソッドは以下に使用します。
+<p>
+
+
+<ul>
+<a name="1001028"></a>
+<li>1 つ以上の IN パラメータが付いた SQL 文
+<br><br>
+<a name="1001029"></a>
+<li>頻繁に実行される簡単な SQL 文
+<br><br>
+</ul>
+</blockquote><a name="1001030"></a>
+
+<p>
+<blockquote><a name="1001031"></a>
+<code>prepareCall</code> メソッドは以下に使用します。
+<p>
+
+
+<ul>
+<a name="1001032"></a>
+<li>ストアードプロシージャへの呼び出し
+<br><br>
+</ul>
+</blockquote>
+<a name="1001033"></a>
+<h3>2.1.7	 &nbsp; &nbsp; トランザクション</h3>
+<a name="1001034"></a>
+トランザクションは、コミットもしくはロールバックされた 1 つ以上の実行が完了した文で構成されます。メソッド <code>commit</code> または 
+<code>rollback</code> が呼び出されると、現在のトランザクションが終了して、別のトランザクションが開始されます。  
+<p><a name="1001035"></a>
+デフォルトでは、新しい接続はオートコミットモードになっています。つまり、文が完了すると、メソッド <code>commit</code> が自動的にその文で呼び出されます。この場合、各文が個々にコミットされ、トランザクションが 1 つの文によってのみ構成されます。オートコミットモードが無効になっていると、トランザクションはメソッド <code>commit</code> または <code>rollback</code> が明示的に呼び出されるまで終了しないので、<code>commit</code> または <code>rollback</code> メソッドが最後に起動されて以来実行されたすべての文を含みます。この 2 番目の場合、トランザクションの文はすべてグループとしてコミットまたはロールバックされます。
+<p>
+<a name="1001036"></a>
+メソッド <code>commit</code> は、SQL 文がデータベースに対して加えたあらゆる変更を反映し、トランザクションによってかけられたロックをすべて開放します。メソッド <code>rollback</code> はそれらの変更を破棄します。
+<p>
+<a name="1001037"></a>
+ユーザは他の変更が同時に有効にならない限り、その変更も有効にしたくない場合があります。これは、オートコミットを無効にし、両方の更新内容を 1 つのトランザクションにグループ化することによって実現できます。両方の更新が正常に行われると、<code>commit</code> メソッドが呼び出され、両方の更新の結果をデータベースに反映します。1 つまたは両方が失敗した場合、<code>rollback</code> メソッドが呼び出され、全ての更新を破棄します。
+<p>
+<a name="1001038"></a>
+ほとんどの JDBC ドライバはトランザクションをサポートします。実際、JDBC 準拠のドライバは、トランザクションをサポートする必要があります。<code>DatabaseMetaData</code> は、DBMS が提供するトランザクションサポートのレベルについての情報を提供します。 
+<p>
+
+<a name="1001039"></a>
+<h3>2.1.8	 &nbsp; &nbsp; トランザクションの遮断レベル</h3>
+<a name="1001040"></a>
+DBMS がトランザクション処理をサポートする場合、DBMSには、2 つのトランザクションが 1 つのデータベース上で同時に稼動しているときに生じ得る潜在的な競合を管理する方法がいくつかあります。ユーザは、潜在的な競合を解決するのに、DBMS がどの程度の注意を払う必要があるかを示すトランザクションの遮断レベルを指定することができます。たとえば、あるトランザクションが値を変更し、変更がコミットまたはロールバックされる前に、2 番目のトランザクションがその値を読み取るとどうなるでしょう ? 最初のトランザクションがロールバックした場合、2 番目のトランザクションが読み取った、変更された値が無効だということが許容されるのでしょうか ? JDBC ユーザは、以下のコードを使用して (<code>con</code> は現在の接続)、コミットされる前に値を読めるように ("ダーティ読み取り") 指示することができます。
+<p><pre><a name="1001041"></a>    con.setTransactionIsolation(TRANSACTION_READ_UNCOMMITTED);
+</pre><a name="1001042"></a>
+トランザクションの遮断レベルが高くなればなるほど、競合を避けるための注意がより多く払われます。<code>Connection</code> インタフェースは、トランザクションがまったくサポートされない最低レベルから、1 つのトランザクションがデータベース上で操作している間に、そのトランザクションが読み取っているデータに対して、他のトランザクションが変更を行わないという最高レベルまで、5 段階のレベルを定義します。通常、遮断のレベルが高くなると、アプリケーションを実行する速度は低下します（ロッキングによるオーバヘッドが増大し、ユーザ間の同時使用が低減するため）。どの遮断レベルを使用するかを決定するときは、開発者はパフォーマンス上のニーズとデータの一貫性について、ニーズのバランスを取る必要があります。もちろん、実際にサポートされるレベルは、基盤の DBMS の能力に依存します。
+<p>
+<a name="1001043"></a>
+<code>Connection</code> オブジェクトが新たに作成されると、そのトランザクションの遮断レベルは、ドライバによりますが、通常の場合には基盤のデータベースのデフォルト値になります。ユーザはメソッド <code>setIsolationLevel</code> を呼び出して、トランザクションの遮断レベルを変更し、残りの接続セッションでは新しいレベルを有効にすることができます。1 つのトランザクションについてのみ、トランザクションの遮断レベルを変更するには、そのトランザクションが開始する前に遮断レベルを設定し、トランザクションが終了した後にそれをリセットする必要があります。トランザクションの最中にトランザクションの遮断レベルを変更すると、メソッド <code>commit</code>への即時呼び出しのトリガがかかり、その時点迄に行われたすべての変更がデータベースに反映されるので、これはお勧めできません。 
+<p>
+
+
+<br>
+<hr>
+<font size=-1>
+<a href="introTOC.doc.html">目次</a>  | <a href="intro.doc.html">前項目</a>  | <a href="drivermanager.doc.html">次項目</a>
+</font>
+<hr>
+
+
+<address>
+<a href="mailto:jdbc@wombat.eng.sun.com">jdbc@wombat.eng.sun.com</a>
+または
+<a href="mailto:jdbc-odbc@wombat.eng.sun.com">jdbc-odbc@wombat.eng.sun.com</a>
+</address>
+
+<a href="copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>
+

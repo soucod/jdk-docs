@@ -1,0 +1,612 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+   <TITLE>JDK 1.1.x Documentation</TITLE>
+<META name="description" content="Sun Microsystems' Java Development Kit v1.1.8 Documentation -- Release notes, API specification, new features, tools, demos, tutorials, training, JRE and related documents.">
+<META name="keywords" content="JDK, Java Development Kit, Developer Kit, 1.1.8, API, release notes, API specification, tools, demos, tutorials, training, JRE, document, documents, documentation, download, package, class, member, javadoc, jar">
+</HEAD>
+
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000FF"
+      VLINK="#000077" ALINK="#FF0000">
+
+<!-- Created by: Doug Kramer, 19-Aug-1996 -->
+
+<TABLE BORDER="0" WIDTH="100%">
+<TR>
+<TD WIDTH=30 VALIGN="TOP">
+<IMG SRC="images/smi.logo.gif" ALT=" Sun Microsystems, Inc " BORDER=0 WIDTH=120 HEIGHT=43>
+</TD>
+
+<TD ALIGN=CENTER>
+   <H1>JDK<sup><font size="-2">TM</font></sup> 1.1.8 Documentation</H1>
+
+         <H4>Java<sup><font size="-2">TM</font></sup> Development Kit</H4>
+</TD>
+
+<TD ALIGN=RIGHT VALIGN=TOP>
+<b><i>JavaSoft<sup><font size="-2">TM</font></sup></i></b><br>
+<a href="#notes"><font size=-2>Release Notes</font></a><br>
+<a href="#api"><font size=-2>API Documentation</font></a><br>
+<a href="#guide"><font size=-2>Guide to New Features</font></a><br>
+<a href="#tools"><font size=-2>Tool Documentation</font></a><br>
+<a href="#demos"><font size=-2>Demos, Tutorials, and Training</font></a><br>
+<a href="#jre"><font size=-2>JRE Documentation</font></a><br>
+<a href="#related"><font size=-2>Related Documents</font></a><br>
+
+</TD>
+</TR>
+</TABLE>
+
+<FONT SIZE=-1>Contents</FONT> 
+<HR SIZE=3 NOSHADE>
+
+<!-- ============================================================= -->
+
+<blockquote><A NAME="notes"></a>
+<table border=0 width="83%" cellspacing=0 cellpadding=0>
+<tr><td>
+<font size="+1"><b>Release Notes</b></font><br>
+General information about this release. <br>
+</td>
+
+<td width="1%">
+<a href="#location"><i>Location</i></a>
+</td>
+</tr>
+</table>
+
+<blockquote>
+<A NAME="java"></a>
+<table border=0 width="75%" cellspacing=0 cellpadding=0>
+
+<tr><td colspan=2>
+<b>README, Changes</b><br>
+</td>
+</tr>
+
+<tr><td>
+<A HREF="../README">README</A>     </td>  <td width="1%"><i>soft</i></td>
+</tr>
+
+<tr><td>
+<A HREF="../CHANGES">Changes to JDK Software</A>   </td>  <td width="1%"><i>soft</i></td>
+</tr>
+
+<tr><td>
+<A HREF="http://java.sun.com/products/jdk/1.1/README-update.html">Release Notes Update</A>   </td>  <td width="1%"><i>web</i></td>
+</tr>
+
+<tr><td>
+<A HREF="http://java.sun.com/products/jdk/1.1/docchanges.html">Documentation Changes</a> </td>  <td width="1%"><i>web</i></td>
+</tr>
+
+<tr><td colspan=2>
+&nbsp; <!-- Blank link -->
+</td></tr>
+
+<A NAME="docs"></a>
+<tr colspan=2><td>
+<b>Introduction, Contacts</b><br>
+</td></tr>
+
+<tr><td>
+<A HREF="relnotes/intro.html">Introduction</A> </td>  <td width="1%"><i>doc</i></i></td>
+</tr>
+
+<tr><td>
+<A HREF="relnotes/contacts.html">Contacting JavaSoft</A> </td>  <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr><td colspan=2>
+&nbsp; <!-- Blank link -->
+</td></tr>
+
+<A NAME="compatibility"></a>
+<tr colspan=2><td>
+<b>Compatibility</b><br>
+</td></tr>
+
+<tr><td>
+<A HREF="http://java.sun.com/products/jdk/1.1/compatibility.html">Compatibility with Previous Releases</a> </td>  <td width="1%"><i>web</i></td>
+</tr>
+
+<tr><td>
+<A HREF="http://java.sun.com/products/jdk/1.1/compatible/index.html">Writing Compatible Programs</a> </td>  <td width="1%"><i>web</i></td>
+</tr>
+
+<tr><td colspan=2>
+&nbsp;  <!-- Blank link -->
+</td></tr>
+
+<A NAME="bugs"></a>
+<tr colspan=2><td>
+<b>Bugs</b><br>
+</td></tr>
+
+<tr><td>
+<A HREF="http://java.sun.com/products/jdk/1.1/bugs.html">Known and Fixed Bugs</a> </td>  <td width="1%"><i>web</i></td>
+</tr>
+
+<tr><td>
+<A HREF="http://java.sun.com/cgi-bin/bugreport.cgi">Submitting a Bug Report</a> </td>  <td width="1%"><i>web</i></td>
+</tr>
+
+<tr><td colspan=2>
+&nbsp; <!-- Blank link -->
+</td></tr>
+
+<A NAME="developer"></a>
+<tr colspan=2><td>
+<b>Developer Notes</b><br>
+</td></tr>
+
+<tr><td>
+<A HREF="relnotes/classlist.html">Complete Class List</A>  </td>  <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr><td>
+<A HREF="relnotes/deprecatedlist.html">Deprecated API List</A>  </td>  <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr><td>
+<A HREF="relnotes/update.html">Updating 1.0 source files to 1.1</A> </td>  <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr><td>
+<a href="http://java.sun.com/products/jdk/faq/faq-sun-packages.html">Programs That Call sun.* Packages</a> </td>  <td width="1%"><i>web</i></td>
+</tr>
+
+<tr><td>
+<A HREF="http://java.sun.com/products/jdk/1.1/performance/index.html">Performance Measurements</a> </td>  <td width="1%"><i>web</i></td>
+</tr>
+
+<tr><td colspan=2>
+&nbsp; <!-- Blank link -->
+</td></tr>
+
+<A NAME="website"></a>
+<tr colspan=2><td>
+<b>Releases and Downloads</b><br>
+</td></tr>
+
+<tr><td>
+<A HREF="http://java.sun.com/products/jdk/release-guidelines.html">Release Guidelines</a> </td>  <td width="1%"><i>web</i></td>
+</tr>
+
+<tr><td>
+<A HREF="http://java.sun.com/products/jdk/1.1/">JDK 1.1 Product Page (for Downloading JDK)</a> </td>  <td width="1%"><i>web</i></td>
+</tr>
+
+<tr><td>
+<A HREF="http://java.sun.com/index.html">JavaSoft Home Page</a> </td>  <td width="1%"><i>web</i></td>
+</tr>
+
+<tr><td colspan=2>
+&nbsp; <!-- Blank link -->
+</td></tr>
+
+<A NAME="legal"></a>
+<tr colspan=2><td>
+<b>Legal Notices</b><br>
+</td></tr>
+
+<tr><td>
+<A HREF="../COPYRIGHT">COPYRIGHT for JDK Software</A> </td>  <td width="1%"><i>soft</i></td>
+</tr>
+
+<tr><td>
+<A HREF="../LICENSE">LICENSE for JDK Software</A> </td>  <td width="1%"><i>soft</i></td>
+</tr>
+
+<tr><td>
+<A HREF="relnotes/SMICopyright.html">Copyright and License Terms for Documentation</A> </td>  <td width="1%"><i>doc</i></td>
+</tr>
+
+
+</table>
+<p>
+
+The remaining documents are located in the JDK documentation download bundle except as noted.<br>
+<p>
+
+
+</blockquote>
+<P>
+
+
+<!-- ============================================================= -->
+<A NAME="api"></a>
+<font size="+1"><b>API Documentation</b></font><br>
+Reference to packages, classes and members. Generated by javadoc.
+<blockquote>
+<table border=0 width=75% cellspacing=0 cellpadding=0>
+<tr>
+  <td>
+  <A HREF="api/packages.html">Java Platform 1.1 Core API Specification</A>
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+</table>
+</blockquote>
+<p>
+
+<!-- ============================================================= -->
+<A NAME="guide"></a>
+<font size="+1"><b>Guide to New Features</b></font><br>
+
+Concepts, descriptions and examples to get started using the Java 
+Development Kit. 
+From our JavaSoft website you can <a href="http://java.sun.com/products/jdk/1.1/download-pdf-ps.html">Download PDF and PS</a> versions of some of these (optional).<p>
+
+<blockquote>
+<table border=0 width=75% cellspacing=0 cellpadding=0>
+<tr>
+  <td colspan=2>
+     <A HREF="relnotes/features.html">New Feature Summary</A> 
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td colspan=3>
+    &nbsp;  <!-- Blank line -->
+  </td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">1.&nbsp;</td>  <td>
+    <A HREF="guide/intl/index.html">Internationalization</A>  
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">2.&nbsp;</td>  <td>
+    <A HREF="guide/security/index.html">Security and Signed Applets</A>  
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">3.&nbsp;</td>  <td>
+    <A HREF="guide/awt/index.html">AWT Enhancements</A>  
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">4.&nbsp;</td>  <td>
+    <A HREF="guide/beans/index.html">JavaBeans</a><sup><font size=-2>TM</font></sup> 
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">5.&nbsp;</td>  <td>
+    <A HREF="guide/jar/index.html">JAR File Format</A> 
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">6.&nbsp;</td>  <td>
+    <A HREF="guide/net/index.html">Networking Enhancements</A> 
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">7.&nbsp;</td>  <td>
+    <A HREF="guide/io/index.html">IO Enhancements</A> 
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">8.&nbsp;</td>  <td>
+    <a href="guide/math/index.html">Math Package</a>
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">9.&nbsp;</td>  <td>
+    <A HREF="guide/rmi/index.html">Remote Method Invocation</A>  
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">10.&nbsp;</td>  <td>
+    <A HREF="guide/serialization/index.html">Object Serialization</A>  
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">11.&nbsp;</td>  <td>
+    <A HREF="guide/reflection/index.html">Reflection</A> 
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">12.&nbsp;</td>  <td>
+<A HREF="guide/jdbc/index.html">JDBC<SUP><FONT SIZE=-2>TM</FONT></SUP> - Connecting
+Java and Databases</A>  
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">13.&nbsp;</td>  <td>
+<A HREF="guide/innerclasses/index.html">Inner Classes</A> 
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">14.&nbsp;</td>  <td>
+    <A HREF="guide/jni/index.html">Java Native Interface</A>  
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">15.&nbsp;</td>  <td>
+    <A HREF="guide/performance/performance.html">Performance Enhancements</A> 
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%" align="right">16.&nbsp;</td>  <td>
+    <A HREF="guide/misc/index.html">Miscellaneous Features</A> <br>
+  </td>   <td width="1%" valign="top"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%">&nbsp;</td>  <td>
+    &nbsp; - <A HREF="api/java.lang.Byte.html">Byte</a>,
+    <A HREF="api/java.lang.Short.html">Short</a> and 
+    <A HREF="api/java.lang.Void.html">Void</a>
+    Classes <br>
+  </td>   <td width="1%" valign="top"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%">&nbsp;</td>  <td>
+    &nbsp; - <A HREF="guide/misc/deprecation/index.html">The @deprecated Tag</A><br>
+  </td>   <td width="1%" valign="top"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%">&nbsp;</td>  <td>
+    &nbsp; - <A HREF="guide/misc/resources.html">Accessing Resource Files</A>  <br>
+  </td>   <td width="1%" valign="top"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td width="4%">&nbsp;</td>  <td>
+    &nbsp; - <A HREF="guide/misc/applet.html">The APPLET Tag (HTML)</A>  
+  </td>   <td width="1%" valign="top"><i>doc</i></td>
+</tr>
+</table>
+</blockquote>
+
+<p>
+
+<!-- ============================================================= -->
+<A NAME="tools"></a>
+
+<font size="+1"><b>Tool Documentation</b></font><br>
+
+Reference documentation for the JDK tools.  Separate documents exist for 
+Solaris and Windows primarily to show platform-specific
+differences in examples, such as disk identifiers, directory separators, 
+and environment variables. With a few exceptions, each tool has the same 
+options on all platforms.
+<p>
+
+<blockquote>
+<table border=0 width=75% cellspacing=0 cellpadding=0>
+<tr>
+  <td>
+  <A HREF="tooldocs/solaris/index.html">Tool Docs with Solaris Examples</A> 
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td>
+    <A HREF="tooldocs/win32/index.html">Tool Docs with Windows Examples</A> 
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+</table>
+</blockquote>
+
+<p>
+<br>
+
+<!-- ============================================================= -->
+<A NAME="demos"></a>
+<font size="+1"><b>Demos, Tutorials, and Training</b></font><br>
+Sample code for applets and applications, training, courses, and 
+tutorials for the Java Development Kit.
+<p>
+<blockquote>
+<table border=0 width=75% cellspacing=0 cellpadding=0><tr>
+  <td>
+    <A HREF="relnotes/demos.html">Demonstration Applets and Applications</A><br>
+    &nbsp; &nbsp; Source and executable files demonstrating features of 1.1
+  </td>   <td align="right" valign="top"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/docs/books/tutorial/index.html">
+    The Java Tutorial: Object-Oriented Programming for the Internet</A><br>
+    &nbsp; &nbsp; A quick start toward learning the Java programming language.<br>
+  </td>   <td align="right" valign="top"><i>web</i></td>
+</tr>
+
+<tr>
+  <td>
+    <a href="http://java.sun.com/aboutJava/training">
+    Training for the Java programming language</a><br>
+    &nbsp; &nbsp; Directory of various training resources.<br>
+  </td>   <td align="right" valign="top"><i>web</i></td>
+</tr>
+
+<tr>
+  <td>
+    <a href="http://java.sun.com/jdc/onlineTraining">
+    Courses for the Java programming language</a><br>
+    &nbsp; &nbsp; Courses on many features of the JDK from 
+    the Java Developer Connection.<br>
+  </td>   <td align="right" valign="top"><i>web</i></td>
+</tr>
+
+<tr>
+  <td>
+    <a href="http://java.sun.com/docs/books/chanlee">
+    <i>The Java Class Libraries</i></a><br>
+    &nbsp; &nbsp; Code examples for most classes, methods, and fields.<br>
+  </td>   <td align="right" valign="top"><i>web</i></td>
+</tr>
+
+</table>
+</blockquote>
+
+<p>
+<br>
+<!-- ============================================================= -->
+<a name="jre"></a>
+<font size="+1"><b>Java Runtime Environment (JRE)</b></font><br>
+Documentation for the JRE.
+
+<blockquote>
+<table border=0 width=75% cellspacing=0 cellpadding=0>
+<tr>
+  <td>
+    <a href="http://java.sun.com/products/jdk/1.1/jre/index.html">
+    JRE Download Page</a><br>
+  </td>   <td width="1%"><i>web</i></td>
+</tr>
+
+<tr>
+  <td>
+    <a href="http://java.sun.com/products/jdk/1.1/jre/README">README</a><br>
+  </td>   <td width="1%"><i>web</i></td>
+</tr>
+
+<tr>
+  <td>
+    <a href="http://java.sun.com/products/jdk/1.1/jre/CHANGES">CHANGES</a><br>
+  </td>   <td width="1%"><i>web</i></td>
+</tr>
+
+<tr>
+  <td>
+    <a href="http://java.sun.com/products/jdk/1.1/jre/COPYRIGHT">COPYRIGHT</a><br>
+  </td>   <td width="1%"><i>web</i></td>
+</tr>
+
+<tr>
+  <td>
+    <a href="http://java.sun.com/products/jdk/1.1/jre/LICENSE">LICENSE</a><br>
+  </td>   <td width="1%"><i>web</i></td>
+</tr>
+
+<tr>
+  <td>
+    <a href="http://java.sun.com/products/jdk/1.1/runtime.html">
+    Notes for Developers</a><br>
+  </td>   <td width="1%"><i>web</i></td>
+</tr>
+
+<tr>
+  <td>
+    <a href="http://java.sun.com/products/jdk/1.1/jre/example/index.html">
+    JRE Usage Example</a><BR>
+  </td>   <td width="1%"><i>web</i></td>
+</tr>
+
+<tr>
+  <td colspan=2>
+    &nbsp;   <!-- Blank line -->
+  </td>
+</tr>
+
+<tr>
+  <td>
+    <a href="tooldocs/solaris/jre.html">Java Runtime Interpreter (<tt>jre</tt>) 
+    for Solaris</a><br>
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+<tr>
+  <td>
+    <a href="tooldocs/win32/jre.html">Java Runtime Interpreter (<tt>jre</tt>) 
+    for Windows</a><br>
+  </td>   <td width="1%"><i>doc</i></td>
+</tr>
+
+</table>
+</blockquote>
+
+<p>
+<br>
+<!-- ============================================================= -->
+<A NAME="related"></a>
+<font size="+1"><b>Related Documents</b></font>
+
+<blockquote>
+<table border=0 width=75% cellspacing=0 cellpadding=0>
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/docs/books/jls/html/index.html">
+    The Java Language Specification</A><br>
+    &nbsp; &nbsp; The definitive reference for the Java programming language. 
+  </td>   <td align="right" valign="top"><i>web</i></td>
+</tr>
+
+</table>
+</blockquote>
+
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+</blockquote>
+
+<font size=-1><em>NOTE - Version 1.1.8 is a maintenance release. 
+In general, documentation that refers to "version &nbsp;1.1" applies 
+to "version&nbsp;1.1.8". </em></font>
+<p>
+
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+<HR SIZE=3 NOSHADE><IMG SRC="images/JAVA.85.GIF" HEIGHT=85 WIDTH=49 ALIGN=RIGHT>
+<FONT SIZE=-2><A HREF="relnotes/SMICopyright.html">Copyright &copy;</A> 1996, 1997, 
+1998 
+   <A HREF="http://www.sun.com/">Sun Microsystems, Inc.</A>
+   901 San Antonio Road, Palo Alto, CA 94303-4900  USA. 
+   All rights reserved. <BR>
+<BR>
+</FONT>
+<FONT SIZE=-1>
+   Please <a href="relnotes/contacts.html">send us comments and suggestions</a><BR>
+   <a href="http://java.sun.com/products/jdk/1.1/docs.html">Download this JDK documentation</a><br>
+</FONT>
+<p>
+
+<a name="location"></a>
+<font size="-1">
+Location<br>
+<i>doc</i>&nbsp;=&nbsp;In documentation download bundle and on website<br>
+<i>soft</i>&nbsp;=&nbsp;In software download bundle and on website<br>
+<i>web</i>&nbsp;=&nbsp;Only on Java website<br>
+</font>
+</center>
+
+<pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+
+</BODY>
+</HTML>

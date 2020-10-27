@@ -1,0 +1,180 @@
+<html>
+<head>
+<title>
+メソッド名の自動変換
+</title>
+</head>
+
+<BODY BGCOLOR="#FFFFFF">
+<font size=-1>
+<a href=HowToUpgrade.html>「変換方法...」へ戻る</a>
+</font>
+<hr>
+
+<h1>
+単純な名前変更
+</h1>
+
+このページでは、 AWT の 1.0 と 1.1 バージョンの間の単純な名前の変更について説明しています。これらの名前変更は、提供する <a href=updateAWT><code>sed</code> スクリプト</a>などのスクリプトによって自動的に実行されます。<code>sed</code> スクリプトの使用方法については、<a href=HowToUpgrade.html>プログラムの 1.1 AWT API への変換方法</a>を参照してください。
+
+<p>
+
+次の表に示す名前変更は、非 AWT コードでは<em>無効</em>です。少なくとも 1 つはどの AWT コードにおいても無効です。<code>sed</code> スクリプトは、どのオブジェクト型に影響するか通知できないため、これが不正な変更を行っていることを発見する可能性があります。次のようなコンパイルエラーメッセージを見つけたときに、通常気がつきます: 
+
+<blockquote>
+<pre>
+CardWindow.java:40: Method setVisible(java.awt.Panel, java.lang.String) not
+found in class java.awt.CardLayout.
+	    ((CardLayout)cards.getLayout()).setVisible(cards,(String)arg);
+</pre>
+</blockquote>
+
+このようなエラーメッセージを見つけたとき、スクリプトが不正にメソッド名を変更したかどうかチェックします。次の表の第 2 列にそのメソッド名を見つけた場合、第 1 列を調べてメソッドの元の名前を見つけます。次に、手作業でプログラムを編集し、エラーを起した行を元の名前を使用するように変更することができます。例えば、上記のエラーを修正するために、<code>CardWindow.java</code> ファイルの 40 行目の <code>setVisible</code> を <code>show</code> に変更する必要があります。
+
+<p>
+
+<blockquote>
+<hr>
+<strong>注:</strong>
+推奨されない AWT メソッド(1.1 では 1.0 メソッドはもはや推奨されません)の完全なリストについては、 
+<a href=DeprecatedMethods.html>1.1 AWT の推奨されないメソッド</a>を参照してください。
+<hr>
+</blockquote>
+
+<p>
+
+<table border=1>
+<tr>
+    <th>元のメソッド名
+    <th>1.1 メソッド名
+<tr>
+    <td><code>addItem</code>
+    <td><code><b>add</b></code>
+<tr>
+    <td><code>appendText</code>
+    <td><code><b>append</b></code>
+<tr>
+    <td><code>inside</code>
+    <td><code><b>contains</b></code>
+<tr>
+    <td><code>layout</code>
+    <td><code><b>doLayout</b></code>
+<tr>
+    <td><code>getPageIncrement</code>
+    <td><code><b>getBlockIncrement</b></code>
+<tr>
+    <td><code>bounds</code><br>
+        <code>getBoundingBox</code>
+    <td><code><b>getBounds</b></code>
+<tr>
+    <td><code>getClipRect</code>
+    <td><code><b>getClipBounds</b></code>
+<tr>
+    <td><code>locate</code>
+    <td><code><b>getComponentAt</b></code>
+<tr>
+    <td><code>countComponents</code>
+    <td><code><b>getComponentCount</b></code>
+<tr>
+    <td><code>insets</code>
+    <td><code><b>getInsets</b></code>
+<tr>
+    <td><code>countItems</code>
+    <td><code><b>getItemCount</b></code>
+<tr>
+    <td><code>location</code>
+    <td><code><b>getLocation</b></code>
+<tr>
+    <td><code>countMenus</code>
+    <td><code><b>getMenuCount</b></code>
+<tr>
+    <td><code>minimumSize</code>
+    <td><code><b>getMinimumSize</b></code>
+<tr>
+    <td><code>preferredSize</code>
+    <td><code><b>getPreferredSize</b></code>
+<tr>
+    <td><code>getCurrent</code>
+    <td><code><b>getSelectedCheckbox</b></code>
+<tr>
+    <td><code>getLineIncrement</code>
+    <td><code><b>getUnitIncrement</b></code>
+<tr>
+    <td><code>getVisible</code>
+    <td><code><b>getVisibleAmount</b></code>
+<tr>
+    <td><code>insertText</code>
+    <td><code><b>insert</b></code>
+<tr>
+    <td><code>isSelected</code>
+    <td><code><b>isIndexSelected</b></code>
+<tr>
+    <td><code>allowsMultipleSelections</code>
+    <td><code><b>isMultipleMode</b></code>
+<tr>
+    <td><code>delItem</code>
+    <td><code><b>remove</b></code>
+<tr>
+    <td><code>clear</code>
+    <td><code><b>removeAll</b></code>
+<tr>
+    <td><code>replaceText</code>
+    <td><code><b>replaceRange</b></code>
+<tr>
+    <td><code>setPageIncrement</code>
+    <td><code><b>setBlockIncrement</b></code>
+<tr>
+    <td><code>reshape</code>
+    <td><code><b>setBounds</b></code>
+<tr>
+    <td><code>setEchoCharacter</code>
+    <td><code><b>setEchoChar</b></code>
+<tr>
+    <td><code>disable()</code>
+    <td><code><b>setEnabled(false)</b></code>
+<tr>
+    <td><code>enable()</code>
+    <td><code><b>setEnabled(true)</b></code>
+<tr>
+    <td><code>enable(<em>expression</em>)</code>
+    <td><code><b>setEnabled(<em>expression</em>)</b></code>
+<tr>
+    <td><code>move</code>
+    <td><code><b>setLocation</b></code>
+<tr>
+    <td><code>setMultipleSelections</code>
+    <td><code><b>setMultipleMode</b></code>
+<tr>
+    <td><code>setCurrent</code>
+    <td><code><b>setSelectedCheckbox</b></code>
+<tr>
+    <td><code>resize</code>
+    <td><code><b>setSize</b></code>
+<tr>
+    <td><code>setLineIncrement</code>
+    <td><code><b>setUnitIncrement</b></code>
+<tr>
+    <td><code>hide</code>
+    <td><code><b>setVisible(false)</b></code>
+<tr>
+    <td><code>show()</code>
+    <td><code><b>setVisible(true)</b></code>
+<tr>
+    <td><code>show(<em>expression</em>)</code>
+    <td><code><b>setVisible(<em>expression</em>)</b></code>
+<tr>
+    <td><code>nextFocus</code>
+    <td><code><b>transferFocus</b></code>
+</table>
+
+<p>
+
+<hr>
+<font size=-1>
+<a href=HowToUpgrade.html>「変換方法...」に戻る</a>
+</font><hr>
+<em>
+By <a href=mailto:kwalrath@eng.sun.com>Kathy Walrath</a>
+</em>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<html>
+<head>
+<title></title>
+</head>
+<body bgcolor=#ffffff>
+
+<table width=600><tr>
+<td><font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection.doc2.html">前項目</a>  | <a href="java-reflection.doc4.html">次項目</a>
+</font></td><td align=right><i>Java コアリフレクション</i></td>
+</tr></table>
+<hr>
+<br>
+ 
+
+<a name="4999"></a>
+<h1>クラス java.lang.reflect.Field </h1><pre>    <a name="5000"></a><code>
+</code>
+    <a name="5001"></a><code>package java.lang.reflect;
+</code>
+    <a name="5002"></a><code>public final class Field extends Object implements Member
+</code>
+</pre><a name="5003"></a>
+<code>Field</code> は、クラスやインタフェースの 1 つのフィールドに関する情報およびそこへのアクセスを提供します。反射されるフィールドは、クラス変数 (<code>static</code> フィールド) でもインスタンス変数 (インスタンスフィールド) でも構いません。<p><a name="5004"></a>
+<code>Field</code> オブジェクトを生成できるのは、Java 仮想マシンだけです。ユーザコードは、クラス <code>Class</code> のメソッド <code>getField</code>, <code>getFields</code>, <code>getDeclaredField</code>, および <code>getDeclaredFields</code> から <code>Field</code> 参照を獲得します。<p><a name="5005"></a>
+<code>Field</code> では、<code>get</code> や <code>set</code> の演算中に拡張変換が可能ですが、縮小変換が行われると <code>IllegalArgumentException</code> をスローします。<p>
+<hr>
+<a name="5006"></a>
+<h2>		 メソッド</h2>
+
+<a name="5007"></a>
+<h3>		 getDeclaringClass</h3>
+<pre>    <a name="5008"></a><code>public Class getDeclaringClass()
+</code>
+</pre><a name="5009"></a>
+この <code>Field</code> オブジェクトが表すフィールドを宣言する、クラスまたはインタフェースを表す <code>Class</code> オブジェクトを返します。<p>
+<a name="5010"></a>
+<h3>		 getName</h3>
+<pre>    <a name="5011"></a><code>public String getName()
+</code>
+</pre><a name="5012"></a>
+この <code>Field</code> オブジェクトが表すフィールドの単純名を返します。<p>
+<a name="5013"></a>
+<h3>		 getModifiers</h3>
+<pre>    <a name="5014"></a><code>public int getModifiers()
+</code>
+</pre><a name="5015"></a>
+この <code>Field</code> オブジェクトが表すフィールドの Java 言語修飾子を、整数型にコード化して返します。修飾子の解読には、<code>Modifier</code> クラスを使います。<p><a name="5016"></a>
+修飾子のコード化は、<em>Java 仮想マシン仕様</em>の表 4.3 で定義されています。<p>
+<a name="5017"></a>
+<h3>		 getType</h3>
+<pre>    <a name="5018"></a><code>public Class getType()
+</code>
+</pre><a name="5019"></a>
+この <code>Field</code> オブジェクトが表すフィールドの宣言型を識別する、<code>Class</code> オブジェクトを返します。<p>
+<a name="5020"></a>
+<h3>		 equals</h3>
+<pre>    <a name="5021"></a><code>public boolean equals(Object obj)
+</code>
+</pre><a name="5022"></a>
+指定の <code>Object</code> とこの <code>Field</code> を比較します。この 2 つが同じときは <code>true</code> を返し、異なるときは <code>false</code> を返します。2 つの <code>Field</code> オブジェクトの宣言クラスと名前が同じ場合、この 2 つのオブジェクトは同じです。<p><a name="5023"></a>
+このメソッドは、クラス <code>Object</code> の <code>equals</code> メソッドをオーバーライドします。<p>
+<a name="5024"></a>
+<h3>		 hashCode</h3>
+<pre>    <a name="5025"></a><code>public int hashCode()
+</code>
+</pre><a name="5026"></a>
+この <code>Field</code> オブジェクトのハッシュコードを返します。これは <code>Field</code> の宣言クラス名およびその単純名の排他的論理和として計算されます。<p><a name="5027"></a>
+このメソッドは、クラス <code>Object</code> の <code>hashCode</code> メソッドをオーバーライドします。<p>
+<a name="5028"></a>
+<h3>		 toString</h3>
+<pre>    <a name="5029"></a><code>public String toString()
+</code>
+</pre><a name="5030"></a>
+この <code>Field</code> を記述する <code>String</code> オブジェクトを返します。形式は、表示フィールドの Java 言語修飾子で、もしあれば、その後にフィールド型、スペース、フィールドを宣言するクラスの完全な修飾名、ピリオド、フィールド名が続きます。以下に例を示します:<p><pre>    <a name="5031"></a>
+
+    <a name="5032"></a>    public static final int java.lang.Thread.MIN_PRIORITY
+
+    <a name="5033"></a>    private int java.io.FileDescriptor.fd
+
+</pre><a name="5034"></a>
+修飾子は、<em>Java 言語仕様</em>に指定の標準順序で置かれます。つまり、<code>public</code>, <code>protected</code>, または <code>private</code> が最初にきて、その後に以下の順序でその他の修飾子が続きます: <code>static</code>, <code>final</code>, <code>transient</code>, および <code>volatile</code><p><a name="5035"></a>
+このメソッドは、クラス <code>Object</code> の <code>toString</code> メソッドをオーバーライドします。<p>
+<a name="5036"></a>
+<h3>		 get</h3>
+<pre>    <a name="5037"></a><code>public Object get(Object obj) 
+</code>
+    <a name="5038"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5039"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5040"></a>
+指定オブジェクト上のこの <code>Field</code> が表すフィールド値を戻します。値はプリミティブ型を持つ場合、自動的にオブジェクトにラップされます。<p><a name="5041"></a>
+基本フィールドの値は、次のようにして獲得します:<p>
+<ul><a name="5042"></a>
+<li>基本フィールドが <code>static</code> フィールドの場合、オブジェクト引数を無視し、<code>null</code> にできる。<br><br>
+<a name="5043"></a>
+<li>それ以外の場合、基本フィールドはインスタンスフィールドである。指定のオブジェクト引数が <code>null</code> の場合、メソッドは <code>NullPointerException</code> をスローする。指定のオブジェクトが基本フィールドを宣言するクラスまたはインタフェースのインスタンスでない場合、メソッドは <code>IllegalArgumentException</code> をスローする。<br><br>
+<a name="5044"></a>
+<li>この <code>Field</code> オブジェクトが Java 言語アクセス制御を実行し、基本フィールドがアクセス不能な場合、メソッドは <code>IllegalAccessException</code> をスローする。<br><br>
+<a name="5045"></a>
+<li>基本フィールドにアクセスできる場合、値は基本インスタンスまたは static フィールドから回収される。フィールドにプリミティブ型がある場合、値はオブジェクトにラップされてから返される。それ以外の場合、値はそのまま返される。<br><br>
+</ul><a name="5046"></a>
+より効率的な <code>Field.get</code> のプリミティブなものも提供されます。これらにはファイナルラッピング変換は不要です。これらについては、以下で説明します。<p>
+<a name="5047"></a>
+<h3>		 getBoolean</h3>
+<pre>    <a name="5048"></a><code>public boolean getBoolean(Object obj)
+</code>
+    <a name="5049"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5050"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5051"></a>
+指定オブジェクト上のこの <code>Field</code> オブジェクトが表すフィールド値を、<code>boolean</code> として返します。手続きの詳細は、<code>Field.get</code> を参照してください。<p><a name="5052"></a>
+基本フィールドの型が <code>boolean</code> でないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5053"></a>
+<h3>		 getByte</h3>
+<pre>    <a name="5054"></a><code>public byte getByte(Object obj)
+</code>
+    <a name="5055"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5056"></a><code>    IllegalAccessException
+</code>
+</pre><a name="5057"></a>
+指定オブジェクト上のこの <code>Field</code> オブジェクトが表すフィールド値を、<code>byte</code> として返します。手続きの詳細は、<code>Field.get</code> を参照してください。<p><a name="5058"></a>
+基本フィールドの型が <code>byte</code> でないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5059"></a>
+<h3>		 getChar</h3>
+<pre>    <a name="5060"></a><code>public char getChar(Object obj)
+</code>
+    <a name="5061"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5062"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5063"></a>
+指定オブジェクト上のこの <code>Field</code> オブジェクトが表すフィールド値を、<code>char</code> として返します。手続きの詳細は、<code>Field.get</code> を参照してください。<p><a name="5064"></a>
+基本フィールド値の型が <code>char</code> でないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5065"></a>
+<h3>		 getShort</h3>
+<pre>    <a name="5066"></a><code>public short getShort(Object obj)
+</code>
+    <a name="5067"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5068"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5069"></a>
+指定オブジェクト上のこの <code>Field</code> オブジェクトが表すフィールド値を、<code>short</code> として返します。手続きの詳細は、<code>Field.get</code> を参照してください。<p><a name="5070"></a>
+識別変換または拡張変換を用いて、基本フィールド値を <code>short</code> に変換できないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5071"></a>
+<h3>		 getInt</h3>
+<pre>    <a name="5072"></a><code>public int getInt(Object obj)
+</code>
+    <a name="5073"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5074"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5075"></a>
+指定オブジェクト上のこの <code>Field</code> オブジェクトが表すフィールド値を、<code>int</code> として返します。手続きの詳細は、<code>Field.get</code> を参照してください。<p><a name="5076"></a>
+識別変換または拡張変換を用いて、基本フィールド値を <code>int</code> に変換できないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5077"></a>
+<h3>		 getLong</h3>
+<pre>    <a name="5078"></a><code>public long getLong(Object obj)
+</code>
+    <a name="5079"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5080"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5081"></a>
+指定オブジェクト上のこの <code>Field</code> オブジェクトが表すフィールド値を、<code>long</code> として返します。手続きの詳細は、<code>Field.get</code> を参照してください。<p><a name="5082"></a>
+識別変換または拡張変換を用いて、基本フィールド値を <code>long</code> に変換できないと、メソッドは <code>IllegalArgumentException</code> を返します。<p>
+<a name="5083"></a>
+<h3>		 getFloat</h3>
+<pre>    <a name="5084"></a><code>public float getFloat(Object obj)
+</code>
+    <a name="5085"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5086"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5087"></a>
+指定オブジェクト上のこの <code>Field</code> オブジェクトが表すフィールド値を、<code>float</code> として返します。手続きの詳細は、<code>Field.get</code> を参照してください。<p><a name="5088"></a>
+識別変換または拡張変換を用いて、基本フィールド値を <code>float</code> に変換できないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5089"></a>
+<h3>		 getDouble</h3>
+<pre>    <a name="5090"></a><code>public double getDouble(Object obj)
+</code>
+    <a name="5091"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5092"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5093"></a>
+指定オブジェクト上のこの <code>Field</code> オブジェクトが表すフィールド値を、<code>double</code> として返します。手続きの詳細は、<code>Field.get</code> を参照してください。<p><a name="5094"></a>
+識別変換または拡張変換を用いて、基本フィールド値を <code>double</code> に変換できないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5095"></a>
+<h3>		 set</h3>
+<pre>    <a name="5096"></a><code>public void set(Object obj, Object value)
+</code>
+    <a name="5097"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5098"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5099"></a>
+指定オブジェクト引数上のこの <code>Field</code> オブジェクトが表すフィールドを、指定の新規値に設定します。基本フィールドにプリミティブ型がある場合、新規値は自動的にアンラップされます。<p><a name="5100"></a>
+演算処理は、以下のように行います:<p>
+<ul><a name="5101"></a>
+<li>基本フィールドが <code>static</code> フィールドの場合、オブジェクト引数を無視し、 <code>null</code> にできる。<br><br>
+<a name="5102"></a>
+<li>それ以外の場合、基本フィールドはインスタンスフィールドである。指定オブジェクト引数が <code>null</code> の場合、メソッドは <code>NullPointerException</code> をスローする。指定オブジェクト引数が、基本フィールドを宣言するクラスまたはインタフェースのインスタンスでない場合、メソッドは <code>IllegalArgumentException</code> をスローする。<br><br>
+<a name="5103"></a>
+<li>この <code>Field</code> オブジェクトが Java 言語アクセス制御を実行し、基本フィールドがアクセス不可能な場合、メソッドは <code>IllegalAccessException</code> をスローする。<br><br>
+<a name="5104"></a>
+<li>基本フィールドが <code>final</code> フィールドの場合、メソッドは <code>IllegalAccessException</code> をスローする。<br><br>
+<a name="5105"></a>
+<li>基本フィールドがプリミティブ型の場合、新規オブジェクト値をプリミティブ型に変換するためのアンラッピング変換が試行される。新規オブジェクト値が <code>null</code> の場合、<code>NullPointerException</code> をスローすると変換が失敗する。新規オブジェクト値が標準 Java ラッパークラスのインスタンスでない場合、<code>IllegalArgumentException</code> をスローすると変換が失敗する。<br><br>
+<a name="5106"></a>
+<li>アンラッピングのあとで、識別変換または拡張変換を使って新規値を基本フィールド型に変換できない場合、メソッドは <code>IllegalArgumentException</code> をスローする。<br><br>
+<a name="5107"></a>
+<li>アンラップ可能な拡大した新規値にフィールドを設定する。<br><br>
+</ul><a name="5108"></a>
+より効率的な <code>Field.set</code> のプリミティブなものも提供されます。これらにはファイナルラッピング変換は不要です。これらについては、以下で説明します。<p>
+<a name="5109"></a>
+<h3>		 setBoolean</h3>
+<pre>    <a name="5110"></a><code>public void setBoolean(Object obj, boolean z)
+</code>
+    <a name="5111"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5112"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5113"></a>
+指定オブジェクト引数上の <code>Field</code> オブジェクトが表すフィールド値を、指定の <code>boolean</code> 値に設定します。手続きの詳細は、<code>Field.set</code> を参照してください。<p><a name="5114"></a>
+基本フィールド型が <code>boolean</code> でないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5115"></a>
+<h3>		 setByte</h3>
+<pre>    <a name="5116"></a><code>public void setByte(Object obj, byte b)
+</code>
+    <a name="5117"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5118"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5119"></a>
+指定オブジェクト引数上のこの <code>Field</code> が表すフィールド値を、指定の <code>byte</code> 値に設定します。手続きの詳細は、<code>Field.set</code> を参照してください。<p><a name="5120"></a>
+識別変換または拡張変換を使って、新規値を基本フィールド型に変換できない場合、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5121"></a>
+<h3>		 setChar</h3>
+<pre>    <a name="5122"></a><code>public void setChar(Object obj, char c)
+</code>
+    <a name="5123"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5124"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5125"></a>
+指定オブジェクト引数上のこの <code>Field</code> オブジェクトが表すフィールド値を、指定の <code>char</code> 値に設定します。手続きの詳細は、<code>Field.set</code> を参照してください。<p><a name="5126"></a>
+識別変換または拡張変換を使って、新規値を基本フィールド型に変換できない場合、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5127"></a>
+<h3>		 setShort</h3>
+<pre>    <a name="5128"></a><code>public void setShort(Object obj, short s)
+</code>
+    <a name="5129"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5130"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5131"></a>
+指定オブジェクト引数上のこの <code>Field</code> オブジェクトが表すフィールド値を、指定の <code>short</code> 値に設定します。手続きの詳細は、<code>Field.set</code> を参照してください。<p><a name="5132"></a>
+識別変換または拡張変換を使って、新規値を基本フィールド型に変換できない場合、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5133"></a>
+<h3>		 setInt</h3>
+<pre>    <a name="5134"></a><code>public void setInt(Object obj, int i)
+</code>
+    <a name="5135"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5136"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5137"></a>
+指定オブジェクト引数上のこの <code>Field</code> オブジェクトが表すフィールド値を、指定の <code>int</code> 値に設定します。手続きの詳細は、<code>Field.set</code> を参照してください。<p><a name="5138"></a>
+識別変換または拡張変換を使って、新規値を基本フィールド型に変換できない場合、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5139"></a>
+<h3>		 setLong</h3>
+<pre>    <a name="5140"></a><code>public void setLong(Object obj, long l)
+</code>
+    <a name="5141"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5142"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5143"></a>
+指定オブジェクト引数上のこの <code>Field</code> オブジェクトが表すフィールド値を、指定の <code>long</code> 値に設定します。手続きの詳細は、<code>Field.set</code> を参照してください。<p><a name="5144"></a>
+識別変換または拡張変換を使って、新規値を基本フィールド型に変換できない場合、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5145"></a>
+<h3>		 setFloat</h3>
+<pre>    <a name="5146"></a><code>public void setFloat(Object obj, float f)
+</code>
+    <a name="5147"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5148"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5149"></a>
+指定オブジェクト引数上のこの <code>Field</code> オブジェクトが表すフィールド値を、指定の <code>float</code> 値に設定します。手続きの詳細は、<code>Field.set</code> を参照してください。<p><a name="5150"></a>
+識別変換または拡張変換を使って、新規値を基本フィールド型に変換できない場合、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+<a name="5151"></a>
+<h3>		 setDouble</h3>
+<pre>    <a name="5152"></a><code>public void setDouble(Object obj, double d)
+</code>
+    <a name="5153"></a><code>    throws NullPointerException, IllegalArgumentException,
+</code>
+    <a name="5154"></a><code>        IllegalAccessException
+</code>
+</pre><a name="5155"></a>
+指定オブジェクト引数上のこの <code>Field</code> オブジェクトが表すフィールド値を、指定の <code>double</code> 値に設定します。手続きの詳細は、<code>Field.set</code> を参照してください。<p><a name="5156"></a>
+基本フィールド型が <code>double</code> でないと、メソッドは <code>IllegalArgumentException</code> をスローします。<p>
+
+<br>
+<hr> 
+<font size=-1>
+<a href="java-reflectionTOC.doc.html">目次</a>  | <a href="java-reflection.doc2.html">前項目</a>  | <a href="java-reflection.doc4.html">次項目</a>
+</font>
+<hr>
+
+
+
+<address>
+<a href="mailto:"></a>
+</address>
+
+<a href="java-reflection-copyright.doc.html">
+<font size=-1><i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights reserved.</i></font>
+</a>
+
+<!-- HTML generated by dkramer on March 14, 1997 -->
+
+</body>
+</html>

@@ -1,0 +1,175 @@
+<html><head><title>Java AWT: 印刷</title></head>
+<BODY BGCOLOR="#FFFFFF">
+ 
+<a name="919687">
+<h1><img align=middle src="images/magnify.sm.gif"> Java AWT: 印刷</h1>
+</a>
+<hr><p><a name="919692">
+<address>
+最終更新: 1997 年 2 月 3 日
+</address>
+<h2>目的</h2>
+</a>
+AWT 印刷 API の目標は、ネイティブプラットフォームの機能を使用して AWT コンポーネントを印刷するための簡単な機構を、開発者に提供することです。この API は、現在の AWT グラフィックモデルと共に使用するために設計されています。<a name="919694">
+<p>
+<h3>印刷 API</h3>
+</a>
+印刷 API は非常に簡単で、java.awt.Toolkit クラスの次の 1 つのメソッドから主に構成されています:
+<pre><code>	<a href="../../../api/java.awt.Toolkit.html#getPrintJob">PrintJob getPrintJob(Frame f, String jobtitle, Properties props)</a>
+</code></pre>
+
+<p>そして、印刷要求に関連したすべての情報をカプセル化する責任のある、次の新しいクラスから構成されます:
+<pre><code>	<a href="../../../api/java.awt.PrintJob.html">java.awt.PrintJob</a>
+</code></pre>
+
+<p>ツールキットの getPrintJob() メソッドは、プラットフォーム固有の印刷ダイアログすべてのポストを行い、PrintJob オブジェクトは戻るとき既にユーザ要求に合うように構成されています。「プロパティ」パラメータは、すべてのプラットフォーム依存デフォルトプロパティ値を、印刷ジョブに渡す機能を提供します（すなわち、「プリンタ名」、「最終ページを最初に」など)。これで、特定のプログラムに適したアプリケーション固有印刷構成プロパティを格納し、個別の状況に適用できるようになります。ユーザが印刷ダイアログ内のデフォルト印刷設定を変更した場合、これらの変更はパラメータとして渡され、 Properties オブジェクトに保存されます（そのため、希望する場合は、プログラムがこの新しいデフォルトを格納するように選択できます）。
+<p>PrintJob オブジェクトは、印刷デバイスに透明にレンダするために使用される印刷グ
+ラフィックスコンテキストと同様に、ユーザが選択した関連の印刷プロパティ (ページサイズなど) へのアクセスを提供します。<a name="919700">
+<p>
+<h3>印刷グラフィックスコンテキスト</h3>
+</a>
+印刷グラフィックスコンテキストは、次の新しいインタフェースによって提供されます:
+
+<pre><code>	<a href="../../../api/java.awt.PrintGraphics.html">java.awt.PrintGraphics</a>
+</code></pre>
+
+<p>PrintJob オブジェクトは、Graphics のサブクラスであり、かつ PrintGraphics インタフェースを実装するオブジェクトに対するハンドルを得るためのメソッドを提供します:
+<pre><code>	<a href="../../../api/java.awt.PrintJob.html#getGraphics">Graphics getGraphics()</a>
+</code></pre>
+
+<p>このオブジェクトは Graphics クラスのサブクラスであるため、簡単に既存の paint() または print() メソッド (標準の Graphics 描画メソッドを使用する) に渡すことができ、基礎となる AWT 実装がこれらの呼び出しを適当な印刷デバイスに翻訳します (これはグラフィック印刷デバイスをサポートする Mac/Windows 上では直接的に行われます; Solaris 上では、適当な PostScript を生成するために PostScript グラフィックスオブジェクトを必要とします)。
+<p>paint() または print() メソッドの内部から、プログラムが画面にレンダしているのか、印刷デバイスにレンダしているのかを検出したい場合がよくあります (例えば、ユーザが選択した「強調表示」テキストを必ずしも印刷したくない場合）。PrintJob.getGraphics() メソッドから返されたグラフィックスオブジェクトが PrintGraphics インタフェースを実装するため、次のテストで簡単にこれを検出できます:
+<pre><code>	public void paint(Graphics g) {
+</code></pre>
+
+<pre><code>		if (g instanceof PrintGraphics) 
+</code></pre>
+
+<pre><code>			// printing is occurring
+</code></pre>
+
+<pre><code>			...
+</code></pre>
+
+<p>PrintGraphics インタフェースの主要なメソッドは、関連する PrintJob オブジェク
+トのハンドルを得るメソッドです:
+<pre><code>	<a href="../../../api/java.awt.PrintGraphics.html#getPrintJob">PrintJob getPrintJob()</a>
+</code></pre>
+<a name="919704">
+<p>
+<h3>ページ付け</h3>
+</a>
+ページ付けを処理するのはプログラムの責任です。getGraphics() への各呼び出しは、単一ページの印刷グラフィックスコンテキストを返します; プログラムが印刷グラフィックスコンテキストの dispose() を呼び出すとき、そのページがプリンタに流しだされます。プログラムは、指定したページの大きさと解像度を与えられ、適当なページコンテンツと改ページを判別する必要があります。
+<p>これらの印刷属性は java.awt.PrintJob の次のメソッドによって得られます:
+<pre><code>	<a href="../../../api/java.awt.PrintJob.html#getPageDimension">Dimension getPageDimension()</a>
+</code></pre>
+<pre><code>	<a href="../../../api/java.awt.PrintJob.html#getPageResolution">int getPageResolution()</a>
+</code></pre>
+
+<a name="919708"></a>
+<p>
+<h3>コンポーネントの印刷階層</h3>
+プログラムで AWT コンポーネントの包含階層全体 (すなわち、Panel とその内部のネストしたコントロール/コンテナすべて) を印刷する必要がある場合,包含階層のルート上の次の java.awt.Componentメソッドを呼び出す必要があります (適当な印刷グラフィックスコンテキストを渡して):
+<pre><code>     <a href="../../../api/java.awt.Component.html#printAll">public void printAll(Graphics g)</a>
+</code></pre>
+<p>
+このメソッドを呼び出すと、包含階層を完全に横断する結果となり、print() メソッドがすべての子孫コンポーネントに呼び出されます。print() メソッドのデフォルト実装は単に paint() を呼び出し、プログラムが paint() メソッドで自分自身をレンダするコンポーネントを作成する場合、印刷は「自動的に」行われる必要があります。すべての基本 AWT コンポーネント(Button、Scrollbar など)は、自分の printAll() メソッドが呼び出されたとき、自分自身を印刷することができるということに注意してください（これらのレンダリングが paint() メソッド内では起こらない場合も同様です）。
+<p>
+<h3>印刷ダイアログ</h3>
+
+いくつかのプログラムでは、自分自身の印刷ダイアログを拡張または作成することが重要になりますが、この機能は API の最初のバージョンにはありません。
+<p>
+<h3>セキュリティ</h3>
+
+潜在的に認可されていないアプレットの印刷ジョブ要求の開始 (および、そのアプレットが希望するプリンタに対し不正なやり方での印刷) を許すことは危険であると考えられるため、印刷ジョブの開始 (Toolkit.getPrintJob 経由) は、新しい SecurityManager メソッドに実装される Applet セキュリティ制限によって束縛される操作であると定義されます。
+<p>
+この制限が、印刷ジョブから返される PrintGraphics オブジェクトを使用してアプレットがレンダする機能を制約せず、認可されていないアプレットが印刷ジョブを開始できないようにしているだけである、ということに注意することが大切です。Java セキュリティアーキテクチャが多くのカスタマイゼーションを可能にするとき、もっと合理的な原則が提供されます。<a name="919710">
+<h2>サンプルコード</h2>
+</a>
+AWT コンポーネントを印刷するために印刷ジョブを開始する方法を示す「非常に」簡単な例を、次に示します:
+<pre><code>	
+import java.awt.*;
+import java.awt.event.*;
+
+public class PrintingTest extends Frame implements ActionListener {
+
+    PrintCanvas canvas;
+
+    public PrintingTest() {
+        super("Printing Test"); 
+        canvas = new PrintCanvas();
+        add("Center", canvas);
+        
+        Button b = new Button("Print");
+        b.setActionCommand("print");
+        b.addActionListener(this);
+        add("South", b);
+
+        pack();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        String cmd = e.getActionCommand();
+        if (cmd.equals("print")) {
+            <b>PrintJob pjob = getToolkit().getPrintJob(this,
+                               "Printing Test", null);
+
+            if (pjob != null) {          
+                Graphics pg = pjob.getGraphics();
+
+                if (pg != null) {
+                    canvas.printAll(pg);
+                    pg.dispose(); // flush page
+                }
+                pjob.end();
+
+            }
+        }</b>
+    }
+
+    public static void main(String args[]) {
+        PrintingTest test = new PrintingTest();
+        test.show();
+    }
+}
+
+class PrintCanvas extends Canvas {
+
+    public Dimension getPreferredSize() {
+        return new Dimension(100, 100);
+    }
+  
+    public void paint(Graphics g) {
+        Rectangle r = getBounds();
+
+        g.setColor(Color.yellow);
+        g.fillRect(0, 0, r.width, r.height);
+
+        g.setColor(Color.blue);
+        g.drawLine(0, 0, r.width, r.height);
+
+        g.setColor(Color.red);
+        g.drawLine(0, r.height, r.width, 0);
+    }
+}
+</code></pre>
+
+<p>
+<hr><br>
+ 
+<address>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</address>
+
+<i>Copyright (C) 1996, 1997 Sun Microsystems, Inc.   All rights
+reserved.</i>
+
+<!-- This file was created with Quadralay WebWorks Publisher 3.0.5 -->
+<!-- -->
+<!-- For more information on how this document, and how the rest of -->
+<!-- this server was created, email yourEmail@xyzcorp.com -->
+<!-- -->
+<!-- Last updated: 09/13/96 16:42:22 -->
+
+</body>
+</html>

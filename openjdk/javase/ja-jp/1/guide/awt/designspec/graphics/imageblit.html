@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>AWT イメージレンダリング API</title>
+</head>
+<BODY BGCOLOR="#FFFFFF">
+ 
+<h1>AWT イメージレンダリング API</h1>
+<hr>
+<address>最終更新: 1996 年 10 月 30 日</address>
+<h2>問題</h2>
+現在 AWT Graphics オブジェクトは、オプションのスケールとオプションのバックグラウンド色付でイメージ全体をレンダする、 4 つのメソッドを持っています。
+<p>
+イメージ全体のサブセットを、Graphics オブジェクトのクロッピングフィルタまたはクリッピング機構を使用せずにレンダする方法はありません。この状況は、Graphics オブジェクトのクリップ属性がもっと制限された値にしかセットできないという事実のために、複雑になります。これは決して拡張したり、以前のクリップ領域に復元したりできません。
+<p>
+イメージをスケールする既存のメソッドもまた、プログラマがイメージを負のサイズにスケールしたり他の方法によって、水平または垂直にフリップすることを許しません。他の任意のイメージ操作はサポートされていないとしても、フリッピングの欠如は顕著です。その理由は、既にサポートされているスケールアルゴリズムに対する小さな算術的修正で、これを簡単に管理できるからです。
+<dl>
+<dd>
+矩形の引数を取る既存の Java インタフェースのほとんどは、負の幅と高さの値を空の矩形を意味するものとして扱います。既存の drawImage メソッドはイメージを負のサイズにスケールするよう命じられたとき、イメージフリッピングを許容できたかもしれません。しかし、それは他で見られる空の負の矩形プロトコルと衝突した可能性があります。負の値を null 操作として扱う（論証的には正当なこと）代わりに 、既存の drawImage メソッドは負の幅と高さの値を「比例値」として考えます。つまり、値の 1 つが負の場合、元のイメージの縦横比を維持するために、適当な値が他の負でない数量に基づいて代替されます。両方とも負の場合、イメージは元のサイズとスケールで描画されます。この動作は、いくつかのブラウザが HTML &lt;img&gt; タグの幅と高さの属性の失われている仕様を扱う方法と互換になるように設計されました。本質的には、イメージに負の幅または高さをスケールすることは、イメージを幅と高さが指定されていないものにスケールすることと比べられ、標準の「比例」アルゴリズムがデフォルト値を取得するために適用されます。
+</dl>
+
+<h2>新イメージレンダリング API</h2>
+この問題を解決するために、2 つの新しいメソッドが AWT Graphics クラスに追加され、完全なスケーリング、フリッピング、クロッピング、イメージレンダリング機能を提供します。新しいメソッドは次のとおりです:
+<pre>	<a href="../../../../api/java.awt.Graphics.html#drawImage(java.awt.Image, int, int, int, int, int, int, int, int, java.awt.image.ImageObserver)">drawImage</a>(Image img,
+		  int dx1, int dy1, int dx2, int dy2,
+		  int sx1, int sy1, int sx2, int sy2,
+		  ImageObserver observer)
+	<a href="../../../../api/java.awt.Graphics.html#drawImage(java.awt.Image, int, int, int, int, int, int, int, int, java.awt.Color, java.awt.image.ImageObserver)">drawImage</a>(Image img,
+		  int dx1, int dy1, int dx2, int dy2,
+		  int sx1, int sy1, int sx2, int sy2,
+		  Color bgcolor, ImageObserver observer)</pre>
+<p>
+これら新しいメソッドの面白い点は、以前の drawImage() メソッドが、非同期スレッドの生のイメージを再読み込みして画面イメージの全く新しい表現を作成する一方、新しいメソッドは常にスケールされていないイメージバージョンからのピクセルを使用し、画面に描画することです。結果として、2 つの新しいメソッドは、イメージの全サイズバージョンが、 MediaTracker または他のイメージステータス API が示すようにロードされ変換される限り、同期的に完了します。
+<p>
+新しいメソッドの座標仕様におけるもう 1 つの面白い変更点は、ソースと転送先矩形を定義するための 2 つの座標の使用です。負の幅と高さは残りの Java API で既存の意味を持ち続けるため、新しいメソッドは新しい座標対仕様を使用し、どの次元がフリップされるかを明示的に制御できるようにします。この新しいシステムはまた、ユーザのマウスのドラッグに従ってイメージのすみを追跡するいくつかのアプリケーションにとって便利なものです。ドラッグの開始と終了座標をx、y、w、hフォーマットに分解する必要はありません。
+
+<h2>サンプルコード</h2>
+<p>イメージクロッピングを実行するための古い API の使用方法を示すサンプルコードを、次に示します:
+<pre>
+
+    import java.awt.*;
+    import java.applet.*;
+
+    public class ImgCropExample extends Applet {
+	Image bgimg, img2;
+	public void paint(Graphics g) {
+	    // Draw a background image
+	    g.drawImage(bgimg, 0, 0, this);
+	    // Draw the upper left 100x100 portion of another image at 10,10
+	    <b>Graphics g2 = g.create();</b>
+	    <b>g2.clipRect(10, 10, 100, 100);</b>
+	    <b>g2.drawImage(img2, 10, 10, this);</b>
+	    <b>g2.dispose();	// reclaims resources more quickly</b>
+	    // Now continue drawing with original clip area
+	    g.fillRect(0, 0, 10, 10);
+	}
+    }
+</pre>
+<p>イメージクロッピングを実行するための新しい API の使用方法を示すサンプルコードを、次に示します:
+<pre>
+
+    import java.awt.*;
+    import java.applet.*;
+
+    public class ImgCropExample extends Applet {
+	Image bgimg, img2;
+	public void paint(Graphics g) {
+	    // Draw a background image
+	    g.drawImage(bgimg, 0, 0, this);
+	    // Draw the upper left 100x100 portion of another image at 10,10
+	    <b>g.drawImage(img2,
+			10, 10, 110, 110,
+			0, 0, 100, 100, this);</b>
+	    // Now continue drawing with original clip area
+	    g.fillRect(0, 0, 10, 10);
+	}
+    }
+</pre>
+
+<p>イメージフリッピングを実行するための新しい API の使用方法を示すサンプルコードを、次に示します:
+<pre>
+
+    import java.awt.*;
+    import java.applet.*;
+
+    public class ImgCropExample extends Applet {
+    	Image img2;
+	public void paint(Graphics g) {
+	    // Draw the center 100x100 portion of a 200x200 image
+	    // at location 10, 10, flipped horizontally.
+	    <b>g.drawImage(img2,
+			10, 10, 110, 110,
+			150, 50, 50, 150, this);</b>
+	}
+    }
+</pre>
+
+<hr><br>
+
+<address>
+フィードバックは <a href="mailto:java-awt@java.sun.com">java-awt@java.sun.com</a> 宛てに送ってください。
+</address>
+
+<i>Copyright (C) 1996, Sun Microsystems, Inc.   All rights
+reserved.</i>
+
+</body>
+</html>

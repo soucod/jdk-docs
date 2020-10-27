@@ -1,0 +1,77 @@
+<html>
+<head>
+<title>JAR ガイド</title>
+<!-- Created by: Susan Keohan 30-Oct-1996 -->
+<!-- Updated by: Beth Stearns 18-Nov-1996 -->
+</head>
+
+<BODY BGCOLOR="#FFFFFF" TEXT=#000000 LINK=#0000ff VLINK=#000077 ALINK=#ff0000>
+<CENTER><P ALIGN=LEFT>
+<IMG SRC="../../images/smi.logo.gif" ALT=" Sun Microsystems, Inc " BORDER=0>
+</P></CENTER>
+
+<font size=-1><a href="index.html">JDK 目次</a></font>
+<HR SIZE=3 NOSHADE>
+
+<center>
+                     <H1>JAR ガイド</H1>
+</center>
+
+<H2>JAR とはなにか?</H2>
+<P>
+JAR は Java ARchive の略です。これは普及している ZIP ファイルフォーマットに基づくファイルフォーマットで、多くのファイルを 1 つに集めるために使用されます。JAR は一般的なアーカイブツールとして使用できますが、これを開発した主な動機は、Java アプレットおよびその必須のコンポーネント (.class ファイル、イメージと音声) が各々に対して新しい接続を開くより単一の HTTP トランザクションでブラウザにダウンロードできるようにすることでした。これはアプレットをウェッブページにロードし機能させる速度を大きく改善します。JAR フォーマットはまた、圧縮をサポートし、ファイルのサイズを縮小しダウンロードの時間をさらに改善します。  
+<!-- REMIND: put a link to download benchmark statistics in here --> 
+さらに、JAR ファイルの個別のエントリにアプレットの著者がデジタル的に署名しその起源を認証することができます。  
+<P>
+JAR は次のようなものです:
+<UL>
+  <LI>クロスプラットフォームの唯一のアーカイブフォーマットである
+  <LI>クラスファイルと同様に、オーディオとイメージファイルを処理する唯一のフォーマットである
+  <LI>既存のアプレットコードと後方互換である
+  <LI>オープン標準であり、完全拡張可能で、java で書かれている
+  <LI>java アプレットの断片をバンドルする好ましい方法である  
+</UL>
+
+<p>JAR は PKWARE で定義されている zip アーカイブからなり、manifest ファイ
+ルおよび潜在的に <A HREF="manifest.html">Manifest および署名</A> 仕様で定義されているようなシグネチャファイルを含みます。
+<P>
+<H2>アプレットタグ</H2>
+JAR ファイルを用意するために HTML ページの APPLET タグを変更することは簡単です。サーバ上の JAR ファイルは <B>ARCHIVE</B> パラメータによって識別されます。このパラメータでは、jar ファイルのディレクトリ位置は次の html ページの位置に関連付けられている必要があります:
+<PRE>
+    &lt;applet code=Animator.class
+      archive="jars/animator.jar"
+      width=460 height=160&gt;
+      &lt;param name=foo value="bar"&gt;
+    &lt;/applet&gt;
+</PRE>
+慣れ親しんだ <B>CODE=myApplet.class</B> パラメータは依然存在する必要があることに注意してください。<B>CODE</B> パラメータはいつものように、実行が始まるアプレットの名前を識別します。しかし、アプレットのクラスファイルとそのヘルパークラスすべてが JAR ファイルからロードされます。 
+<P>
+一度アーカイブファイルが識別されると、これはダウンロードされコンポーネントに分離されます。アプレット実行の間、新しいクラス、イメージまたはオーディオクリップがアプレットによって要求されたとき、最初にアプレットに関連するアーカイブ内で検索されます。ダウンロードされたアーカイブの中でファイルが見付からない場合、CODEBASE (すなわち、JDK1.0.2 と同様に検索されます) に関連するアプレットサーバ上で検索されます。
+
+<P>
+archive タグは複数の JAR ファイルを指定することがあります。各 JAR ファイルは "," (コンマ) で分離する必要があります。順番に各ファイルがダウンロードされます:
+<PRE>
+    &lt;applet code=Animator.class
+      archive="classes.jar ,  images.jar ,  sounds.jar"
+      width=460 height=160&gt;
+      &lt;param name=foo value="bar"&gt;
+    &lt;/applet&gt;
+</PRE>
+アーカイブパラメータ内のエントリの間には空白をいくらでも入れられます。さらに、archive タグそれ自身は大文字小文字を区別しません。このタグを小文字だけ、大文字だけ、または ArCHiVe のように大文字小文字のすべての組み合わせが可能にできます。 
+
+<p>
+
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<HR SIZE=3 NOSHADE>
+
+<IMG SRC="../../images/JAVA.85.GIF" ALIGN=RIGHT>
+
+<FONT SIZE=-2>
+<A HREF="../../relnotes/SMICopyright.html">Copyright (C)</A> 1996 Sun Microsystems, Inc., 2550 Garcia Ave., Mtn. View, CA 94043-1100 USA. All rights reserved.</font>
+<br><br>
+
+</BODY>
+</HTML>
+
+
+
