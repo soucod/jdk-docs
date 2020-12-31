@@ -13,12 +13,14 @@ jdk api, jfx api
 
 #### Java-api
 
-8
+[Java1](openjdk/javase/en-us/1/api)
 
-11
+[Java8](openjdk/javase/en-us/8/docs/api)
+
+[Java11](openjdk/javase/en-us/11/docs/api)
 
 #### JavaFX-api
 
-[javafx8](jfx/en-us/8/api)
+[Javafx8](jfx/en-us/8/api)
 
-[javafx11](jfx/en-us/11/api)
+[Javafx11](jfx/en-us/11/api)
